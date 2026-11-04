@@ -108,6 +108,7 @@ range.xql: attr-case-insensitive-lower
 range.xql: attr-case-insensitive-mixed
 range.xql: attr-case-insensitive-upper
 types.xql: date-field-normalized
+types.xql: date-field-normalized-bc-1
 types.xql: date-field-normalized-bc-2
 types.xql: date-normalized
 types.xql: double-equals-type-conversion

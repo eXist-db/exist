@@ -48,8 +48,8 @@ public class DateConverter implements TypeConverter {
     public Field toField(String fieldName, String content) {
         try {
             DateValue dv;
-            if (content.indexOf('-') < 1) {
-                // just year
+            if (content.indexOf('-', 1) < 0) {
+                // just year, possibly negative
                 int year = Integer.parseInt(content);
                 XMLGregorianCalendar calendar = TimeUtils.getInstance().newXMLGregorianCalendar();
                 calendar.setYear(year);

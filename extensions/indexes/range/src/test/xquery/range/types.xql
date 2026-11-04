@@ -554,7 +554,6 @@ function tt:date-field-normalized($date as xs:date) {
 };
 
 declare
-    %test:pending("Now this test is running, we can see that it fails!")
     %test:args("-0800-02-11")
     %test:assertEquals("E1")
 function tt:date-field-normalized-bc-1($date as xs:date) {
