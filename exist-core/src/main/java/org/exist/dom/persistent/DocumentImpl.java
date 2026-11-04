@@ -440,7 +440,12 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
             if (collection == null) {
                 uri = (XmldbURI) fileURI.clone();
             } else {
-                uri = collection.getURI().append(fileURI);
+                // a document's name is normally a single path segment in canonical form, which can be appended without
+                // parsing the path again; any other name is parsed as before, so that its URI, the document's lock key,
+                // is the same whichever way it is made
+                final String name = fileURI.getRawCollectionPath();
+                uri = name.isEmpty() || name.indexOf('/') >= 0 || !XmldbURI.isCanonicalSegment(name)
+                        ? collection.getURI().append(fileURI) : collection.getURI().appendInternal(fileURI);
             }
         }
         return uri;
@@ -557,6 +562,16 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
     @Override
     @EnsureContainerLocked(mode=READ_LOCK)
     public Permission getPermissions() {
+        return permissions;
+    }
+
+    /**
+     * Gets the permissions without the READ_LOCK that {@link #getPermissions()} requires, for a caller
+     * which excludes concurrent changes to them otherwise.
+     *
+     * @return the permissions of the document.
+     */
+    public Permission getPermissionsNoLock() {
         return permissions;
     }
 

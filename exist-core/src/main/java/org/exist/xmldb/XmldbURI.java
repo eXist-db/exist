@@ -527,10 +527,68 @@ public class XmldbURI implements Comparable<Object>, Serializable, Cloneable {
         final int fix = ("".equals(split[0])) ? 1 : 0;
         final XmldbURI[] segments = new XmldbURI[split.length - fix];
 
+        // a segment already in canonical form needn't be parsed again; any other is parsed as before, so that the
+        // segments, and the lock keys made from them, are what they were for names not stored in that form
         for (int i = fix; i < split.length; i++) {
-            segments[i - fix] = XmldbURI.create(split[i]);
+            segments[i - fix] = isCanonicalSegment(split[i]) ? createInternal(split[i]) : create(split[i]);
         }
         return segments;
+    }
+
+    /**
+     * Whether a path segment is in the canonical form that {@link #create(String)} gives it, so that parsing it again
+     * would not change it: each character is one that a path segment may hold unencoded (RFC 3986 {@code pchar}:
+     * letters, digits, {@code - . _ ~ ! $ & ' ( ) * + , ; = @}), and each {@code %} begins a percent-encoding of
+     * two upper-case hexadecimal digits. A name stored otherwise, such as with a space or a non-ASCII letter, is not.
+     * Nor is one with a ':', which {@link #create(String)} reads as a URI's scheme when it is parsed on its own, as
+     * {@link #getPathSegments()} parsed each segment.
+     *
+     * @param segment the segment, without '/'
+     * @return true if the segment is in canonical form
+     */
+    public static boolean isCanonicalSegment(final String segment) {
+        final int length = segment.length();
+        int i = 0;
+        while (i < length) {
+            final char c = segment.charAt(i);
+            if (c == '%') {
+                if (i + 2 >= length || !isUpperHexDigit(segment.charAt(i + 1)) || !isUpperHexDigit(segment.charAt(i + 2))) {
+                    return false;
+                }
+                i += 3;
+            } else if (isPathSegmentChar(c)) {
+                i++;
+            } else {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Whether each segment of a path is in canonical form, see {@link #isCanonicalSegment(String)}.
+     *
+     * @param path the path, its segments separated by '/'
+     * @return true if every segment is in canonical form
+     */
+    public static boolean isCanonicalPath(final String path) {
+        int start = 0;
+        for (int slash = path.indexOf('/'); slash >= 0; slash = path.indexOf('/', start)) {
+            if (!isCanonicalSegment(path.substring(start, slash))) {
+                return false;
+            }
+            start = slash + 1;
+        }
+        return isCanonicalSegment(path.substring(start));
+    }
+
+    private static boolean isUpperHexDigit(final char c) {
+        return (c >= '0' && c <= '9') || (c >= 'A' && c <= 'F');
+    }
+
+    private static boolean isPathSegmentChar(final char c) {
+        return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9')
+                || "-._~!$&'()*+,;=@".indexOf(c) >= 0;
     }
 
     /**
