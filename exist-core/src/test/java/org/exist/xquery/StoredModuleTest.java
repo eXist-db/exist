@@ -40,6 +40,7 @@ import org.xmldb.api.modules.BinaryResource;
 import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XQueryService;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -91,7 +92,7 @@ public class StoredModuleTest {
         collection.close();
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void testQuery() throws Exception {
 
         Collection c = createCollection("test");
@@ -114,7 +115,7 @@ public class StoredModuleTest {
         }
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void testModule1() throws Exception {
         String collectionName = "module1";
         String module = "module namespace mod1 = 'urn:module1';" +
@@ -170,7 +171,7 @@ public class StoredModuleTest {
 //    "concat('hi from module 5: ',$mod5:testvar)" +
 //    "};";
 
-    @org.junit.jupiter.api.Test
+    @Test
     void testModule23MissingRelativeContext() throws XMLDBException {
         String collection2Name = "module2";
         String collection3Name = "module2/module3";
@@ -188,7 +189,7 @@ public class StoredModuleTest {
         assertThrows(XMLDBException.class, () -> existEmbeddedServer.executeQuery(query));
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void testRelativeImportDb() throws Exception {
         String collection2Name = "module2";
         String collection3Name = "module2/module3";
@@ -220,7 +221,7 @@ public class StoredModuleTest {
         assertEquals("hi from module 4", r);
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void testRelativeImportFile() throws Exception {
         final String collection2Name = "module2";
         final String collection3Name = "module3";
@@ -256,7 +257,7 @@ public class StoredModuleTest {
         assertEquals("hi from module 4", r);
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void testCircularImports() throws XMLDBException {
         
         final String index_module = 
@@ -308,7 +309,7 @@ public class StoredModuleTest {
         assertDoesNotThrow(() -> existEmbeddedServer.executeQuery(index_module));
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void testLocalVariableDeclarationCallsLocalFunction() throws XMLDBException {
         final String index_module =
             "xquery version \"1.0\";" +
@@ -332,7 +333,7 @@ public class StoredModuleTest {
         assertDoesNotThrow(() -> existEmbeddedServer.executeQuery(index_module));
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void dyanmicModuleImportForSameNamespace() throws XMLDBException {
         
         Collection testHome = createCollection("testDynamicModuleImport");

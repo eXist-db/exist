@@ -37,6 +37,7 @@ import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.BinaryResource;
 import org.xmldb.api.modules.CollectionManagementService;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
@@ -76,7 +77,7 @@ public class EvalTest {
         existEmbeddedServer.getRoot().removeResource(invokableQuery);
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void eval() throws XPathException, XMLDBException {
         final String query = """
                 let $query := 'let $a := 1 return $a'
@@ -87,7 +88,7 @@ public class EvalTest {
         assertEquals("1", r);
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void evalWithExternalVars() throws XPathException, XMLDBException {
         final String query = "let $value := 'world' return\n" +
                 "\tutil:eval(xs:anyURI('/db/" + INVOKABLE_QUERY_FILENAME + "'), false(), (xs:QName('" + INVOKABLE_QUERY_EXTERNAL_VAR_NAME + "'), $value))";
@@ -99,7 +100,7 @@ public class EvalTest {
         assertEquals("world", n.getFirstChild().getNodeValue());
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void evalwithPI() throws XPathException, XMLDBException {
         final String query = """
                 let $query := 'let $a := <test><?pi test?></test> return count($a//processing-instruction())'
@@ -110,7 +111,7 @@ public class EvalTest {
         assertEquals("1", r);
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void evalInline() throws XPathException, XMLDBException {
         final String query = """
                 let $xml := document{<test><a><b/></a></test>}
@@ -122,7 +123,7 @@ public class EvalTest {
         assertEquals("3", r);
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void testEvalWithContextVariable() throws XPathException, XMLDBException {
         final String query = """
                 let $xml := <test><a/><b/></test>
@@ -137,7 +138,7 @@ public class EvalTest {
         assertEquals("true", r);
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void testEvalSupplyingContext() throws XPathException, XMLDBException {
         final String query = """
                 let $xml := <test><a/></test>
@@ -152,7 +153,7 @@ public class EvalTest {
         assertEquals("true", r);
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void testEvalSupplyingContextAndVariable() throws XPathException, XMLDBException {
         final String query = """
                 let $xml := <test><a/></test>
@@ -168,7 +169,7 @@ public class EvalTest {
         assertEquals("3", r);
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void testEvalSupplyingContextItem() throws XPathException, XMLDBException {
         final String query = """
                 let $context := 'London'
@@ -180,7 +181,7 @@ public class EvalTest {
         assertEquals("London", r);
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void evalInContextWithPreDeclaredNamespace() throws XMLDBException {
         createCollection("testEvalInContextWithPreDeclaredNamespace");
         final String query =
@@ -192,7 +193,7 @@ public class EvalTest {
         existEmbeddedServer.executeQuery(query);
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void evalInContextWithPreDeclaredNamespaceAcrossLocalFunctionBoundary() throws XMLDBException {
         createCollection("testEvalInContextWithPreDeclaredNamespace");
         final String query =
@@ -208,7 +209,7 @@ public class EvalTest {
     }
 
     //should fail with - Error while evaluating expression: /db:article. XPST0081: No namespace defined for prefix db [at line 5, column 9]
-    @org.junit.jupiter.api.Test
+    @Test
     void evalInContextWithPreDeclaredNamespaceAcrossModuleBoundary() throws XMLDBException {
         Collection testHome = createCollection("testEvalInContextWithPreDeclaredNamespace");
         final String processorModule =
@@ -238,7 +239,7 @@ public class EvalTest {
      * namespaces being present in the XQueryContext the next time
      * the same query was executed
      */
-    @org.junit.jupiter.api.Test
+    @Test
     void evalWithMissingVariableReferenceShouldReportTheSameErrorEachTime() throws XMLDBException {
         final String testHomeName = "testEvalWithMissingVariableReferenceShouldReportTheSameErrorEachTime";
         final Collection testHome = createCollection(testHomeName);
@@ -294,7 +295,7 @@ public class EvalTest {
         return collection;
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void evalAndSerialize() throws XMLDBException {
         final String query = """
                 let $query := "<elem1>hello</elem1>"
@@ -305,7 +306,7 @@ public class EvalTest {
         assertEquals("<elem1>hello</elem1>", r.getContent());
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void evalAndSerializeDefaultOptions() throws XMLDBException {
         String query = """
                 let $query := "<elem1>hello</elem1>"
@@ -328,7 +329,7 @@ public class EvalTest {
         assertEquals("hello", r.getContent());
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void evalAndSerializeJson() throws XMLDBException {
         String query = """
                 let $query := "<outer><elem1>hello</elem1></outer>"
@@ -339,7 +340,7 @@ public class EvalTest {
         assertEquals("{\"elem1\":\"hello\"}", r.getContent());
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void evalAndSerializeAdaptive() throws XMLDBException {
         String query = """
                 let $query := 'map { "key": "value"}'
@@ -350,7 +351,7 @@ public class EvalTest {
         assertEquals("map{\"key\":\"value\"}", r.getContent());
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void evalAndSerializeSubsequence() throws XMLDBException {
         final String query = """
                 let $query := "for $i in (1 to 10) return <i>{$i}</i>"
@@ -361,7 +362,7 @@ public class EvalTest {
         assertEquals("<i>1</i><i>2</i><i>3</i><i>4</i>", r.getContent());
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void evalErrorInfo() {
         final String query = """
                 let $query := "let $msg := 'some error message'
@@ -381,7 +382,7 @@ public class EvalTest {
         }
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void evalPassErrorInfo() {
         final String query = """
                 let $query := "let $msg := 'some error message'

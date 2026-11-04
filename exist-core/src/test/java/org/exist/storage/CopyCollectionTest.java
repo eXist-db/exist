@@ -45,6 +45,7 @@ import org.xml.sax.SAXException;
 import java.io.IOException;
 import java.util.Optional;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.api.Test;
 
 import static org.exist.TestUtils.ADMIN_DB_PWD;
 import static org.exist.TestUtils.ADMIN_DB_USER;
@@ -87,7 +88,7 @@ public class CopyCollectionTest {
     /**
      * As the owner copy {@link #USER1_COL1} from {@link TestConstants#TEST_COLLECTION_URI} to non-existent {@link #USER1_NEW_COL}.
      */
-    @org.junit.jupiter.api.Test
+    @Test
     void copyToNonExistentAsSelf() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException, TriggerException {
         final Subject user1 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER1_NAME, USER1_PWD);
         copyCol(user1, NO_PRESERVE, USER1_COL1, USER1_NEW_COL);
@@ -97,7 +98,7 @@ public class CopyCollectionTest {
     /**
      * As the owner copy {@link #USER1_COL1} from {@link TestConstants#TEST_COLLECTION_URI} already existing {@link #USER1_COL2}.
      */
-    @org.junit.jupiter.api.Test
+    @Test
     void copyToExistentAsSelf() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException, TriggerException {
         final Subject user1 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER1_NAME, USER1_PWD);
         copyCol(user1, NO_PRESERVE, USER1_COL1, USER1_COL2);
@@ -107,7 +108,7 @@ public class CopyCollectionTest {
     /**
      * As a DBA copy {@link #USER1_COL1} from {@link TestConstants#TEST_COLLECTION_URI} to non-existent {@link #USER1_NEW_COL}.
      */
-    @org.junit.jupiter.api.Test
+    @Test
     void copyToNonExistentAsDBA() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException, TriggerException {
         final Subject adminUser = existWebServer.getBrokerPool().getSecurityManager().authenticate(ADMIN_DB_USER, ADMIN_DB_PWD);
         copyCol(adminUser, NO_PRESERVE, USER1_COL1, USER1_NEW_COL);
@@ -117,7 +118,7 @@ public class CopyCollectionTest {
     /**
      * As a DBA copy {@link #USER1_COL1} from {@link TestConstants#TEST_COLLECTION_URI} already existing {@link #USER1_COL2}.
      */
-    @org.junit.jupiter.api.Test
+    @Test
     void copyToExistentAsDBA() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException, TriggerException {
         final Subject adminUser = existWebServer.getBrokerPool().getSecurityManager().authenticate(ADMIN_DB_USER, ADMIN_DB_PWD);
         copyCol(adminUser, NO_PRESERVE, USER1_COL1, USER1_COL2);
@@ -127,7 +128,7 @@ public class CopyCollectionTest {
     /**
      * As some other (non-owner) user copy {@link #USER1_COL1} from {@link TestConstants#TEST_COLLECTION_URI} to non-existent {@link #USER2_NEW_COL}.
      */
-    @org.junit.jupiter.api.Test
+    @Test
     void copyToNonExistentAsOther() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException, TriggerException {
         final Subject user2 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER2_NAME, USER2_PWD);
         copyCol(user2, NO_PRESERVE, USER1_COL1, USER2_NEW_COL);
@@ -137,7 +138,7 @@ public class CopyCollectionTest {
     /**
      * As some other (non-owner) user copy {@link #USER1_COL1} from {@link TestConstants#TEST_COLLECTION_URI} already existing {@link #USER2_COL2}.
      */
-    @org.junit.jupiter.api.Test
+    @Test
     void copyToExistentAsOther() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException, TriggerException {
         final Subject user2 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER2_NAME, USER2_PWD);
         copyCol(user2, NO_PRESERVE, USER1_COL1, USER2_COL2);
@@ -148,7 +149,7 @@ public class CopyCollectionTest {
      * Whilst preserving attributes,
      * as the owner copy {@link #USER1_COL1} from {@link TestConstants#TEST_COLLECTION_URI} to non-existent {@link #USER1_NEW_COL}.
      */
-    @org.junit.jupiter.api.Test
+    @Test
     void copyPreserveToNonExistentAsSelf() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException, TriggerException {
         final Subject user1 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER1_NAME, USER1_PWD);
         copyCol(user1, PRESERVE, USER1_COL1, USER1_NEW_COL);
@@ -159,7 +160,7 @@ public class CopyCollectionTest {
      * Whilst preserving attributes,
      * as the owner copy {@link #USER1_COL1} from {@link TestConstants#TEST_COLLECTION_URI} already existing {@link #USER1_COL2}.
      */
-    @org.junit.jupiter.api.Test
+    @Test
     void copyPreserveToExistentAsSelf() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException, TriggerException {
         final Subject user1 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER1_NAME, USER1_PWD);
         final long originalCol2Created = getCreated(USER1_COL2);
@@ -171,7 +172,7 @@ public class CopyCollectionTest {
      * Whilst preserving attributes,
      * as a DBA copy {@link #USER1_COL1} from {@link TestConstants#TEST_COLLECTION_URI} to non-existent {@link #USER1_NEW_COL}.
      */
-    @org.junit.jupiter.api.Test
+    @Test
     void copyPreserveToNonExistentAsDBA() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException, TriggerException {
         final Subject adminUser = existWebServer.getBrokerPool().getSecurityManager().authenticate(ADMIN_DB_USER, ADMIN_DB_PWD);
         copyCol(adminUser, PRESERVE, USER1_COL1, USER1_NEW_COL);
@@ -182,7 +183,7 @@ public class CopyCollectionTest {
      * Whilst preserving attributes,
      * as a DBA copy {@link #USER1_COL1} from {@link TestConstants#TEST_COLLECTION_URI} already existing {@link #USER1_COL2}.
      */
-    @org.junit.jupiter.api.Test
+    @Test
     void copyPreserveToExistentAsDBA() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException, TriggerException {
         final Subject adminUser = existWebServer.getBrokerPool().getSecurityManager().authenticate(ADMIN_DB_USER, ADMIN_DB_PWD);
         final long originalCol2Created = getCreated(USER1_COL2);
@@ -194,7 +195,7 @@ public class CopyCollectionTest {
      * Whilst preserving attributes,
      * as some other (non-owner) user copy {@link #USER1_COL1} from {@link TestConstants#TEST_COLLECTION_URI} to non-existent {@link #USER2_NEW_COL}.
      */
-    @org.junit.jupiter.api.Test
+    @Test
     void copyPreserveToNonExistentAsOther() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException, TriggerException {
         final Subject user2 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER2_NAME, USER2_PWD);
         copyCol(user2, PRESERVE, USER1_COL1, USER2_NEW_COL);
@@ -205,7 +206,7 @@ public class CopyCollectionTest {
      * Whilst preserving attributes,
      * as some other (non-owner) user copy {@link #USER1_COL1} from {@link TestConstants#TEST_COLLECTION_URI} already existing {@link #USER2_COL2}.
      */
-    @org.junit.jupiter.api.Test
+    @Test
     void copyPreserveToExistentAsOther() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException, TriggerException {
         final Subject user2 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER2_NAME, USER2_PWD);
         final long originalCol2Created = getCreated(USER2_COL2);
@@ -216,7 +217,7 @@ public class CopyCollectionTest {
     /**
      * Test copy collection /db/a/b/c/d/e/f/g/h/i/j/k to /db/z/y/x/w/v/u/k
      */
-    @org.junit.jupiter.api.Test
+    @Test
     void copyDeep() throws EXistException, IOException, PermissionDeniedException, TriggerException, LockException {
         final XmldbURI srcUri = XmldbURI.create("/db/a/b/c/d/e/f/g/h/i/j/k");
         final XmldbURI destUri = XmldbURI.create("/db/z/y/x/w/v/u");
@@ -277,7 +278,7 @@ public class CopyCollectionTest {
      * Note that the collection /db/a/b/c/d/e/f/g/h/i/j/k has the sub-collections (sub-1 and sub-2),
      * this test checks that the sub-collections are correctly preserved.
      */
-    @org.junit.jupiter.api.Test
+    @Test
     void copyDeepWithSubCollections() throws EXistException, IOException, PermissionDeniedException, TriggerException, LockException {
         final XmldbURI srcUri = XmldbURI.create("/db/a/b/c/d/e/f/g/h/i/j/k");
         final XmldbURI srcSubCol1Uri = srcUri.append("sub-1");

@@ -49,6 +49,7 @@ import java.nio.file.Path;
 import java.util.Optional;
 import java.util.Random;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.api.Test;
 
 /**
  * Test indexing and recovery of large string sequences.
@@ -69,7 +70,7 @@ public class LargeValuesTest {
     @RegisterExtension
     public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
-    @org.junit.jupiter.api.Test
+    @Test
     void storeAndRecover() throws PermissionDeniedException, DatabaseConfigurationException, IOException, LockException, CollectionConfigurationException, SAXException, EXistException {
         storeDocuments();
         restart();

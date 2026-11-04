@@ -57,6 +57,7 @@ import javax.xml.transform.Source;
 import java.io.IOException;
 import java.util.Optional;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.api.Test;
 
 import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -222,7 +223,7 @@ public class TransformTest {
     /**
      * {@see https://github.com/eXist-db/exist/issues/1506}
      */
-    @org.junit.jupiter.api.Test
+    @Test
     void keys() throws EXistException, PermissionDeniedException, XPathException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final XQuery xquery = pool.getXQueryService();
@@ -247,7 +248,7 @@ public class TransformTest {
     }
 
     @Disabled("https://github.com/eXist-db/exist/issues/2096")
-    @org.junit.jupiter.api.Test
+    @Test
     void xslDocument() throws EXistException, PermissionDeniedException, XPathException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final XQuery xquery = pool.getXQueryService();
@@ -276,7 +277,7 @@ public class TransformTest {
     /**
      * {@see https://github.com/eXist-db/exist/issues/1691}
      */
-    @org.junit.jupiter.api.Test
+    @Test
     void transformReindexTransform() throws XPathException, PermissionDeniedException, EXistException, IOException, LockException {
         transform1(TEST_SIMPLE_XML_COLLECTION);
         reindex(TEST_SIMPLE_XML_COLLECTION);
@@ -286,7 +287,7 @@ public class TransformTest {
     /**
      * {@see https://github.com/eXist-db/exist/issues/1691}
      */
-    @org.junit.jupiter.api.Test
+    @Test
     void transformReindexTransform_with_comment() throws XPathException, PermissionDeniedException, EXistException, IOException, LockException {
         transform1(TEST_SIMPLE_XML_WITH_COMMENT_COLLECTION);
         reindex(TEST_SIMPLE_XML_WITH_COMMENT_COLLECTION);
@@ -296,7 +297,7 @@ public class TransformTest {
     /**
      * {@see https://github.com/eXist-db/exist/issues/1691}
      */
-    @org.junit.jupiter.api.Test
+    @Test
     void transformReindexTransform_with_two_comments() throws XPathException, PermissionDeniedException, EXistException, IOException, LockException {
         transform1(TEST_SIMPLE_XML_WITH_TWO_COMMENTS_COLLECTION);
         reindex(TEST_SIMPLE_XML_WITH_TWO_COMMENTS_COLLECTION);
@@ -306,7 +307,7 @@ public class TransformTest {
     /**
      * {@see https://github.com/eXist-db/exist/issues/1691}
      */
-    @org.junit.jupiter.api.Test
+    @Test
     void twoNodesCountDescendants() throws EXistException, PermissionDeniedException, XPathException, IOException, LockException {
         transform_twoNodesCountDescendants();
         reindex(TEST_TWO_NODES_COLLECTION);

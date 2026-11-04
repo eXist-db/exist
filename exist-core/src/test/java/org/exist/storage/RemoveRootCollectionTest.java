@@ -36,12 +36,13 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.api.Test;
 public class RemoveRootCollectionTest {
 
     private DBBroker broker;
     Collection root;
 
-    @org.junit.jupiter.api.Test
+    @Test
     void removeEmptyRootCollection() throws Exception {
         final BrokerPool pool = BrokerPool.getInstance();
         final TransactionManager transact = pool.getTransactionManager();
@@ -53,7 +54,7 @@ public class RemoveRootCollectionTest {
         assertEquals(0, root.getDocumentCount(broker));
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void removeRootCollectionWithChildCollection() throws Exception {
         addChildToRoot();
         final BrokerPool pool = BrokerPool.getInstance();
@@ -67,7 +68,7 @@ public class RemoveRootCollectionTest {
     }
 
     @Disabled("Document count not zero after removing root collection, see #6158")
-    @org.junit.jupiter.api.Test
+    @Test
     void removeRootCollectionWithDocument() throws Exception {
         addDocumentToRoot();
         final BrokerPool pool = BrokerPool.getInstance();

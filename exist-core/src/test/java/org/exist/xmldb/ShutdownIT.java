@@ -34,6 +34,7 @@ import org.xmldb.api.base.XMLDBException;
 import java.io.IOException;
 import java.io.InputStream;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.api.Test;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -101,7 +102,7 @@ public class ShutdownIT {
         rootCol.removeResource(res);
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void shutdown() throws Exception {
 		for (int i = 0; i < ITERATIONS; i++) {
 			existXmldbEmbeddedServer.restart();

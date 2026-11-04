@@ -40,6 +40,7 @@ import org.xmldb.api.modules.XMLResource;
 
 import java.io.IOException;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 public class SAXTriggerTest {
@@ -81,7 +82,7 @@ public class SAXTriggerTest {
 
     private final static String testCollection = "/db/triggers";
 
-    @org.junit.jupiter.api.Test
+    @Test
     void test() throws EXistException, XMLDBException {
 
         final BrokerPool db = BrokerPool.getInstance();
@@ -100,7 +101,7 @@ public class SAXTriggerTest {
         assertEquals(DOCUMENT1_CONTENT, AnotherTrigger.sb.toString());
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void saxEventModifications() throws EXistException, XMLDBException {
 
         final BrokerPool db = BrokerPool.getInstance();
@@ -117,7 +118,7 @@ public class SAXTriggerTest {
         assertEquals(DOCUMENT3_CONTENT, resource.getContent().toString());
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void saxEventModificationsAtXConf() throws EXistException, XMLDBException {
         final Collection root = DatabaseManager.getCollection(BASE_URI + testCollection, "admin", "");
 

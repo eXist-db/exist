@@ -54,6 +54,7 @@ import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.*;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.api.Test;
 import java.nio.file.Files;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -127,7 +128,7 @@ public class SystemExportFiltersTest {
         }
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void exportImport() throws Exception {
         Path file;
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();

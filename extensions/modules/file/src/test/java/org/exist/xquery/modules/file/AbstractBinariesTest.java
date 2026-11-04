@@ -69,7 +69,7 @@ public abstract class AbstractBinariesTest<T, U, E extends Exception> {
     /**
      * {@see https://github.com/eXist-db/exist/issues/790#error-case-3}
      */
-    @org.junit.jupiter.api.Test
+    @Test
     public void readBinary() throws Exception {
         final byte[] data = randomData(1024 * 1024 * 10);  // 10KB
         final Path tmpFile = createTemporaryFile(data);
@@ -104,7 +104,7 @@ public abstract class AbstractBinariesTest<T, U, E extends Exception> {
      * {@code exist-core/src/test/xquery/binary-value.xqm}. Keep the Java tests regardless: they are the
      * ones that run the query as a main module.</p>
      */
-    @org.junit.jupiter.api.Test
+    @Test
     public void readBinaryUsedInElementConstructorThenReadAgain() throws Exception {
         final byte[] data = randomData(1024);
         final Path tmpFile = createTemporaryFile(data);
@@ -136,7 +136,7 @@ public abstract class AbstractBinariesTest<T, U, E extends Exception> {
      *
      * @see <a href="https://github.com/eXist-db/exist/issues/6552">Regression when storing an uploaded binary</a>
      */
-    @org.junit.jupiter.api.Test
+    @Test
     public void readBinaryStoreThenReadAgain() throws Exception {
         final byte[] data = randomData(1024);
         final Path tmpFile = createTemporaryFile(data);
@@ -162,7 +162,7 @@ public abstract class AbstractBinariesTest<T, U, E extends Exception> {
      *
      * @see <a href="https://github.com/eXist-db/exist/issues/6552">Regression when storing an uploaded binary</a>
      */
-    @org.junit.jupiter.api.Test
+    @Test
     public void binaryDocStoreThenReadAgain() throws Exception {
         final String query = """
                 let $b := util:binary-doc('%s')
@@ -184,7 +184,7 @@ public abstract class AbstractBinariesTest<T, U, E extends Exception> {
      *
      * @see <a href="https://github.com/eXist-db/exist/issues/6552">Regression when storing an uploaded binary</a>
      */
-    @org.junit.jupiter.api.Test
+    @Test
     public void readBinaryStoredTwice() throws Exception {
         final byte[] data = randomData(1024);
         final Path tmpFile = createTemporaryFile(data);
@@ -337,7 +337,7 @@ public abstract class AbstractBinariesTest<T, U, E extends Exception> {
     /**
      * {@see https://github.com/eXist-db/exist/issues/790#error-case-4}
      */
-    @org.junit.jupiter.api.Test
+    @Test
     public void readAndWriteBinary() throws Exception {
         final byte[] data = randomData(1024 * 1024);  // 1MB
         final Path tmpInFile = createTemporaryFile(data);

@@ -31,6 +31,7 @@ import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
@@ -73,7 +74,7 @@ public class TestXPathOpOrSpecialCase {
      * query the document with a bogus predicate containing an <code>or<code> operation;
      * expect <code>org.exist.xquery.XPathException: exerr:ERROR cannot convert xs:boolean('false') to a node set</code>.
      */
-    @org.junit.jupiter.api.Test
+    @Test
     void verifyOpOrInPredicate() throws Exception
 	{
 		try

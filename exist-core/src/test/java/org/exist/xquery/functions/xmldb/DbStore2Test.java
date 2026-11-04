@@ -45,6 +45,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.api.Test;
 
 /**
  * Due to limitation of ExistXmldbEmbeddedServer we need to split this test to two files.
@@ -109,7 +110,7 @@ public class DbStore2Test {
         FileUtils.deleteDirectory(jettyRootDir.toFile());
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     final void testWithAnyUriEnabled() throws XMLDBException {
         final Collection rootCol = existEmbeddedServerWithAnyURI.getRoot();
         Collection testCol = rootCol.getChildCollection(TEST_COLLECTION);
@@ -130,7 +131,7 @@ public class DbStore2Test {
         assertNotNull(rs);
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     final void testLargeFileStore() throws XMLDBException, IOException {
         final byte buff[] = new byte[BUFFER_SIZE];
         try (final FileOutputStream fOut = new FileOutputStream(largeFileLocation.toFile(), true)) {

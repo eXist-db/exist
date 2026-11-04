@@ -29,6 +29,7 @@ import org.exist.storage.BrokerPool;
 import org.exist.test.ExistEmbeddedServer;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.api.Test;
 
 import static org.exist.storage.NativeBroker.DEFAULT_DATA_DIR;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -48,7 +49,7 @@ public class StatisticsIndexTest {
     @RegisterExtension
     public final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer("db1", configFile, null, true);
 
-    @org.junit.jupiter.api.Test
+    @Test
     void statsFileExists() {
         final Path dataDir = existEmbeddedServer.getBrokerPool().getConfiguration().getProperty(BrokerPool.PROPERTY_DATA_DIR, Path.of(DEFAULT_DATA_DIR));
         assertTrue(Files.exists(dataDir.resolve("stats.dbx")));

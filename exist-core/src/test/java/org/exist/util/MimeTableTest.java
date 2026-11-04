@@ -23,6 +23,7 @@ package org.exist.util;
 
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
+import org.junit.jupiter.api.Test;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -50,7 +51,7 @@ class MimeTableTest  {
      * The distribution version of mime-types.xml does not use the
      * default mime type capability.
      */
-    @org.junit.jupiter.api.Test
+    @Test
     void testDistributionVersionOfMimeTypesXml() throws URISyntaxException {
 		final Path mimeTypes = Path.of(getClass().getResource("mime-types.xml").toURI());
 
@@ -85,7 +86,7 @@ class MimeTableTest  {
      * This test checks the behavior of the mime-types@default-resource-type attribute
      * The test config assigns all resources to application/xml
      */
-    @org.junit.jupiter.api.Test
+    @Test
     void testWithDefaultResourceTypeFeature() throws URISyntaxException {
 		final Path mimeTypes = Path.of(getClass().getResource("mime-types-xml-default.xml").toURI());
 
@@ -124,7 +125,7 @@ class MimeTableTest  {
      * This test checks the behavior of the mime-types@default-mime-type attribute
      * The test config assigns all resources to foo/bar (BINARY)
      */
-    @org.junit.jupiter.api.Test
+    @Test
     void testWithDefaultMimeTypeFeature() throws URISyntaxException {
 		final Path mimeTypes = Path.of(getClass().getResource("mime-types-foo-default.xml").toURI());
 
@@ -159,7 +160,7 @@ class MimeTableTest  {
 		assertEquals(MimeType.BINARY, mt.getType(), "Incorrect resource type");
 	}
 
-    @org.junit.jupiter.api.Test
+    @Test
     void testClasspathDefaultIncludesApplicationXquery() {
 		final MimeTable mimeTable = new MimeTable();
 		final MimeType xquery = mimeTable.getContentType("application/xquery");
@@ -167,14 +168,14 @@ class MimeTableTest  {
 		assertEquals("application/xquery", xquery.getName());
 	}
 
-    @org.junit.jupiter.api.Test
+    @Test
     void testUnreadablePathThrows() {
 		final Path missing = Path.of("/nonexistent/mime-types-does-not-exist.xml");
 		final IllegalStateException ex = assertThrows(IllegalStateException.class, () -> new MimeTable(missing));
 		assertTrue(ex.getMessage().contains("not readable"));
 	}
 
-    @org.junit.jupiter.api.Test
+    @Test
     void testInvalidXmlThrows() throws Exception {
 		final Path broken = Files.createTempFile("mime-types-broken", ".xml");
 		try {

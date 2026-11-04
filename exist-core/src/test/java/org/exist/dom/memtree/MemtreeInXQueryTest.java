@@ -27,6 +27,7 @@ import org.exist.test.ExistXmldbEmbeddedServer;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -39,7 +40,7 @@ public class MemtreeInXQueryTest {
     @RegisterExtension
     public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(true, true, true);
 
-    @org.junit.jupiter.api.Test
+    @Test
     void pi_attributes() throws XMLDBException {
         final String xquery = """
                 let $doc := document{
@@ -56,7 +57,7 @@ public class MemtreeInXQueryTest {
         result.clear();
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void pi_children() throws XMLDBException {
         final String xquery = """
                 let $doc := document{
@@ -73,7 +74,7 @@ public class MemtreeInXQueryTest {
         result.clear();
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void pi_descendantAttributes() throws XMLDBException {
         final String xquery = """
                 let $doc := document{
@@ -90,7 +91,7 @@ public class MemtreeInXQueryTest {
         result.clear();
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void attr_attributes() throws XMLDBException {
         final String xquery = """
                 let $doc := document {
@@ -108,7 +109,7 @@ public class MemtreeInXQueryTest {
         result.clear();
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void attr_children() throws XMLDBException {
         final String xquery = """
                 let $doc := document {

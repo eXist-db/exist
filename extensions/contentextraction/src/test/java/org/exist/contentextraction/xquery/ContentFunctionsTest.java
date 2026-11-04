@@ -45,6 +45,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Optional;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.api.Test;
 
 import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
 import static org.exist.contentextraction.xquery.Util.executeQuery;
@@ -94,7 +95,7 @@ public class ContentFunctionsTest {
         }
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void getMetadataFromPdf() throws EXistException, XPathException, PermissionDeniedException, IOException {
         final String mainQuery =
                 """
@@ -124,7 +125,7 @@ public class ContentFunctionsTest {
         }
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void getMetadataAndContentFromPdf() throws EXistException, XPathException, PermissionDeniedException, IOException {
         final String mainQuery =
                 """
@@ -154,7 +155,7 @@ public class ContentFunctionsTest {
     }
 
     @Disabled("see https://github.com/eXist-db/exist/issues/3835")
-    @org.junit.jupiter.api.Test
+    @Test
     void getMetadataFromXlsx() throws EXistException, XPathException, PermissionDeniedException, IOException {
         final String mainQuery =
                 """

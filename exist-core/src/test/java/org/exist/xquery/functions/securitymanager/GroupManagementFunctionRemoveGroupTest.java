@@ -37,6 +37,7 @@ import org.exist.xquery.value.Sequence;
 
 import java.util.Optional;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 public class GroupManagementFunctionRemoveGroupTest {
@@ -52,25 +53,25 @@ public class GroupManagementFunctionRemoveGroupTest {
     @RegisterExtension
     public final ExistEmbeddedServer existWebServer = new ExistEmbeddedServer(true, true);
 
-    @org.junit.jupiter.api.Test
+    @Test
     void cannotDeleteDbaGroup() throws XPathException, EXistException {
         assertThrows(PermissionDeniedException.class, () ->
             extractPermissionDenied(() -> xqueryRemoveGroup(SecurityManager.DBA_GROUP)));
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void cannotDeleteGuestGroup() throws XPathException, EXistException {
         assertThrows(PermissionDeniedException.class, () ->
             extractPermissionDenied(() -> xqueryRemoveGroup(SecurityManager.GUEST_GROUP)));
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void cannotDeleteUnknownGroup() throws XPathException, EXistException {
         assertThrows(PermissionDeniedException.class, () ->
             extractPermissionDenied(() -> xqueryRemoveGroup(SecurityManager.UNKNOWN_GROUP)));
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void deleteUsersSupplementalGroups() throws PermissionDeniedException, EXistException {
         final BrokerPool pool = existWebServer.getBrokerPool();
         final SecurityManager sm = pool.getSecurityManager();
@@ -132,7 +133,7 @@ public class GroupManagementFunctionRemoveGroupTest {
         }
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void deleteUsersPersonalPrimaryGroup() throws EXistException, PermissionDeniedException {
         final BrokerPool pool = existWebServer.getBrokerPool();
         final SecurityManager sm = pool.getSecurityManager();
@@ -163,7 +164,7 @@ public class GroupManagementFunctionRemoveGroupTest {
         }
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void deleteUsersSharingPersonalPrimaryGroup() throws PermissionDeniedException, EXistException {
         final BrokerPool pool = existWebServer.getBrokerPool();
         final SecurityManager sm = pool.getSecurityManager();

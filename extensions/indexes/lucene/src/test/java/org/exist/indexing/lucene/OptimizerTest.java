@@ -40,6 +40,7 @@ import org.xmldb.api.modules.XQueryService;
 import java.io.IOException;
 import java.io.InputStream;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.api.Test;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.exist.util.PropertiesBuilder.propertiesBuilder;
@@ -82,7 +83,7 @@ public class OptimizerTest {
                     "</collection>";
     private static Collection testCollection;
 
-    @org.junit.jupiter.api.Test
+    @Test
     void simplePredicates() throws XMLDBException {
         long r = execute("//SPEECH[ft:query(LINE, 'king')]", false);
         execute("//SPEECH[ft:query(LINE, 'king')]", true, MSG_OPT_ERROR, r);
@@ -118,7 +119,7 @@ public class OptimizerTest {
         execute("//*[SPEAKER = 'HAMLET']", true, MSG_OPT_ERROR, r);
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void twoPredicates() throws XMLDBException {
         long r = execute("//SPEECH[ft:query(LINE, 'king')][SPEAKER='HAMLET']", false);
         execute("//SPEECH[ft:query(LINE, 'king')][SPEAKER='HAMLET']", true, MSG_OPT_ERROR, r);
@@ -126,7 +127,7 @@ public class OptimizerTest {
         execute("//SPEECH[SPEAKER='HAMLET'][ft:query(LINE, 'king')]", true, MSG_OPT_ERROR, r);
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void booleanOperator() throws XMLDBException {
         long r = execute("//SPEECH[ft:query(LINE, 'king')][SPEAKER='HAMLET']", false);
         execute("//SPEECH[ft:query(LINE, 'king') and SPEAKER='HAMLET']", false, MSG_OPT_ERROR, r);

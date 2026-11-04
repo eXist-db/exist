@@ -49,6 +49,7 @@ import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XPathQueryService;
 import org.xmldb.api.modules.XUpdateQueryService;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.api.Test;
 
 /**
  * @author wolf
@@ -71,7 +72,7 @@ public class RemoveAppendTest {
     public final ExistXmldbEmbeddedServer existXmldbEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
     @Disabled("Test setup broken — ITEM_COUNT is zero")
-    @org.junit.jupiter.api.Test
+    @Test
     void testRemoveAppend() throws Exception {
         XUpdateQueryService service = testCol.getService(XUpdateQueryService.class);
         XPathQueryService query = testCol.getService(XPathQueryService.class);
@@ -86,7 +87,7 @@ public class RemoveAppendTest {
         }
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void appendRemove() throws XMLDBException, IOException {
         XUpdateQueryService service = testCol.getService(XUpdateQueryService.class);
         XPathQueryService query = testCol.getService(XPathQueryService.class);

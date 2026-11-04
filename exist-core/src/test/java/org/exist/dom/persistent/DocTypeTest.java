@@ -53,6 +53,7 @@ import org.w3c.dom.DocumentType;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -88,7 +89,7 @@ public class DocTypeTest {
 
 	private static Collection root = null;
 
-    @org.junit.jupiter.api.Test
+    @Test
     void docType_usingInputSource() throws EXistException, URISyntaxException, LockException, SAXException, PermissionDeniedException, IOException {
 		final BrokerPool pool = existEmbeddedServer.getBrokerPool();
 		final TransactionManager transact = pool.getTransactionManager();
@@ -124,7 +125,7 @@ public class DocTypeTest {
 		}
 	}
 
-    @org.junit.jupiter.api.Test
+    @Test
     void docType_usingString() throws EXistException, PermissionDeniedException, SAXException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
 		try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));

@@ -43,6 +43,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -105,7 +106,7 @@ public class CleanupTest {
         service.removeCollection("test");
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void resetStateOfModuleVars() throws XMLDBException, XPathException {
         final EXistXQueryService service = collection.getService(EXistXQueryService.class);
         final CompiledExpression compiled = service.compile(TEST_QUERY);
@@ -140,7 +141,7 @@ public class CleanupTest {
         assertNull(var2.getContextDocSet());
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void resetStateOfInlineFunc() throws XMLDBException, EXistException, PermissionDeniedException, XPathException {
         final BrokerPool pool = BrokerPool.getInstance();
         final XQuery xquery = pool.getXQueryService();
@@ -155,7 +156,7 @@ public class CleanupTest {
         }
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void preserveExternalVariable() throws XMLDBException, XPathException {
         // see https://github.com/eXist-db/exist/pull/1512 and use of util:eval
         final EXistXQueryService service = collection.getService(EXistXQueryService.class);
@@ -174,7 +175,7 @@ public class CleanupTest {
         assertNull(var);
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void resetStateofInternalModule() throws XMLDBException, XPathException {
         final EXistXQueryService service = collection.getService(EXistXQueryService.class);
 

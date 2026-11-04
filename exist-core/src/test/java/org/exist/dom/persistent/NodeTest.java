@@ -42,6 +42,7 @@ import org.w3c.dom.*;
 import java.io.IOException;
 import java.util.Optional;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -69,7 +70,7 @@ public class NodeTest {
         "<!-- doc ends here -->";
 	private static Collection root = null;
 
-    @org.junit.jupiter.api.Test
+    @Test
     void document() throws EXistException, LockException, PermissionDeniedException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
@@ -83,7 +84,7 @@ public class NodeTest {
         }
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void childAxis() throws EXistException, LockException, PermissionDeniedException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
@@ -125,7 +126,7 @@ public class NodeTest {
         }
 	}
 
-    @org.junit.jupiter.api.Test
+    @Test
     void siblingAxis() throws EXistException, LockException, PermissionDeniedException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
@@ -171,7 +172,7 @@ public class NodeTest {
         }
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void attributeAxis() throws EXistException, LockException, PermissionDeniedException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
@@ -214,7 +215,7 @@ public class NodeTest {
 	}
 
     @Deprecated
-    @org.junit.jupiter.api.Test
+    @Test
     void visitor() throws EXistException, LockException, PermissionDeniedException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));

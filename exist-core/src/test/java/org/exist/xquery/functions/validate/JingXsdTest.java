@@ -39,6 +39,7 @@ import org.xml.sax.SAXException;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.XMLDBException;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for the validation:jing() function with XSDs.
@@ -76,7 +77,7 @@ public class JingXsdTest {
 
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void xsdStoredValid() throws XMLDBException, SAXException, IOException {
         final String query = "validation:jing-report( " +
                 "doc('/db/personal/personal-valid.xml'), " +
@@ -84,7 +85,7 @@ public class JingXsdTest {
         assertThat(QueryResults.single(existEmbeddedServer, query), hasXPath("//status/text()", equalTo("valid")));
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void xsdStoredInvalid() throws XMLDBException, SAXException, IOException {
         final String query = "validation:jing-report( " +
                 "doc('/db/personal/personal-invalid.xml'), " +
@@ -92,7 +93,7 @@ public class JingXsdTest {
         assertThat(QueryResults.single(existEmbeddedServer, query), hasXPath("//status/text()", equalTo("invalid")));
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void xsdAnyuriValid() throws XMLDBException, SAXException, IOException {
         final String query = "validation:jing-report( " +
                 "xs:anyURI('xmldb:exist:///db/personal/personal-valid.xml'), " +
@@ -100,7 +101,7 @@ public class JingXsdTest {
         assertThat(QueryResults.single(existEmbeddedServer, query), hasXPath("//status/text()", equalTo("valid")));
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void xsdAnyuriInvalid() throws XMLDBException, SAXException, IOException {
         final String query = "validation:jing-report( " +
                 "xs:anyURI('xmldb:exist:///db/personal/personal-invalid.xml'), " +

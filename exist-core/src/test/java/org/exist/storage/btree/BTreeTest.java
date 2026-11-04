@@ -44,6 +44,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.TreeMap;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.api.Test;
 
 /**
  * Low-level tests on the B+tree.
@@ -64,7 +65,7 @@ public class BTreeTest {
     @TempDir
     Path temporaryFolder;
 
-    @org.junit.jupiter.api.Test
+    @Test
     void simpleUpdates() throws DBException, IOException, TerminatedException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try(final BTree btree = new BTree(pool, BTREE_TEST_FILE_ID, BTREE_TEST_FILE_VERSION, false, pool.getCacheManager(), file)) {
@@ -100,7 +101,7 @@ public class BTreeTest {
         }
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void strings() throws DBException, IOException, TerminatedException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try(final BTree btree = new BTree(pool, BTREE_TEST_FILE_ID, BTREE_TEST_FILE_VERSION, false, pool.getCacheManager(), file)) {
@@ -155,7 +156,7 @@ public class BTreeTest {
         }
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void longStrings() throws DBException, IOException {
         // Test storage of long keys up to half of the page size (4k)
         final Random rand = new Random(System.currentTimeMillis());
@@ -193,7 +194,7 @@ public class BTreeTest {
         }
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void stringsTruncated() throws DBException, IOException, TerminatedException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try(BTree btree = new BTree(pool, BTREE_TEST_FILE_ID, BTREE_TEST_FILE_VERSION, false, pool.getCacheManager(), file)) {
@@ -221,7 +222,7 @@ public class BTreeTest {
         }
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void removeStrings() throws DBException, IOException, TerminatedException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try(final BTree btree = new BTree(pool, BTREE_TEST_FILE_ID, BTREE_TEST_FILE_VERSION, false, pool.getCacheManager(), file)) {
@@ -258,7 +259,7 @@ public class BTreeTest {
         }
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void numbers() throws TerminatedException, DBException, EXistException, IOException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try(final BTree btree = new BTree(pool, BTREE_TEST_FILE_ID, BTREE_TEST_FILE_VERSION, false, pool.getCacheManager(), file)) {
@@ -297,7 +298,7 @@ public class BTreeTest {
         }
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void numbersWithPrefix() throws DBException, EXistException, IOException, TerminatedException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try(final BTree btree = new BTree(pool, BTREE_TEST_FILE_ID, BTREE_TEST_FILE_VERSION, false, pool.getCacheManager(), file)) {

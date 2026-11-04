@@ -27,6 +27,7 @@ import org.exist.xquery.XPathException;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -41,7 +42,7 @@ public class AdditionalJingXsdRngTest {
     @RegisterExtension
     public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
-    @org.junit.jupiter.api.Test
+    @Test
     void testValidateXSDwithJing() throws XMLDBException {
         final String query = """
                 let $v := <doc>
@@ -70,7 +71,7 @@ public class AdditionalJingXsdRngTest {
         assertEquals("true", r);
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void testValidateXSDwithJing_invalid() throws XMLDBException {
         final String query = """
                 let $v := <doc>
@@ -99,7 +100,7 @@ public class AdditionalJingXsdRngTest {
         assertEquals("false", r);
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void testValidateRNGwithJing() throws XPathException, XMLDBException {
         final String query = """
                 let $v := <doc>
@@ -140,7 +141,7 @@ public class AdditionalJingXsdRngTest {
         assertEquals("true", r);
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void testValidateRNGwithJing_invalid() throws XMLDBException {
         final String query = """
                 let $v := <doc>
@@ -181,7 +182,7 @@ public class AdditionalJingXsdRngTest {
         assertEquals("false", r);
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void repeatTests() throws XMLDBException, XPathException {
         for (int i = 0; i < 1000; i++) {
             testValidateRNGwithJing();

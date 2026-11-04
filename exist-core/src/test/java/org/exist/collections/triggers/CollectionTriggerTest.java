@@ -38,6 +38,7 @@ import org.xmldb.api.base.XMLDBException;
 
 import java.io.IOException;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 public class CollectionTriggerTest {
@@ -50,7 +51,7 @@ public class CollectionTriggerTest {
     private static EXistCollectionManagementService rootSrv;
 
 
-    @org.junit.jupiter.api.Test
+    @Test
     void move() throws XMLDBException, EXistException, PermissionDeniedException {
 
         //create /db/testCollectionTrigger/srcCollection

@@ -38,6 +38,7 @@ import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for the validation:jaxp() function with DTDss.
@@ -75,7 +76,7 @@ public class ParseDtdNokTest {
 
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void xsdStoredValid() throws XMLDBException {
         final String query = "validation:jaxp-report( " +
                 "xs:anyURI('/db/hamlet/hamlet_valid.xml'), false(), xs:anyURI('/db/hamlet/') )";
@@ -87,7 +88,7 @@ public class ParseDtdNokTest {
         assertThat(r, hasXPath("//status/text()", equalTo("valid")));
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void xsdStoredInvalid() throws XMLDBException {
         final String query = "validation:jaxp-report( xs:anyURI('/db/hamlet/hamlet_invalid.xml'), false(), xs:anyURI('/db/hamlet/') )";
 
@@ -98,7 +99,7 @@ public class ParseDtdNokTest {
         assertThat(r, hasXPath("//status/text()", equalTo("invalid")));
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void xsdAnyuriValid() throws XMLDBException {
         final String query = "validation:jaxp-report( " +
                 "xs:anyURI('/db/hamlet/hamlet_valid.xml'), false(), xs:anyURI('/db/hamlet/') )";
@@ -110,7 +111,7 @@ public class ParseDtdNokTest {
         assertThat(r, hasXPath("//status/text()", equalTo("valid")));
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void xsdAnyuriInvalid() throws XMLDBException {
         final String query = "validation:jaxp-report( " +
                 "xs:anyURI('/db/hamlet/hamlet_invalid.xml'), false(), xs:anyURI('/db/hamlet/') )";

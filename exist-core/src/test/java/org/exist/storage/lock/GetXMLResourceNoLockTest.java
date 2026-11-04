@@ -43,6 +43,7 @@ import org.exist.storage.txn.Txn;
 import org.xml.sax.SAXException;
 import uk.ac.ic.doc.slurp.multilock.MultiLock;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.api.Test;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -61,7 +62,7 @@ public class GetXMLResourceNoLockTest {
     private static String EMPTY_BINARY_FILE = "What's an up dog?";
     private static XmldbURI DOCUMENT_NAME_URI = XmldbURI.create("empty.txt");
 
-    @org.junit.jupiter.api.Test
+    @Test
     void testCollectionMaintainsLockWhenResourceIsSelectedNoLock() throws EXistException, LockException, SAXException, PermissionDeniedException, IOException {
 
 		storeTestResource();

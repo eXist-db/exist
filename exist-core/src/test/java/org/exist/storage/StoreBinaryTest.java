@@ -38,6 +38,7 @@ import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.xml.sax.SAXException;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.api.Test;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -49,7 +50,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  */
 public class StoreBinaryTest {
 
-    @org.junit.jupiter.api.Test
+    @Test
     void check_MimeType_is_preserved() throws EXistException, PermissionDeniedException, LockException, IOException, SAXException, DatabaseConfigurationException {
 
         final String xqueryMimeType = "application/xquery";

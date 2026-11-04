@@ -45,6 +45,7 @@ import org.xml.sax.SAXException;
 import java.io.IOException;
 import java.util.Optional;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.api.Test;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.exist.collections.CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE_URI;
@@ -148,7 +149,7 @@ public class XQueryTriggerSetUidTest {
         }
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void triggerSetUid() throws EXistException, PermissionDeniedException, IOException, SAXException, LockException, XPathException {
         final BrokerPool pool = EXIST_EMBEDDED_SERVER.getBrokerPool();
         try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getGuestSubject()));  // NOTE: "guest" user

@@ -50,6 +50,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.api.Test;
 public class BackupRestoreSecurityPrincipalsTest {
 
     private final static String BACKUP_FILE_PREFIX = "exist.BackupRestoreSecurityPrincipalsTest";
@@ -90,7 +91,7 @@ public class BackupRestoreSecurityPrincipalsTest {
      * that they have distinct and expected user ids and that any resources
      * that were owned by them are still correctly owner by them (and not some other user).
      */
-    @org.junit.jupiter.api.Test
+    @Test
     void restoreConflictingUsername() throws PermissionDeniedException, EXistException, SAXException, IOException, XMLDBException, ReflectiveOperationException {
         // creates a database with new users: 'frank(id=11)', 'joe(id=12)', and 'jack(id=13)'
         createInitialUsers(FRANK_USER, JOE_USER, JACK_USER);

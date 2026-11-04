@@ -40,6 +40,7 @@ import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for the validation:jaxp() function with Catalog (resolvers).
@@ -84,7 +85,7 @@ public class JaxpParseTest {
         results.getResource(0).getContent();
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void parseAndFillDefaults() throws XMLDBException {
         String query = "validation:pre-parse-grammar(xs:anyURI('/db/parse_validate/defaultValue.xsd'))";
         String result = execute(query);

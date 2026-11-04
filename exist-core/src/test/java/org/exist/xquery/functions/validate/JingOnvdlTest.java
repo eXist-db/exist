@@ -36,6 +36,7 @@ import java.io.IOException;
 import org.xml.sax.SAXException;
 import org.xmldb.api.base.XMLDBException;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for the validation:jing() function with NVDLs
@@ -95,7 +96,7 @@ public class JingOnvdlTest {
         existEmbeddedServer.executeQuery(data2);
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void onvdlValid() throws IOException, SAXException, XMLDBException {
         final String query = "let $a := " + XML_DATA1 +
                 "let $b := xs:anyURI('/db/validate-test/test.nvdl')" +
@@ -104,7 +105,7 @@ public class JingOnvdlTest {
         assertThat(QueryResults.single(existEmbeddedServer, query), hasXPath("//status/text()", equalTo("valid")));
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void onvdlInvalid() throws IOException, SAXException, XMLDBException {
         final String query = "let $a := <test/>" +
                     "let $b := xs:anyURI('/db/validate-test/test.nvdl')" +
@@ -114,7 +115,7 @@ public class JingOnvdlTest {
     }
 
 
-    @org.junit.jupiter.api.Test
+    @Test
     void onvdlStoredValid() throws XMLDBException, SAXException, IOException {
         final String query = "validation:jing-report( " +
                 "doc('/db/validate-test/valid.xml'), " +
@@ -122,7 +123,7 @@ public class JingOnvdlTest {
         assertThat(QueryResults.single(existEmbeddedServer, query), hasXPath("//status/text()", equalTo("valid")));
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void onvdlStoredInvalid() throws XMLDBException, SAXException, IOException {
         final String query = "validation:jing-report( " +
                 "doc('/db/validate-test/invalid.xml'), " +
@@ -130,7 +131,7 @@ public class JingOnvdlTest {
         assertThat(QueryResults.single(existEmbeddedServer, query), hasXPath("//status/text()", equalTo("invalid")));
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void onvdlAnyuriValid() throws XMLDBException, SAXException, IOException {
         final String query = "validation:jing-report( " +
                 "xs:anyURI('xmldb:exist:///db/validate-test/valid.xml'), " +
@@ -138,7 +139,7 @@ public class JingOnvdlTest {
         assertThat(QueryResults.single(existEmbeddedServer, query), hasXPath("//status/text()", equalTo("valid")));
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void onvdlAnyuriInvalid() throws XMLDBException, SAXException, IOException {
         final String query = "validation:jing-report( " +
                 "xs:anyURI('xmldb:exist:///db/validate-test/invalid.xml'), " +
@@ -146,7 +147,7 @@ public class JingOnvdlTest {
         assertThat(QueryResults.single(existEmbeddedServer, query), hasXPath("//status/text()", equalTo("invalid")));
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void onvdlAnyuriValidBoolean() throws XMLDBException {
         final String query = "validation:jing( " +
                 "xs:anyURI('xmldb:exist:///db/validate-test/valid.xml'), " +

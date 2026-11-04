@@ -46,6 +46,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.xml.sax.SAXException;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.api.Test;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -99,7 +100,7 @@ public class TwoDatabasesTest {
         }
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void putGet() throws LockException, SAXException, PermissionDeniedException, EXistException, IOException {
         put();
         get();

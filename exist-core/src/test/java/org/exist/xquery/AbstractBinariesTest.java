@@ -27,6 +27,7 @@ import org.exist.xmldb.XmldbURI;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -68,7 +69,7 @@ public abstract class AbstractBinariesTest<T, U, E extends Exception> {
     /**
      * {@see https://github.com/eXist-db/exist/issues/790#error-case-1}
      */
-    @org.junit.jupiter.api.Test
+    @Test
     public void serializeBinary() throws Exception {
         final String query = "import module namespace util = \"http://exist-db.org/xquery/util\";\n" +
                 "util:binary-doc('" + TEST_COLLECTION.append(BIN1_FILENAME).toString() + "')";

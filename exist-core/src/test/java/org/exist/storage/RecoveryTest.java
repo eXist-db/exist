@@ -58,6 +58,7 @@ import static org.exist.samples.Samples.SAMPLES;
 
 import org.xml.sax.SAXException;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.api.Test;
 
 /**
  * Test recovery after a forced database corruption.
@@ -83,7 +84,7 @@ public class RecoveryTest {
         BrokerPool.FORCE_CORRUPTION = false;
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void storeCommit_removeNoCommit() throws PermissionDeniedException, DatabaseConfigurationException, IOException, LockException, SAXException, EXistException, BTreeException, XPathException {
 
         // store, commit, and then remove without committing (remove should be undone during next recovery!)

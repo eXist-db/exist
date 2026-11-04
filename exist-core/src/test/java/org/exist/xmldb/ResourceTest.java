@@ -74,6 +74,7 @@ import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
 import org.xmldb.api.modules.XPathQueryService;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.api.Test;
 import static org.exist.samples.Samples.SAMPLES;
 public class ResourceTest {
 
@@ -92,7 +93,7 @@ public class ResourceTest {
         System.clearProperty(PROP_JOIN_TRANSACTION_IF_PRESENT);
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void readNonExistingResource() throws XMLDBException {
         Collection testCollection = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
         assertNotNull(testCollection);
@@ -100,7 +101,7 @@ public class ResourceTest {
         assertNull(nonExistent);
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void readResource() throws XMLDBException, IOException {
         final Collection testCollection = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
         assertNotNull(testCollection);
@@ -122,7 +123,7 @@ public class ResourceTest {
         }
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void testRecursiveSerailization() throws XMLDBException, IOException {
         final String xmlDoc1 = "<test><title>Title</title>"
                 + "<import href=\"recurseSer2.xml\"></import>"
@@ -161,7 +162,7 @@ public class ResourceTest {
         }
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void readDOM() throws XMLDBException {
         Collection testCollection = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
         assertNotNull(testCollection);
@@ -189,7 +190,7 @@ public class ResourceTest {
         }
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void setContentAsSAX() throws SAXException, ParserConfigurationException, XMLDBException, IOException {
         Collection testCollection = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
         assertNotNull(testCollection);
@@ -211,7 +212,7 @@ public class ResourceTest {
         testCollection.storeResource(doc);
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void setContentAsDOM() throws XMLDBException, ParserConfigurationException, SAXException, IOException {
         Collection testCollection = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
         assertNotNull(testCollection);
@@ -229,7 +230,7 @@ public class ResourceTest {
         testCollection.storeResource(doc);
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void setContentAsSourceXml() throws XMLDBException {
         final Collection testCollection = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
         assertNotNull(testCollection);
@@ -254,7 +255,7 @@ public class ResourceTest {
         assertThat(newDocXml, hasXPath("/test/para[2]/text()", equalTo("Paragraph4")));
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void setContentAsSourceBinary() throws XMLDBException {
         final Collection testCollection = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
         assertNotNull(testCollection);
@@ -271,7 +272,7 @@ public class ResourceTest {
         assertArrayEquals(bin, newDocBin);
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void queryRemoveResource() throws XMLDBException {
         Resource resource = null;
         
@@ -294,7 +295,7 @@ public class ResourceTest {
         }
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void addRemove() throws XMLDBException {
 
         final String resourceID = "addremove.xml";
@@ -312,7 +313,7 @@ public class ResourceTest {
         assertNull(locatedAfterRemove);
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void addRemoveAddWithIds() throws XMLDBException {
 
         final String resourceID = "removeWithIds;1.xml";
