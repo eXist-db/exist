@@ -1,0 +1,21 @@
+extensions/indexes/lucene/src/test/java/xquery/lucene/PathShapesTest.java
+  s_c0b5ee22aea9de::t_36896d3c3e5624 115,117,165-167,228,246,248,297-299
+extensions/indexes/lucene/src/test/xquery/lucene/path-shapes.xqm
+  s_c0b5ee22aea9de::t_edf9106c50d63f 199,201,333,366,368,414
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "835705ba0bc2867102c588a3b77a3bd0c8f16b0f",
+  "prompts": {},
+  "sessions": {
+    "s_c0b5ee22aea9de": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "66464b24-fb74-414b-af2f-36fc31af21cf",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
