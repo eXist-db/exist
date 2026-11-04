@@ -36,19 +36,17 @@ import org.w3c.dom.Node;
  * 
  * @author wolf
  */
-public class DynamicNameCheck extends AbstractExpression {
+public class DynamicNameCheck extends AbstractRewritableExpression {
 
     final private NameTest test;
-    final private Expression expression;
 
     public DynamicNameCheck(XQueryContext context, NameTest test) {
         this(context, test, null);
     }
 
     public DynamicNameCheck(XQueryContext context, NameTest test, final Expression expression) {
-        super(context);
+        super(context, expression);
         this.test = test;
-        this.expression = expression;
     }
 
     /* (non-Javadoc)
