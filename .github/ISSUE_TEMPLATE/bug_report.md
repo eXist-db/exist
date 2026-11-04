@@ -7,6 +7,8 @@ assignees: ''
 
 ---
 
+> Before filing, please search the [open and closed issues](https://github.com/eXist-db/exist/issues?q=is%3Aissue) for the same problem; if you find it, add to that issue instead.
+
 > To be able to better understand you problem, please add as much information as possible to this ticket. Always test your bugs against the latest stable release of exist. We cannot provide support for older versions here on GitHub. If the version of eXist that is experiencing the issue is more than 1 major version behind the most recent release, please consider posting a question on our mailing list. 
 
 

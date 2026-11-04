@@ -52,25 +52,54 @@ Our controlled list of commit labels that should be prefixed to each commit summ
 * `[ci]`
     This should be used when a commit solely makes changes to CI configuration.
 
-In addition any commit that addresses a GitHub issue, should have an additonal line in its commit after the summary and before any fuller explaination that takes this form:
-```
-Closes https://github.com/eXist-db/exist/issues/<github-issue-number>
-```
+Keep the summary line under 72 characters. The body, wrapped at 72, says in a few short paragraphs why the change is needed; leave out the story of the investigation and the list of files changed, the diff shows those.
+
+Reference each GitHub issue a commit touches in the footer, after the body: `Closes #<number>` when the commit fixes it, `See #<number>` when it fixes part of it or is related.
 
 ### Commit Message Example
 For example, here is a correctly formatted commit message:
 
 ```
-[bugfix] Fix relative paths in EXPath classpath.txt files.
+[bugfix] Fix relative paths in EXPath classpath.txt files
 
-Closes https://github.com/eXist-db/exist/issues/4901
-We now store the path of Jar files in each EXPath Package's `.exist/classpath.txt` file relative to the package's `content/` sub-folder.
+We now store the path of Jar files in each EXPath Package's
+`.exist/classpath.txt` file relative to the package's `content/`
+sub-folder.
+
+Closes #4901
 ```
+
+## Issues
+Before you file an issue or start work on a fix, search the open issues and pull requests for the same problem, and the closed issues for an earlier decision or a regression:
+
+```bash
+gh issue list --repo eXist-db/exist --state all --search "<keywords>"
+gh pr list --repo eXist-db/exist --state open --search "<keywords>"
+```
+
+If an issue already describes the problem, add to it instead of filing a new one; if an open pull request already fixes it, review it or build on it. A new issue says what happens, the smallest query or steps that show it, and what was expected; theories and investigation notes go in a comment. When a change fixes only part of an issue, say in a comment on the issue what remains.
 
 ## Pull Requests and Code Review
 Pull requests are reviewed and tested before they're merged by the eXist-db Core Development Team.
 We have a policy around how pull requests are reviewed in a timely and fair manner. That policy is available here - [Community Code Review and Merge Policy for the exist-db/exist Git Repository](PR-CODE-REVIEW-POLICY.md). 
 Worth restating, is the one "golden rule", even within the Core Team, **no developer should merge their own pull request**. This simple-but-important rule ensures that at least two people have considered the change.
+
+### Pull Request Description
+A pull request description includes a summary, why the change matters to users (below), what changed per area, spec references where they apply, an XQTS before/after table for conformance work, and a test plan. Link the issues instead of restating them, use a before/after table instead of paragraphs where you can, and do not repeat the commit messages. Reference the issues as in commit messages: `Closes #<number>` or `See #<number>`.
+
+#### Why, and what users notice
+Right after the summary, add a `## Why, and what users notice` section in plain words, for a reader who does not know the code:
+
+- Who was affected, and what they saw before: a wrong or empty answer, an error, a hang, slowness.
+- What they will notice after the change.
+- Any behaviour change, and what to do about it: a setting, a query to rewrite, a reindex.
+- If users will notice nothing, say so, and say who the change is for.
+
+Keep it to two to four sentences. Leave out internal class names unless users meet them, and back any number with a measurement in the pull request. For example:
+
+> With LDAP login, creating a new LDAP-backed account or group recursed endlessly: the request hung until it timed out, and the log filled with "Initializing LDAP context". Creating LDAP accounts and groups works again.
+
+> Under concurrent queries and updates, a document update could now and then fail with a `NullPointerException` from query bookkeeping that has nothing to do with the update. That spurious error goes away; nothing else changes.
 
 Although the following are taken from our [Developer Manifesto](http://www.exist-db.org/exist/apps/doc/devguide_manifesto.xml "eXist Project Developer Manifesto") and [Code Review Guide](http://www.exist-db.org/exist/apps/doc/devguide_codereview.xml "eXist Project Code Review Guide"), the main things that get a pull request accepted are:
 

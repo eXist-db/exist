@@ -7,6 +7,8 @@ assignees: ''
 
 ---
 
+> Before filing, please search the [open and closed issues](https://github.com/eXist-db/exist/issues?q=is%3Aissue) for the same request; if you find it, add to that issue instead.
+
 > Please make sure that the feature you are suggesting is reported in the right place. `Documentation`, `Dashboard` etc all have their own repos. Suggestion for new features should be posted there. 
 
 **Is your feature request related to a problem? Please describe.**
