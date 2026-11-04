@@ -104,3 +104,83 @@ function fn-pos:test-persistent-dom-with-positional-predicates() {
         $dom//b[3]/position()
     )
 };
+
+(: https://github.com/eXist-db/exist/issues/6854 :)
+declare
+    %test:assertEquals("1/3 2/3 3/3")
+function fn-pos:in-memory-dom-position-and-last-in-path-step() {
+    string-join($fn-pos:nodes//b/(position() || '/' || last()), ' ')
+};
+
+declare
+    %test:assertEquals("1/3 2/3 3/3")
+function fn-pos:persistent-dom-position-and-last-in-path-step() {
+    let $dom := doc('/db/' || $fn-pos:collection || '/' || $fn-pos:doc)
+
+    return string-join($dom//b/(position() || '/' || last()), ' ')
+};
+
+declare
+    %test:assertEquals("1/3,2/3,3/3 | 1/3,2/3,3/3")
+function fn-pos:in-memory-dom-position-and-last-in-nested-path() {
+    string-join((<x/>, <y/>)/string-join($fn-pos:nodes//b/(position() || '/' || last()), ','), ' | ')
+};
+
+declare
+    %test:assertEquals("1/3,2/3,3/3 | 1/3,2/3,3/3")
+function fn-pos:persistent-dom-position-and-last-in-nested-path() {
+    let $dom := doc('/db/' || $fn-pos:collection || '/' || $fn-pos:doc)
+
+    return string-join((<x/>, <y/>)/string-join($dom//b/(position() || '/' || last()), ','), ' | ')
+};
+
+declare
+    %test:assertEquals("c", "a")
+function fn-pos:in-memory-dom-position-after-sibling-path() {
+    $fn-pos:nodes//b/(if (position() = last()) then @n/string() else ()),
+    $fn-pos:nodes//b/(if (position() = 1) then @n/string() else ())
+};
+
+declare
+    %test:assertEquals("c", "a")
+function fn-pos:persistent-dom-position-after-sibling-path() {
+    let $dom := doc('/db/' || $fn-pos:collection || '/' || $fn-pos:doc)
+
+    return (
+        $dom//b/(if (position() = last()) then @n/string() else ()),
+        $dom//b/(if (position() = 1) then @n/string() else ())
+    )
+};
+
+declare
+    %test:assertEquals("b", "c")
+function fn-pos:in-memory-dom-position-in-predicate() {
+    $fn-pos:nodes//b[position() = 2]/@n/string(),
+    $fn-pos:nodes//b[position() = last()]/@n/string()
+};
+
+declare
+    %test:assertEquals("b", "c")
+function fn-pos:persistent-dom-position-in-predicate() {
+    let $dom := doc('/db/' || $fn-pos:collection || '/' || $fn-pos:doc)
+
+    return (
+        $dom//b[position() = 2]/@n/string(),
+        $dom//b[position() = last()]/@n/string()
+    )
+};
+
+(: in ./position(), the focus of position() is the context item of the predicate, a sequence of one item :)
+declare
+    %test:assertEquals("a", "b", "c")
+function fn-pos:in-memory-dom-path-in-predicate() {
+    $fn-pos:nodes//b[./position() = 1]/@n/string()
+};
+
+declare
+    %test:assertEquals("a", "b", "c")
+function fn-pos:persistent-dom-path-in-predicate() {
+    let $dom := doc('/db/' || $fn-pos:collection || '/' || $fn-pos:doc)
+
+    return $dom//b[./position() = 1]/@n/string()
+};
