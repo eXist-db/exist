@@ -476,6 +476,7 @@ public class LocalCollection extends AbstractLocal implements EXistCollection {
         }
 
         modify().apply((collection, broker, transaction) -> {
+            holdDocumentLockUntilEnd(transaction);
             //Check that the document exists
             try(final LockedDocument lockedDocument = collection.getDocumentWithLock(broker, resURI, LockMode.WRITE_LOCK)) {
                 if (lockedDocument == null) {
@@ -574,6 +575,7 @@ public class LocalCollection extends AbstractLocal implements EXistCollection {
         }
 
         modify().apply((collection, broker, transaction) -> {
+            holdDocumentLockUntilEnd(transaction);
             try {
                 final String strMimeType = res.getMimeType(broker, transaction);
                 final MimeType mimeType = strMimeType != null ? MimeTable.getInstance().getContentType(strMimeType) : null;
@@ -599,6 +601,7 @@ public class LocalCollection extends AbstractLocal implements EXistCollection {
         }
 
         modify().apply((collection, broker, transaction) -> {
+            holdDocumentLockUntilEnd(transaction);
             String uri = null;
             if(res.file != null) {
                 uri = res.file.toUri().toASCIIString();

@@ -1345,6 +1345,8 @@ public class RpcConnection implements RpcAPI {
                          final int overwrite, @Nullable final Date created, @Nullable final Date modified) throws URISyntaxException, EXistException, PermissionDeniedException {
         final XmldbURI docUri = XmldbURI.xmldbUriFor(documentPath);
         return this.<Boolean>writeCollection(docUri.removeLastSegment()).apply((collection, broker, transaction) -> {
+            // the transaction stores this document only, so the document's lock can be held until it ends
+            transaction.setHoldDocumentLocksUntilEnd(true);
 
             try(final ManagedDocumentLock lockedDocument = broker.getBrokerPool().getLockManager().acquireDocumentWriteLock(docUri)) {
                 if (overwrite == 0) {
@@ -1525,6 +1527,8 @@ public class RpcConnection implements RpcAPI {
 
             // keep a write lock in the transaction
             transaction.acquireCollectionLock(() -> broker.getBrokerPool().getLockManager().acquireCollectionWriteLock(collection.getURI()));
+            // the transaction stores this document only, so the document's lock can be held until it ends
+            transaction.setHoldDocumentLocksUntilEnd(true);
 
             try(final ManagedDocumentLock lockedDocument = broker.getBrokerPool().getLockManager().acquireDocumentWriteLock(docUri)) {
                 if (overwrite == 0) {
@@ -2081,6 +2085,8 @@ public class RpcConnection implements RpcAPI {
         return this.<Boolean>writeCollection(docUri.removeLastSegment()).apply((collection, broker, transaction) -> {
             // keep a write lock in the transaction
             transaction.acquireCollectionLock(() -> broker.getBrokerPool().getLockManager().acquireCollectionWriteLock(collection.getURI()));
+            // the transaction removes this document only, so the document's lock can be held until it ends
+            transaction.setHoldDocumentLocksUntilEnd(true);
 
             try(final LockedDocument lockedDoc = collection.getDocumentWithLock(broker, docUri.lastSegment(), LockMode.WRITE_LOCK)) {
                 if (lockedDoc == null) {

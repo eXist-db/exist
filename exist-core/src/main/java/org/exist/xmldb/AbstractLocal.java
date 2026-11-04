@@ -248,6 +248,19 @@ public abstract class AbstractLocal {
     }
 
     /**
+     * For an operation which stores or removes one Document, holds the Document's WRITE_LOCK until the
+     * transaction ends, if the transaction is its own rather than one it continues; see
+     * {@link Txn#setHoldDocumentLocksUntilEnd(boolean)}.
+     *
+     * @param transaction the operation's transaction
+     */
+    protected static void holdDocumentLockUntilEnd(final Txn transaction) {
+        if (!(transaction instanceof Txn.ReusableTxn)) {
+            transaction.setHoldDocumentLocksUntilEnd(true);
+        }
+    }
+
+    /**
      * Higher-order-function for performing an XMLDB operation on
      * the database
      *
