@@ -1,0 +1,14 @@
+exist-core/src/main/java/org/exist/xquery/ConstantFalsePredicate.java
+  h_ff0005bef58c9d 31-32,53
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "923ae39875c70c1ea3389d72f773484e6ad0799a",
+  "prompts": {},
+  "humans": {
+    "h_ff0005bef58c9d": {
+      "author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
