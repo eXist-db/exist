@@ -1,6 +1,12 @@
 exist-core/src/main/java/org/exist/xquery/Optimizer.java
   s_8c882bcb6b3111::t_8e284191da43f5 1045
   s_8c882bcb6b3111::t_3b3390d9b00bef 287-288
+exist-core/src/main/java/org/exist/xquery/ExpressionUnwrap.java
+  s_8c882bcb6b3111::t_fe524cf5cfac59 1-26,28-35,42-75
+  s_8c882bcb6b3111::t_28942d55dbc1cd 36,38-41
+  s_8c882bcb6b3111::t_dee89025f80e9c 27,37
+exist-core/src/main/java/org/exist/xquery/pragmas/Optimize.java
+  s_8c882bcb6b3111::t_95570d800c7a86 91-92
 ---
 {
   "schema_version": "authorship/3.0.0",
