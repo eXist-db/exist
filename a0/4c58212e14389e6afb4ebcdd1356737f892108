@@ -1,0 +1,19 @@
+exist-core/src/main/java/org/exist/xquery/AndPredicateSplitter.java
+  s_8c882bcb6b3111::t_6d56c9a47c656e 32-33
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "a04c58212e14389e6afb4ebcdd1356737f892108",
+  "prompts": {},
+  "sessions": {
+    "s_8c882bcb6b3111": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b6a6bfdf-b5e2-4144-8709-3a7e650445e6",
+        "model": "unknown"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
