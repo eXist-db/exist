@@ -152,7 +152,8 @@ public class QueryLeavesItsInputsTest {
             "($c, $c[ft:query(., 'alpha')])/self::p",
             "($c[ft:query(., 'alpha')], $c)/.",
             "for $n in $c where $n[ft:query(., 'alpha')] return $n",
-            "$d[p[ft:query(., 'alpha')] and p]"
+            "$d[p[ft:query(., 'alpha')] and p]",
+            "$d[not(p[ft:query(., 'beta')])]"
     );
 
     @BeforeAll
