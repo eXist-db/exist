@@ -1,0 +1,21 @@
+exist-core/src/main/java/org/exist/xquery/Optimizer.java
+  s_8c882bcb6b3111::t_29b3fac4e5603a 158-159,166,353
+exist-core/src/main/java/org/exist/xquery/UnionStepDistribution.java
+  s_8c882bcb6b3111::t_7c5bc58fba41da 26-29,31,56,137-138
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "32c522e5c6713960232c00c2eacbe321b3461ace",
+  "prompts": {},
+  "sessions": {
+    "s_8c882bcb6b3111": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b6a6bfdf-b5e2-4144-8709-3a7e650445e6",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
