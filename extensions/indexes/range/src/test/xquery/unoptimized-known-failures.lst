@@ -2,6 +2,11 @@
 # Remove a test once it passes without the optimizer; the suite fails while a listed test passes.
 
 # Checks of the optimizer itself (%test:stats, or an index pragma that needs it); these stay
+collation-default.xqm: eq-same-collation-range-uses-index
+collation-default.xqm: eq-field-same-collation-uses-index
+collation.xqm: eq-without-collation-collated-range-uses-index
+collation.xqm: equals-without-collation-range-uses-index
+collation.xqm: starts-with-codepoint-range-uses-index
 conditions.xql: multiple-conditions
 conditions.xql: multiple-conditions-inbetween
 conditions.xql: optimize-contains
@@ -89,6 +94,7 @@ types.xql: string-contains-optimized
 # By design: the index's configuration defines the comparison (case="no", collations, filters such as lowercasing
 # and folding, converters such as date normalization), so with the index the answer differs from plain XPath's;
 # these stay
+collation.xqm: eq-without-collation-collated-range
 optimizer.xql: contains-field-string-filtered
 optimizer.xql: contains-string-collation-with-diacritics
 optimizer.xql: contains-string-filtered
