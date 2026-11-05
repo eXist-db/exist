@@ -35,6 +35,7 @@ import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.XPathException;
 import org.w3c.dom.Element;
 
+import javax.annotation.Nullable;
 import java.io.Reader;
 import java.lang.invoke.LambdaMetafactory;
 import java.lang.invoke.MethodHandle;
@@ -93,6 +94,24 @@ public class RangeIndexAnalyzer extends Analyzer {
 
     public void addFilter(Element filter) throws DatabaseConfigurationException {
         filterConfigs.add(new FilterConfig(filter));
+    }
+
+    /**
+     * Whether the analyzer runs the index's keys through filters, which makes it compare in more than the collation.
+     *
+     * @return true if the configuration added at least one filter
+     */
+    public boolean hasFilters() {
+        return !filterConfigs.isEmpty();
+    }
+
+    /**
+     * The collator of the configured collation.
+     *
+     * @return the collator, built once and frozen, or null if the index compares by codepoint
+     */
+    public @Nullable Collator getCollator() {
+        return collator;
     }
 
     public void addCollation(String uri) throws DatabaseConfigurationException {

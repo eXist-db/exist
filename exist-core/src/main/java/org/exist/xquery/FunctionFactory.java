@@ -196,7 +196,7 @@ public class FunctionFactory {
                 case "equals" -> {
                     final GeneralComparison op = optimizeStringFunction(context, ast, parent, params, "equals", StringTruncationOperator.EQUALS);
                     if (params.size() < 3) {
-                        op.setCollation(new StringValue("?strength=identical"));
+                        op.setImplicitCollation(new StringValue("?strength=identical"));
                     }
                     yield op;
                 }
