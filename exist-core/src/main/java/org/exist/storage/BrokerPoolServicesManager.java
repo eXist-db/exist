@@ -44,6 +44,7 @@ import static org.exist.security.UnixStylePermission.LOG;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * This class simply maintains a list of {@link BrokerPoolService}
@@ -108,6 +109,7 @@ class BrokerPoolServicesManager {
     );
 
     final List<BrokerPoolService> brokerPoolServices = new ArrayList<>();
+    private final AtomicBoolean quiesceNotified = new AtomicBoolean();
 
     /**
      * Register a Service to be managed
@@ -284,6 +286,45 @@ class BrokerPoolServicesManager {
                 LOG.trace("Notifying service: {} of start multi-user...", brokerPoolService.getClass().getSimpleName());
             }
             brokerPoolService.startMultiUser(brokerPool);
+        }
+    }
+
+    /**
+     * Asks the services to quiesce before the database leaves multi-user mode.
+     *
+     * Does nothing unless the services are in multi-user mode, and calls the
+     * services at most once.
+     *
+     * @param brokerPool The broker pool instance
+     *
+     * @throws BrokerPoolServicesManagerException if any service causes an error when quiescing
+     */
+    void beforeStopMultiUserServices(final BrokerPool brokerPool) throws BrokerPoolServicesManagerException {
+        if (states.getCurrentState() != ManagerState.MULTI_USER || !quiesceNotified.compareAndSet(false, true)) {
+            return;
+        }
+
+        List<BrokerPoolServiceException> serviceExceptions = null;
+
+        // we notify in the reverse order to starting up, as we do when stopping
+        for(int i = brokerPoolServices.size() - 1; i >= 0; i--) {
+            final BrokerPoolService brokerPoolService = brokerPoolServices.get(i);
+            if(LOG.isTraceEnabled()) {
+                LOG.trace("Asking service: {} to quiesce before stop multi-user...", brokerPoolService.getClass().getSimpleName());
+            }
+
+            try {
+                brokerPoolService.beforeStopMultiUser(brokerPool);
+            } catch (final BrokerPoolServiceException e) {
+                if(serviceExceptions == null) {
+                    serviceExceptions = new ArrayList<>();
+                }
+                serviceExceptions.add(e);
+            }
+        }
+
+        if(serviceExceptions != null) {
+            throw new BrokerPoolServicesManagerException(serviceExceptions);
         }
     }
 

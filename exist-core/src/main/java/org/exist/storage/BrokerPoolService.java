@@ -141,6 +141,28 @@ public interface BrokerPoolService {
     }
 
     /**
+     * Ask this service to quiesce before the BrokerPool leaves its operational state.
+     *
+     * Called once at the start of a shutdown, while the BrokerPool is still operational and
+     * brokers can still be obtained. A service that runs background work should use this to
+     * stop starting new work, but it should not wait for work in flight: that remains the job
+     * of {@link #stopMultiUser(BrokerPool)}, which is called after the BrokerPool has stopped
+     * handing out brokers to other callers.
+     *
+     * Implementations must be quick, must not block on other services and must tolerate being
+     * called when the BrokerPool is shut down without having been in multi-user mode.
+     *
+     * By default there is nothing to do.
+     *
+     * @param brokerPool The multi-user available broker pool instance
+     *
+     * @throws BrokerPoolServiceException if an error occurs when quiescing the service
+     */
+    default void beforeStopMultiUser(final BrokerPool brokerPool) throws BrokerPoolServiceException {
+        //nothing to quiesce
+    }
+
+    /**
      * Stop any part of this service that should happen at the
      * end of multi-user mode.
      *
