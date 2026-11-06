@@ -21,7 +21,6 @@
  */
 package org.exist.xquery.modules.lucene;
 
-import org.exist.dom.QName;
 import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.persistent.NodeSet;
 import org.exist.indexing.lucene.LuceneIndex;
@@ -108,7 +107,32 @@ public class QueryFieldVector extends AbstractVectorQueryFunction {
             contextSet = null;
         }
 
-        return runSearch(null, docs, contextSet, contextSet, field, vector, k, options);
+        return runSearch(false, docs, contextSet, contextSet, field, vector, k, options);
+    }
+
+    /**
+     * A field belongs to the elements its configuration names, which need not be the ones the step selects: it can be
+     * shared with others, or on a node below them. A search of the field looks among the step's nodes only if the step's
+     * name is the only one that has it. That has to hold for every evaluation, and the optimizer keeps its decision for a
+     * context, so the field's name has to be a constant.
+     */
+    @Override
+    public Sequence canOptimizeSequence(final Sequence contextSequence) {
+        final Sequence optimizable = super.canOptimizeSequence(contextSequence);
+        if (stepName == null || optimizable.isEmpty()) {
+            return optimizable;
+        }
+        final LuceneIndexWorker index = (LuceneIndexWorker) context.getBroker().getIndexController().getWorkerByIndexId(LuceneIndex.ID);
+        try {
+            final Expression fieldArg = getArgument(0);
+            if (index != null && fieldArg.getDependencies() == Dependency.NO_DEPENDENCY
+                    && index.isVectorFieldOnlyOn(contextSequence.getDocumentSet(), fieldArg.eval(contextSequence, null).getStringValue(), stepName)) {
+                return optimizable;
+            }
+        } catch (final XPathException e) {
+            LOG.debug("Not pre-selecting a vector field: {}", e.getMessage());
+        }
+        return Sequence.EMPTY_SEQUENCE;
     }
 
     @Override
@@ -134,20 +158,19 @@ public class QueryFieldVector extends AbstractVectorQueryFunction {
         // select them: the k nearest of the context, not of the documents
         final NodeSet nodes = contextSequence.toNodeSet();
         final NodeSet contextSet = useContext ? nodes : null;
-        // a field can be shared by several elements: only this step's are the nodes it selects
-        final Sequence result = runSearch(stepName, contextSequence.getDocumentSet(), contextSet, nodes, field, vector, k, options);
+        final Sequence result = runSearch(true, contextSequence.getDocumentSet(), contextSet, nodes, field, vector, k, options);
         preselectResult = result.toNodeSet();
         return preselectResult;
     }
 
     /** The tail shared by {@link #eval(Sequence[], Sequence)} and {@link #preSelect(Sequence, boolean)}: resolve the index and run the KNN search. */
-    private Sequence runSearch(@Nullable final QName name, final DocumentSet docs, @Nullable final NodeSet contextSet,
-            @Nullable final NodeSet within, final String field, final float[] vector, final int k, final QueryOptions options) throws XPathException {
+    private Sequence runSearch(final boolean preSelected, final DocumentSet docs, @Nullable final NodeSet contextSet, @Nullable final NodeSet within,
+            final String field, final float[] vector, final int k, final QueryOptions options) throws XPathException {
         final LuceneIndexWorker index = (LuceneIndexWorker) context.getBroker().getIndexController().getWorkerByIndexId(LuceneIndex.ID);
-        final PerformanceStats.IndexOptimizationLevel optimizationLevel =
-                VectorSearchSupport.optimizationLevelForField(index, docs, field);
+        final PerformanceStats.IndexOptimizationLevel level = VectorSearchSupport.optimizationLevelForField(index, docs, field);
+        final PerformanceStats.IndexOptimizationLevel optimizationLevel = preSelected ? level : VectorSearchSupport.asWritten(level);
         return VectorSearchSupport.execute(this, context, index, optimizationLevel,
-                () -> index.searchVector(getContextId(), name, docs, contextSet, within, field, vector, k, options));
+                () -> index.searchVector(getContextId(), docs, contextSet, within, field, vector, k, options));
     }
 
     /**

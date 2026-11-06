@@ -7,3 +7,5 @@ ft-query-forms.xqm: optimizer-query-on-self
 ft-query-forms.xqm: optimizer-query-on-wildcard
 ft-query-forms.xqm: optimizer-wildcard-long-path
 ft-query-forms.xqm: optimizer-wildcard-self-descendant
+vector-search.xqm: profiler-optimized-query-field-vector
+vector-search.xqm: profiler-optimized-when-vector-config-present

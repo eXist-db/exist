@@ -146,8 +146,9 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
     /**
      * The axis that asks {@link #query} for the hits on the context nodes themselves: a hit counts only when its own
-     * node is one of the context nodes. This is {@code ft:query}'s filter, the nodes it is given whose own index entry
-     * matches; {@link NodeSet#ANCESTOR} also returns a context node through a match below it.
+     * node is one of the context nodes, or for its document if that is one. This is {@code ft:query}'s filter, the nodes
+     * it is given whose own index entry matches; a document has no entry, and is a scope for the entries in it.
+     * {@link NodeSet#ANCESTOR} also returns any other context node through a match below it.
      */
     public static final int SELF = -1;
 
@@ -1018,19 +1019,18 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     public NodeSet searchVector(final int contextId, final DocumentSet docs, @Nullable final NodeSet contextSet,
             final String field, final float[] vector, final int k, final QueryOptions options)
             throws IOException, XPathException {
-        return searchVector(contextId, null, docs, contextSet, contextSet, field, vector, k, options);
+        return searchVector(contextId, docs, contextSet, contextSet, field, vector, k, options);
     }
 
     /**
      * Vector (KNN) search by field name, among some nodes.
      *
-     * @param name the only element whose index entries the search looks among, or null for any that has the field
      * @param contextSet the context the hits are returned in, as their ancestors in it, or null to return the hits
      * @param within the nodes the search looks among, the hits being in them or below them, or null for the documents
      * @see #searchVector(int, DocumentSet, NodeSet, String, float[], int, QueryOptions)
      */
-    public NodeSet searchVector(final int contextId, @Nullable final QName name, final DocumentSet docs,
-            @Nullable final NodeSet contextSet, @Nullable final NodeSet within, final String field, final float[] vector, final int k, final QueryOptions options)
+    public NodeSet searchVector(final int contextId, final DocumentSet docs, @Nullable final NodeSet contextSet,
+            @Nullable final NodeSet within, final String field, final float[] vector, final int k, final QueryOptions options)
             throws IOException, XPathException {
         return index.withSearcher(searcher -> {
             final NodeSet resultSet = new NewArrayNodeSet();
@@ -1041,10 +1041,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 // no configuration defines the field: nothing to find, as ft:query-field finds nothing in an unknown field
                 return resultSet;
             }
-            final Query filter = buildVectorFilterQuery(options, defining);
-            final Query filterQuery = inContext(
-                    name != null ? withIndexType(filter, LuceneUtil.encodeQName(name, index.getBrokerPool().getSymbols())) : filter,
-                    field, docs, within);
+            final Query filterQuery = inContext(buildVectorFilterQuery(options, defining), field, docs, within);
             final int candidates = vectorCandidates(k, options);
             final KnnFloatVectorQuery baseQuery = filterQuery != null
                     ? new KnnFloatVectorQuery(field, vector, candidates, filterQuery)
@@ -1185,6 +1182,26 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             }
         }
         return false;
+    }
+
+    /**
+     * @return true when the Lucene configuration for {@code docs} declares a {@code vector-field} of this name, and only
+     *     on elements of the given name
+     */
+    public boolean isVectorFieldOnlyOn(final DocumentSet docs, final String fieldName, final QName name) {
+        boolean found = false;
+        for (final LuceneConfigs.Group group : LuceneConfigs.of(broker, docs).groups()) {
+            for (final LuceneIndexConfig idxConf : group.config().getIndexConfigurations()) {
+                if (findVectorField(idxConf, fieldName) != null) {
+                    final QName configured = idxConf.getQName();
+                    if (!name.equals(configured) || configured.getNameType() != name.getNameType()) {
+                        return false;
+                    }
+                    found = true;
+                }
+            }
+        }
+        return found;
     }
 
     @Nullable
@@ -1882,16 +1899,26 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
             private void processSelfHit(int doc, NodeProxy storedNode, LuceneMatch match, int sizeHint) throws IOException {
                 // the hit is the context node itself, or no hit of the context: a match below a context node is not
-                // that node's
+                // that node's, unless it is a document, which has no index entry and is a scope for those in it
                 final NodeProxy contextNode = contextSet.get(storedNode);
+                final NodeProxy document = contextSet.get(storedNode.getOwnerDocument(), NodeId.DOCUMENT_NODE);
                 if (contextNode != null) {
-                    // the context node is the caller's: the hit is a copy of it, with the match, whose context in the
-                    // predicate is the context node, so that the predicate keeps it
-                    final NodeProxy hit = contextId == Expression.NO_CONTEXT_ID ? contextNode
-                            : contextNode.withContextNode(contextId, contextNode);
-                    resultSet.add(hit.withMatch(match), sizeHint);
+                    addSelfHit(contextNode, match, sizeHint);
+                }
+                if (document != null) {
+                    addSelfHit(document, match, sizeHint);
+                }
+                if (contextNode != null || document != null) {
                     chainCollect(doc);
                 }
+            }
+
+            private void addSelfHit(final NodeProxy contextNode, final LuceneMatch match, final int sizeHint) {
+                // the context node is the caller's: the hit is a copy of it, with the match, whose context in the
+                // predicate is the context node, so that the predicate keeps it
+                final NodeProxy hit = contextId == Expression.NO_CONTEXT_ID ? contextNode
+                        : contextNode.withContextNode(contextId, contextNode);
+                resultSet.add(hit.withMatch(match), sizeHint);
             }
 
             private void processAncestorHit(int doc, NodeProxy storedNode, LuceneMatch match, int sizeHint) throws IOException {

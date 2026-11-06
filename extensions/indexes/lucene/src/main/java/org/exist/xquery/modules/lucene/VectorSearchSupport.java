@@ -75,6 +75,14 @@ final class VectorSearchSupport {
         }
     }
 
+    /**
+     * The level to report for a search evaluated as written: it uses the index, as {@code ft:query} does then, but was
+     * not pre-selected.
+     */
+    static PerformanceStats.IndexOptimizationLevel asWritten(final PerformanceStats.IndexOptimizationLevel level) {
+        return level == PerformanceStats.IndexOptimizationLevel.OPTIMIZED ? PerformanceStats.IndexOptimizationLevel.BASIC : level;
+    }
+
     static PerformanceStats.IndexOptimizationLevel optimizationLevelForField(@Nullable final LuceneIndexWorker index,
             final DocumentSet docs, final String field) {
         return index != null && index.hasVectorIndexForField(docs, field)

@@ -60,6 +60,15 @@ declare variable $qvs:XCONF :=
                 <text qname="ch">
                     <vector-field name="qvs-emb" expression="embedding" dimension="3" similarity="cosine" encoding="text"/>
                 </text>
+                <text qname="chap">
+                    <vector-field name="qvs-chap" expression="block/embedding" dimension="3" similarity="cosine" encoding="text"/>
+                </text>
+                <text qname="block">
+                    <vector-field name="qvs-block" expression="embedding" dimension="3" similarity="cosine" encoding="text"/>
+                </text>
+                <text qname="@v">
+                    <vector-field name="qvs-attribute" expression="." dimension="3" similarity="cosine" encoding="text"/>
+                </text>
             </lucene>
         </index>
     </collection>;
@@ -89,6 +98,8 @@ function qvs:setUp() {
             <root><sec n="{$i}"><embedding>{qvs:vector(21 - $i)}</embedding><sec n="c{$i}"><embedding>{qvs:vector($i)}</embedding></sec></sec></root>),
         xmldb:store($qvs:COLLECTION, "p" || $i || ".xml",
             <part n="{$i}"><embedding>{qvs:vector(21 - $i)}</embedding><part n="c{$i}"><embedding>{qvs:vector($i)}</embedding></part></part>),
+        xmldb:store($qvs:COLLECTION, "c" || $i || ".xml",
+            <chap n="{$i}" v="{qvs:vector($i)}"><block><embedding>{qvs:vector($i)}</embedding></block></chap>),
         xmldb:store($qvs:COLLECTION, "b" || $i || ".xml",
             <book><ch n="{$i}"><embedding>{qvs:vector($i + 10)}</embedding>{
                 if ($i = 1) then
@@ -228,4 +239,42 @@ declare
     %test:assertEquals("c1", "c2", "c3")
 function qvs:descendant-step-over-nested-elements() {
     sort(collection($qvs:COLLECTION)/root//sec[ft:query-vector(., $qvs:VEC, 3)]/@n/string())
+};
+
+(: a field is on the elements its configuration names, which need not be the ones the step selects: a hit below a node
+   gives that node :)
+declare
+    %test:assertEquals("1", "2", "3")
+function qvs:field-on-a-child-of-the-step() {
+    sort(collection($qvs:COLLECTION)//chap[ft:query-field-vector("qvs-block", $qvs:VEC, 3)]/@n/string())
+};
+
+declare
+    %test:assertEquals("1", "2", "3")
+function qvs:field-on-an-attribute-of-the-step() {
+    sort(collection($qvs:COLLECTION)//chap[ft:query-field-vector("qvs-attribute", $qvs:VEC, 3)]/@n/string())
+};
+
+declare
+    %test:assertEquals("1", "2", "3")
+function qvs:field-on-the-step() {
+    sort(collection($qvs:COLLECTION)//block[ft:query-field-vector("qvs-block", $qvs:VEC, 3)]/../@n/string())
+};
+
+(: the path is evaluated again for each field, with the same context :)
+declare
+    %test:assertEquals(3, 3)
+function qvs:field-from-a-variable-over-one-step() {
+    let $docs := collection($qvs:COLLECTION)
+    for $field in ("qvs-block", "qvs-attribute")
+    return count($docs//chap[ft:query-field-vector($field, $qvs:VEC, 3)])
+};
+
+(: the first field is on the step's elements and the second is not: the second must not reuse the first's decision :)
+declare
+    %test:assertEquals(3, 3)
+function qvs:field-from-a-variable-on-the-step-first() {
+    let $docs := collection($qvs:COLLECTION)
+    for $field in ("qvs-chap", "qvs-block")
+    return count($docs//chap[ft:query-field-vector($field, $qvs:VEC, 3)])
 };
