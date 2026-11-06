@@ -1,0 +1,33 @@
+exist-architecture-tests/AGENTS.md
+  s_a5cd43af656534::t_da41fa5e3ec0b5 10-11
+exist-architecture-tests/src/test/java/org/exist/architecture/LocaleRules.java
+  s_a5cd43af656534::t_c114d605e7c9e1 1-71
+exist-architecture-tests/src/test/java/org/exist/architecture/ArchitectureTest.java
+  s_a5cd43af656534::t_ae174f46534bb2 42-44
+exist-architecture-tests/src/test/resources/archunit_store/stored.rules
+  s_a5cd43af656534::t_434dfb49a52abc 2-3,6
+exist-architecture-tests/pom.xml
+  s_a5cd43af656534::t_1198b59eceaab4 72-263,297
+exist-architecture-tests/src/test/resources/archunit_store/036fc13f-0fbe-4ea6-bb6b-25319dcf06d4
+  s_a5cd43af656534::t_87efaa4f1d7635 1-42
+exist-architecture-tests/src/test/resources/archunit_store/25233bb7-728d-44f8-9a37-45c9b700c990
+  s_a5cd43af656534::t_a8fb29f7b736c1 1-21
+exist-architecture-tests/src/test/resources/archunit_store/afd30334-9891-48d2-973d-bbe6dcb36611
+  s_a5cd43af656534::t_d141570f61c2d6 1,94-99,101-107
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "85d45b8b9800a15cac120f9aa20d0d62f02d3f6e",
+  "prompts": {},
+  "sessions": {
+    "s_a5cd43af656534": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "0c27615c-f7ee-4d9b-a125-a7e63f4914bc",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
