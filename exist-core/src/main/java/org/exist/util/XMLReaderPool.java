@@ -72,6 +72,23 @@ public class XMLReaderPool extends GenericObjectPool<XMLReader> implements Broke
         }
     }
 
+    /**
+     * Configures the validation related features of a reader that was borrowed from this pool,
+     * for example for the validation mode of a collection configuration.
+     *
+     * @param reader the borrowed reader
+     * @param mode the validation mode
+     *
+     * @see XMLReaderObjectFactory#configureValidation(XMLReader, XMLReaderObjectFactory.VALIDATION_SETTING)
+     */
+    public void setValidationMode(final XMLReader reader, final XMLReaderObjectFactory.VALIDATION_SETTING mode) {
+        if (getFactory() instanceof XMLReaderObjectFactory factory) {
+            factory.configureValidation(reader, mode);
+        } else {
+            XMLReaderObjectFactory.setReaderValidationMode(mode, reader);
+        }
+    }
+
     @Override
     public XMLReader borrowObject() throws Exception {
         return borrowXMLReader();

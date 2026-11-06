@@ -1,0 +1,5 @@
+<!-- Entity declarations used by org.exist.validation.DtdEntityTest and DtdGrammarCacheTest -->
+<!ELEMENT a (#PCDATA)>
+<!ENTITY alpha "from-A">
+<!ENTITY ouml "&#246;">
+<!ENTITY trade "&#8482;">

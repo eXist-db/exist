@@ -33,6 +33,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.exist.Namespaces;
 import org.exist.resolver.XercesXmlResolverAdapter;
+import org.exist.validation.ReaderGrammarPool;
 import org.exist.storage.BrokerPoolService;
 import org.exist.validation.GrammarPool;
 
@@ -72,6 +73,8 @@ public class XMLReaderObjectFactory extends BasePooledObjectFactory<XMLReader> i
             = "http://apache.org/xml/properties/internal/grammar-pool";
     public static final String APACHE_PROPERTIES_LOAD_EXT_DTD
             = "http://apache.org/xml/features/nonvalidating/load-external-dtd";
+    public static final String APACHE_PROPERTIES_INTERNAL_ENTITYMANAGER
+            = "http://apache.org/xml/properties/internal/entity-manager";
     public static final String APACHE_PROPERTIES_INTERNAL_ENTITYRESOLVER
             = "http://apache.org/xml/properties/internal/entity-resolver";
 
@@ -117,9 +120,12 @@ public class XMLReaderObjectFactory extends BasePooledObjectFactory<XMLReader> i
         final XMLReader xmlReader = pooledXmlReader.getObject();
 
         try {
-            if (validation.maybe()) {
-                // Only need to set Grammar Cache if we are validating
-                xmlReader.setProperty(APACHE_PROPERTIES_INTERNAL_GRAMMARPOOL, grammarPool);
+            if (grammarPool != null) {
+                // Each reader gets its own view of the shared cache, which decides whether
+                // the parser may use cached DTD grammars
+                xmlReader.setProperty(APACHE_PROPERTIES_INTERNAL_GRAMMARPOOL, new ReaderGrammarPool(grammarPool));
+            } else if (validation.maybe()) {
+                xmlReader.setProperty(APACHE_PROPERTIES_INTERNAL_GRAMMARPOOL, null);
             }
 
             // Set XML Catalog Resolver
@@ -132,7 +138,24 @@ public class XMLReaderObjectFactory extends BasePooledObjectFactory<XMLReader> i
             LOG.error("SAXNotSupportedException:{}", ex.getMessage());
         }
 
-        setReaderValidationMode(validation, xmlReader);
+        configureValidation(xmlReader, validation);
+
+        xmlReader.setErrorHandler(SILENT_SAX_ERROR_HANDLER);
+    }
+
+    /**
+     * Configures the validation related features of the {@code xmlReader}.
+     *
+     * The features are applied in a fixed order: first those implied by the validation
+     * {@code mode}, then any feature the administrator set in the parser section of
+     * conf.xml. An explicitly configured feature therefore always wins over the mode,
+     * no matter whether the mode comes from the server or from a collection configuration.
+     *
+     * @param xmlReader the reader
+     * @param mode the validation mode
+     */
+    public void configureValidation(final XMLReader xmlReader, final VALIDATION_SETTING mode) {
+        setReaderValidationMode(mode, xmlReader);
 
         // Sets any features for the parser which were defined in conf.xml
         if (parserFeatures != null) {
@@ -140,8 +163,6 @@ public class XMLReaderObjectFactory extends BasePooledObjectFactory<XMLReader> i
                 setReaderFeature(xmlReader, feature.getKey(), feature.getValue());
             }
         }
-
-        xmlReader.setErrorHandler(SILENT_SAX_ERROR_HANDLER);
     }
 
     @Override
@@ -151,6 +172,7 @@ public class XMLReaderObjectFactory extends BasePooledObjectFactory<XMLReader> i
         xmlReader.setContentHandler(null);
         xmlReader.setErrorHandler(SILENT_SAX_ERROR_HANDLER);
         xmlReader.setProperty(Namespaces.SAX_LEXICAL_HANDLER, null);
+        xmlReader.setProperty(Namespaces.SAX_DECLARATION_HANDLER, null);
     }
 
     /**
@@ -162,7 +184,17 @@ public class XMLReaderObjectFactory extends BasePooledObjectFactory<XMLReader> i
     public static void setReaderValidationMode(final VALIDATION_SETTING validation, final XMLReader xmlReader) {
         // Configure XMLReader see http://xerces.apache.org/xerces2-j/features.html
         setReaderFeature(xmlReader, Namespaces.SAX_NAMESPACES_PREFIXES, true);
-        setReaderFeature(xmlReader, APACHE_PROPERTIES_LOAD_EXT_DTD, validation.maybe());
+
+        // The external DTD subset declares entities that the document may rely on, so it is read
+        // when a catalog resolver can supply it, even if the document is not validated. Without such
+        // a resolver nothing bounds where the subset would be fetched from, so it is only read when
+        // validating. An unresolved subset of a non-validated document is not fetched, see
+        // XercesXmlResolverAdapter#setRestrictExternalSubset.
+        final XercesXmlResolverAdapter resolverAdapter = XercesXmlResolverAdapter.getFrom(xmlReader);
+        if (resolverAdapter != null) {
+            resolverAdapter.setRestrictExternalSubset(!validation.maybe());
+        }
+        setReaderFeature(xmlReader, APACHE_PROPERTIES_LOAD_EXT_DTD, validation.maybe() || resolverAdapter != null);
         setReaderFeature(xmlReader, Namespaces.SAX_VALIDATION, validation.maybe());
         setReaderFeature(xmlReader, Namespaces.SAX_VALIDATION_DYNAMIC, validation == VALIDATION_SETTING.AUTO);
         setReaderFeature(xmlReader, APACHE_FEATURES_VALIDATION_SCHEMA, validation.maybe());

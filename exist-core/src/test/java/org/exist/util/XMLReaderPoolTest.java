@@ -112,6 +112,105 @@ class XMLReaderPoolTest {
         verify(mockConfiguration);
     }
 
+    @ParameterizedTest
+    @ValueSource(strings = {"no", "false"})
+    void xmlReaderWithDisabledValidationReadsExternalDtdWhenCatalogPresent(final String validationMode) throws SAXNotSupportedException, SAXNotRecognizedException {
+        final Resolver mockResolver = createMock(Resolver.class);
+        final Configuration mockConfiguration = createMock(Configuration.class);
+        expect(mockConfiguration.getProperty(GrammarPool.GRAMMAR_POOL_ELEMENT)).andReturn(null);
+        expect(mockConfiguration.getProperty(XMLReaderObjectFactory.CATALOG_RESOLVER)).andReturn(mockResolver);
+        expect(mockConfiguration.getProperty(XMLReaderObjectFactory.PROPERTY_VALIDATION_MODE)).andReturn(validationMode);
+
+        expect(mockConfiguration.getProperty(XMLReaderPool.XmlParser.XML_PARSER_FEATURES_PROPERTY)).andReturn(Collections.emptyMap());
+
+        replay(mockConfiguration);
+
+        final XMLReaderObjectFactory xmlReaderObjectFactory = new XMLReaderObjectFactory();
+        xmlReaderObjectFactory.configure(mockConfiguration);
+        final XMLReaderPool xmlReaderPool = new XMLReaderPool(xmlReaderObjectFactory, 1, 0);
+        xmlReaderPool.configure(mockConfiguration);
+
+        final XMLReader xmlreader = xmlReaderPool.borrowXMLReader();
+        assertNotNull(xmlreader);
+        try {
+            assertFalse(xmlreader.getFeature(Namespaces.SAX_VALIDATION));
+            // the entities declared in the external subset are needed even when not validating
+            assertTrue(xmlreader.getFeature(XMLReaderObjectFactory.APACHE_PROPERTIES_LOAD_EXT_DTD));
+        } finally {
+            xmlReaderPool.returnXMLReader(xmlreader);
+        }
+
+        verify(mockConfiguration);
+    }
+
+    @Test
+    void validationModeOverrideKeepsConfiguredParserFeatures() throws SAXNotSupportedException, SAXNotRecognizedException {
+        final Configuration mockConfiguration = createMock(Configuration.class);
+        expect(mockConfiguration.getProperty(GrammarPool.GRAMMAR_POOL_ELEMENT)).andReturn(null);
+        expect(mockConfiguration.getProperty(XMLReaderObjectFactory.CATALOG_RESOLVER)).andReturn(null);
+        expect(mockConfiguration.getProperty(XMLReaderObjectFactory.PROPERTY_VALIDATION_MODE)).andReturn("no");
+
+        // an explicit parser feature of the administrator
+        final Map<String, Boolean> parserFeatures = new HashMap<>();
+        parserFeatures.put(XMLReaderObjectFactory.APACHE_PROPERTIES_LOAD_EXT_DTD, false);
+        expect(mockConfiguration.getProperty(XMLReaderPool.XmlParser.XML_PARSER_FEATURES_PROPERTY)).andReturn(parserFeatures);
+
+        replay(mockConfiguration);
+
+        final XMLReaderObjectFactory xmlReaderObjectFactory = new XMLReaderObjectFactory();
+        xmlReaderObjectFactory.configure(mockConfiguration);
+        final XMLReaderPool xmlReaderPool = new XMLReaderPool(xmlReaderObjectFactory, 1, 0);
+        xmlReaderPool.configure(mockConfiguration);
+
+        final XMLReader xmlreader = xmlReaderPool.borrowXMLReader();
+        assertNotNull(xmlreader);
+        try {
+            // e.g. the validation mode of a collection configuration
+            xmlReaderPool.setValidationMode(xmlreader, XMLReaderObjectFactory.VALIDATION_SETTING.ENABLED);
+
+            assertTrue(xmlreader.getFeature(Namespaces.SAX_VALIDATION));
+            // the explicit parser feature wins over the validation mode
+            assertFalse(xmlreader.getFeature(XMLReaderObjectFactory.APACHE_PROPERTIES_LOAD_EXT_DTD));
+        } finally {
+            xmlReaderPool.returnXMLReader(xmlreader);
+        }
+
+        verify(mockConfiguration);
+    }
+
+    @Test
+    void borrowedReaderGetsServerValidationModeAgain() throws SAXNotSupportedException, SAXNotRecognizedException {
+        final Configuration mockConfiguration = createMock(Configuration.class);
+        expect(mockConfiguration.getProperty(GrammarPool.GRAMMAR_POOL_ELEMENT)).andReturn(null);
+        expect(mockConfiguration.getProperty(XMLReaderObjectFactory.CATALOG_RESOLVER)).andReturn(null);
+        expect(mockConfiguration.getProperty(XMLReaderObjectFactory.PROPERTY_VALIDATION_MODE)).andReturn("no");
+        expect(mockConfiguration.getProperty(XMLReaderPool.XmlParser.XML_PARSER_FEATURES_PROPERTY)).andReturn(Collections.emptyMap());
+
+        replay(mockConfiguration);
+
+        final XMLReaderObjectFactory xmlReaderObjectFactory = new XMLReaderObjectFactory();
+        xmlReaderObjectFactory.configure(mockConfiguration);
+        final XMLReaderPool xmlReaderPool = new XMLReaderPool(xmlReaderObjectFactory, 1, 0);
+        xmlReaderPool.configure(mockConfiguration);
+
+        final XMLReader first = xmlReaderPool.borrowXMLReader();
+        // e.g. the validation mode of a collection configuration, which is not reset on return
+        xmlReaderPool.setValidationMode(first, XMLReaderObjectFactory.VALIDATION_SETTING.ENABLED);
+        assertTrue(first.getFeature(Namespaces.SAX_VALIDATION));
+        xmlReaderPool.returnXMLReader(first);
+
+        final XMLReader second = xmlReaderPool.borrowXMLReader();
+        try {
+            assertSame(first, second);
+            assertFalse(second.getFeature(Namespaces.SAX_VALIDATION));
+            assertFalse(second.getFeature(XMLReaderObjectFactory.APACHE_FEATURES_VALIDATION_SCHEMA));
+        } finally {
+            xmlReaderPool.returnXMLReader(second);
+        }
+
+        verify(mockConfiguration);
+    }
+
     @Test
     void xmlReaderWithUnknownValidation() throws SAXNotSupportedException, SAXNotRecognizedException {
         final Configuration mockConfiguration = createMock(Configuration.class);
@@ -164,7 +263,10 @@ class XMLReaderPoolTest {
         final XMLReader xmlreader = xmlReaderPool.borrowXMLReader();
         assertNotNull(xmlreader);
         try {
-            assertSame(mockGrammarPool, xmlreader.getProperty(XMLReaderObjectFactory.APACHE_PROPERTIES_INTERNAL_GRAMMARPOOL));
+            // each reader has its own view of the configured pool
+            final Object readerGrammarPool = xmlreader.getProperty(XMLReaderObjectFactory.APACHE_PROPERTIES_INTERNAL_GRAMMARPOOL);
+            assertInstanceOf(org.exist.validation.ReaderGrammarPool.class, readerGrammarPool);
+            assertSame(mockGrammarPool, ((org.exist.validation.ReaderGrammarPool) readerGrammarPool).getDelegate());
         } finally {
             xmlReaderPool.returnXMLReader(xmlreader);
         }
@@ -585,7 +687,7 @@ class XMLReaderPoolTest {
         xmlreader = xmlReaderPool.borrowXMLReader();
         assertNotNull(xmlreader);
         try {
-            assertSame(mockGrammarPool, xmlreader.getProperty(XMLReaderObjectFactory.APACHE_PROPERTIES_INTERNAL_GRAMMARPOOL));
+            assertSame(mockGrammarPool, ((org.exist.validation.ReaderGrammarPool) xmlreader.getProperty(XMLReaderObjectFactory.APACHE_PROPERTIES_INTERNAL_GRAMMARPOOL)).getDelegate());
         } finally {
             xmlReaderPool.returnXMLReader(xmlreader);
         }
