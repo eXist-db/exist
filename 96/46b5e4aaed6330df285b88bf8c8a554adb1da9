@@ -1,0 +1,38 @@
+extensions/indexes/lucene/src/test/java/org/exist/indexing/lucene/RecomputedVectorsTest.java
+  s_423afd188df03d::t_f73f1c9e2d0205 1-70
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/LuceneIndex.java
+  s_423afd188df03d::t_53dc75e5750e66 291-296
+  s_423afd188df03d::t_0d90a50d5b55c6 311-331
+  s_423afd188df03d::t_73413aa16701c9 55
+  s_423afd188df03d::t_1eb2795f9525f4 96-104
+  s_423afd188df03d::t_ff87dd5cda0220 252
+extensions/indexes/vector-it/src/test/java/xquery/lucene/VectorRebuildIT.java
+  s_423afd188df03d::t_a2b13f23571930 22-241
+  s_423afd188df03d::t_0855c1188d1a90 1-21,242-244
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/RecomputedVectors.java
+  s_423afd188df03d::t_a48b6d8de7e66a 1-102
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/LuceneVectorFieldConfig.java
+  s_423afd188df03d::t_9b846b9b6cfce9 393-394
+  s_423afd188df03d::t_b12a29eb5a379e 415-418
+  s_423afd188df03d::t_4b2ec7c2fcd751 390,395
+  s_423afd188df03d::t_39ed8f56540acd 419-421
+extensions/indexes/vector-it/pom.xml
+  s_423afd188df03d::t_22afed89d1fcf1 69-78
+  s_423afd188df03d::t_50416203a2ba94 98
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "9646b5e4aaed6330df285b88bf8c8a554adb1da9",
+  "prompts": {},
+  "sessions": {
+    "s_423afd188df03d": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "e2edcafa-3c62-4825-b6bc-2030158e3989",
+        "model": "default"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
