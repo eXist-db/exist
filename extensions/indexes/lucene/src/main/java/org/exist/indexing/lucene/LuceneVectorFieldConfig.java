@@ -387,8 +387,12 @@ public class LuceneVectorFieldConfig extends AbstractFieldConfig {
             } else if (embeddingLocal && VECTOR_STORE_DB.equals(luceneConfig.getVectorStore())) {
                 STORE_CONTEXT.set(new StoreContext(broker, document, nodeId));
             }
+            final int vectorsBefore = luceneDoc.getFields(fieldName).length;
             try {
                 doBuild(broker, contextNode, luceneDoc, text);
+                if (embeddingLocal && luceneDoc.getFields(fieldName).length > vectorsBefore) {
+                    countRecomputed(broker);
+                }
             } finally {
                 if (embeddingLocal) {
                     STORE_CONTEXT.remove();
@@ -405,6 +409,13 @@ public class LuceneVectorFieldConfig extends AbstractFieldConfig {
             LOG.warn("Permission denied while evaluating expression for vector field '{}': {}", fieldName, e.getMessage());
         } catch (XPathException e) {
             LOG.warn("XPath error while evaluating expression for vector field '{}': {}", fieldName, e.getMessage());
+        }
+    }
+
+    /** Counts a node whose vector was embedded, see {@link LuceneIndex#vectorRecomputed}. */
+    private void countRecomputed(final DBBroker broker) {
+        if (broker.getIndexController().getWorkerByIndexId(LuceneIndex.ID) instanceof LuceneIndexWorker worker) {
+            worker.index.vectorRecomputed(fieldName, modelId);
         }
     }
 

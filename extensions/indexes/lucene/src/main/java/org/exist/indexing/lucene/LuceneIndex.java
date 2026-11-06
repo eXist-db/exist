@@ -52,6 +52,7 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Stream;
 
@@ -92,6 +93,15 @@ public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
 
     /** Whether the index on disk has entries in another format, see {@link #isRebuildRequired()}. */
     private boolean rebuildRequired = false;
+
+    /** The time between two reports of how many vectors a reindex of the database has embedded again. */
+    private static final long VECTOR_PROGRESS_INTERVAL = TimeUnit.MINUTES.toNanos(1);
+
+    /**
+     * The vectors embedded again by the reindex of the database that runs from {@link #remove()} to
+     * {@link #markRebuilt()}, such as the rebuild of an index in another format at startup; null outside it.
+     */
+    private volatile RecomputedVectors recomputedVectors = null;
     protected DirectoryTaxonomyWriter cachedTaxonomyWriter = null;
 
     protected SearcherTaxonomyManager searcherManager = null;
@@ -239,6 +249,7 @@ public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
 
     @Override
     public void remove() throws DBException {
+        recomputedVectors = new RecomputedVectors(System::nanoTime, VECTOR_PROGRESS_INTERVAL);
         close();
         Path dir = getDataDir().resolve(getDirName());
         try (Stream<Path> stream = Files.list(dir)) {
@@ -277,6 +288,12 @@ public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
 
     @Override
     public synchronized void markRebuilt() throws DBException {
+        final RecomputedVectors recomputed = recomputedVectors;
+        recomputedVectors = null;
+        if (recomputed != null && recomputed.total() > 0) {
+            LOG.info("Reindex: embedded the vectors of {} nodes again in {} ({})",
+                    recomputed.total(), recomputed.elapsed(), recomputed.byField());
+        }
         if (cachedWriter == null) {
             return;
         }
@@ -289,6 +306,27 @@ public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
             throw new DBException("Failed to record the format of the Lucene index: " + e.getMessage());
         }
         rebuildRequired = false;
+    }
+
+    /**
+     * Counts a node whose vector field embedding="local" or "http" a reindex of the database has embedded again, and
+     * logs the first node of each field and, every minute, the progress: embedding every node again can take hours.
+     *
+     * @param field the vector field
+     * @param model the embedding model of the field
+     */
+    void vectorRecomputed(final String field, final String model) {
+        final RecomputedVectors recomputed = recomputedVectors;
+        if (recomputed == null) {
+            return;
+        }
+        if (recomputed.add(field)) {
+            LOG.info("Reindex: embedding the vectors of field '{}' again with model {}, node by node", field, model);
+        }
+        if (recomputed.isProgressDue()) {
+            LOG.info("Reindex: embedded the vectors of {} nodes again in {} ({})",
+                    recomputed.total(), recomputed.elapsed(), recomputed.byField());
+        }
     }
 
     @Override
