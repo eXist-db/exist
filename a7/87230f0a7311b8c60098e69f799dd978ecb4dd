@@ -1,0 +1,24 @@
+extensions/indexes/lucene/src/test/xquery/lucene/vector-search.xqm
+  s_cda7b57354762d::t_12f711b7506db1 776,797,808
+extensions/indexes/lucene/src/test/xquery/lucene/vector-embed.xqm
+  s_cda7b57354762d::t_6cf691151d426e 64,90,93
+  s_cda7b57354762d::t_0a381f208394cc 61
+extensions/indexes/lucene/src/test/xquery/lucene/ft-query-forms.xqm
+  s_cda7b57354762d::t_719eb078311a82 211,221
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "a787230f0a7311b8c60098e69f799dd978ecb4dd",
+  "prompts": {},
+  "sessions": {
+    "s_cda7b57354762d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "9b56b1e3-1c21-445f-b4ef-9451f54523c2",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
