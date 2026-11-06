@@ -45,6 +45,13 @@ public final class UrlConnections {
     private static final Logger LOG = LogManager.getLogger(UrlConnections.class);
 
     /**
+     * No connect or read timeout. Same meaning as {@code 0} on
+     * {@link URLConnection#setConnectTimeout(int)} / {@link URLConnection#setReadTimeout(int)}:
+     * wait indefinitely. Matches {@code url-connect-timeout} / {@code url-read-timeout} in conf.xml.
+     */
+    public static final int NO_TIMEOUT = 0;
+
+    /**
      * Default connect timeout in milliseconds.
      */
     public static final int DEFAULT_CONNECT_TIMEOUT = 10_000;
@@ -57,8 +64,9 @@ public final class UrlConnections {
     }
 
     /**
-     * Connect and read timeouts in milliseconds, 0 means no timeout. The read timeout is the
-     * longest wait for data between two reads, not a limit on the whole transfer.
+     * Connect and read timeouts in milliseconds. {@link UrlConnections#NO_TIMEOUT} means no
+     * timeout. The read timeout is the longest wait for data between two reads, not a limit on
+     * the whole transfer.
      *
      * @param connect the connect timeout
      * @param read the read timeout

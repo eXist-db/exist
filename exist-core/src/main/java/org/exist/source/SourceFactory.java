@@ -185,7 +185,13 @@ public class SourceFactory {
     }
 
     private static URLSource urlSource(@Nullable final DBBroker broker, final URL url) {
-        return new URLSource(url, UrlConnections.Timeouts.from(broker == null ? null : broker.getConfiguration()));
+        final UrlConnections.Timeouts timeouts;
+        if (broker == null) {
+            timeouts = UrlConnections.Timeouts.DEFAULT;
+        } else {
+            timeouts = UrlConnections.Timeouts.from(broker.getConfiguration());
+        }
+        return new URLSource(url, timeouts);
     }
 
     private static String firstPathSegment(final String path) {
