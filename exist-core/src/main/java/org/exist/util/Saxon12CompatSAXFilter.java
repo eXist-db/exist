@@ -84,8 +84,20 @@ public class Saxon12CompatSAXFilter extends XMLFilterImpl implements LexicalHand
     private final Map<String, Integer> suppressedPrefixMappings = new HashMap<>();
 
     public Saxon12CompatSAXFilter(final ContentHandler delegate) {
-        setContentHandler(delegate);
+        super.setContentHandler(delegate);
         this.lexicalDelegate = delegate instanceof LexicalHandler lh ? lh : null;
+    }
+
+    /**
+     * The delegate is fixed at construction: {@link #lexicalDelegate} is derived from it
+     * once, so swapping the content handler afterwards would send content and lexical
+     * events to different handlers.
+     *
+     * @throws UnsupportedOperationException always
+     */
+    @Override
+    public void setContentHandler(final ContentHandler handler) {
+        throw new UnsupportedOperationException("Saxon12CompatSAXFilter's delegate is fixed at construction");
     }
 
     @Override
