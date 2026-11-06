@@ -41,6 +41,7 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
+import org.w3c.dom.DOMException;
 import org.w3c.dom.Node;
 
 /**
@@ -149,7 +150,7 @@ public class Rename extends Modification {
                 
                 //commit the transaction
                 transaction.commit();
-            } catch (final PermissionDeniedException | EXistException | LockException | TriggerException e) {
+            } catch (final PermissionDeniedException | EXistException | LockException | TriggerException | DOMException e) {
                 throw new XPathException(this, e.getMessage(), e);
             } finally {
                 unlockDocuments();
