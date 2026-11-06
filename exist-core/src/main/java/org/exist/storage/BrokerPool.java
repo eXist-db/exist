@@ -1207,6 +1207,45 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
      */
     //TODO : rename as getBroker ? getInstance (when refactored) ?
     public DBBroker get(final Optional<Subject> subject) throws EXistException {
+        return get(subject, null);
+    }
+
+    /**
+     * Returns an active broker for a service which is stopping.
+     *
+     * Behaves like {@link #getBroker()}, except that a registered service whose
+     * {@link BrokerPoolService#stopMultiUser(BrokerPool)} has not yet returned is still served
+     * while the pool is in the process of leaving multi-user mode.
+     *
+     * The service is served until its own stop has returned, also while the stop of another
+     * service is running. Like any other caller it waits when all brokers are in use, so a
+     * service that waits for such a caller in its {@code stopMultiUser} should bound that wait.
+     * The pool itself gives up on such a caller when no broker has become available for
+     * {@link #PROPERTY_SHUTDOWN_DELAY} (the time the pool waits for active brokers when
+     * shutting down) once the shutdown has begun; a non-positive value disables this.
+     *
+     * @param service the registered service on whose behalf the broker is requested
+     * @return The broker
+     * @throws EXistException If the instance is not available (stopped or not configured)
+     */
+    public DBBroker getBrokerForService(final BrokerPoolService service) throws EXistException {
+        Objects.requireNonNull(service, "service cannot be null");
+        return get(Optional.empty(), service);
+    }
+
+    /**
+     * Whether a caller on behalf of the given service (null for none) must be refused a broker
+     * because the pool is shutting down.
+     */
+    private boolean refusesBroker(final BrokerPoolService service) {
+        final State s = status.getCurrentState();
+        if (s == State.SHUTTING_DOWN_MULTI_USER_MODE && service != null) {
+            return !servicesManager.awaitsStopMultiUser(service);
+        }
+        return isShuttingDownOrDown();
+    }
+
+    private DBBroker get(final Optional<Subject> subject, final BrokerPoolService service) throws EXistException {
         Objects.requireNonNull(subject, "Subject cannot be null, use BrokerPool#getBroker() instead");
 
         if(!isInstanceConfigured()) {
@@ -1257,7 +1296,7 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
         synchronized(this) {
             //Are there any available brokers ?
             if(inactiveBrokers.isEmpty()) {
-                if(isShuttingDownOrDown()) {
+                if(refusesBroker(service)) {
                     throw new EXistException("BrokerPool is not operational (state: " + status.getCurrentState().name() + ")");
                 }
                 //There are no available brokers. If allowed...
@@ -1265,11 +1304,23 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
                 //... create one
                 {
                     createBroker();
-                } else
+                } else {
                     //... or wait until there is one available
+                    long shuttingDownSince = -1;
                     while(inactiveBrokers.isEmpty()) {
-                        if(isShuttingDownOrDown()) {
+                        if(refusesBroker(service)) {
                             throw new EXistException("BrokerPool is shutting down");
+                        }
+                        // a service admitted during its stop does not wait longer than the pool
+                        // itself waits for brokers during shutdown
+                        if(service != null && maxShutdownWait > 0 && isShuttingDown()) {
+                            final long now = System.currentTimeMillis();
+                            if(shuttingDownSince < 0) {
+                                shuttingDownSince = now;
+                            } else if(now - shuttingDownSince > maxShutdownWait) {
+                                throw new EXistException("BrokerPool is shutting down: no broker became available "
+                                        + "to the service within " + maxShutdownWait + "ms");
+                            }
                         }
                         LOG.debug("waiting for a broker to become available");
                         try {
@@ -1279,6 +1330,7 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
                             throw new EXistException("Interrupted while waiting for a broker", e);
                         }
                     }
+                }
             }
             broker = inactiveBrokers.pop();
             broker.prepare();
