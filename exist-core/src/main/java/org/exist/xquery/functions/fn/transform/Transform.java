@@ -44,12 +44,12 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.xml.transform.ErrorListener;
 import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.dom.DOMSource;
 import java.net.URI;
-import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -113,25 +113,7 @@ public class Transform {
 
         if (options.xsltVersion.equals(V1_0) || options.xsltVersion.equals(V2_0) || options.xsltVersion.equals(V3_0)) {
             try {
-                final Holder<XPathException> compileException = new Holder<>();
-                final XsltExecutable xsltExecutable;
-                if (options.shouldCache.orElse(BooleanValue.TRUE).getValue()) {
-                    xsltExecutable = Transform.XSLT_EXECUTABLE_CACHE.get(executableHash(options), key -> {
-                        try {
-                            return compileExecutable(options);
-                        } catch (final XPathException e) {
-                            compileException.value = e;
-                            return null;
-                        }
-                    });
-                } else {
-                    xsltExecutable = compileExecutable(options);
-                }
-
-                if (compileException.value != null) {
-                    // if we could not compile the xslt, rethrow the error
-                    throw compileException.value;
-                }
+                final XsltExecutable xsltExecutable = getExecutable(options);
                 if (xsltExecutable == null) {
                     throw new XPathException(fnTransform, ErrorCodes.FOXT0003, "Unable to compile stylesheet (No error returned from compilation)");
                 }
@@ -313,26 +295,39 @@ public class Transform {
      * @param options options to read
      * @return a string, the hash we want
      */
-    private String executableHash(final Options options) {
-
-        final String uniquifier;
-        if (options.resolvedStylesheetBaseURI.isPresent() || options.sourceTextChecksum.isPresent()) {
-            uniquifier = "";
-        } else {
-            uniquifier = LocalDateTime.now().toString();
+    /**
+     * The compiled stylesheet, from the cache if caching is requested and the stylesheet can be identified.
+     *
+     * @return the compiled stylesheet, or null if compilation returned none
+     * @throws XPathException if the stylesheet could not be compiled
+     */
+    private @Nullable XsltExecutable getExecutable(final Options options) throws XPathException {
+        if (!options.shouldCache.orElse(BooleanValue.TRUE).getValue() || options.stylesheetCacheKey.isEmpty()) {
+            return compileExecutable(options);
         }
+
+        final Holder<XPathException> compileException = new Holder<>();
+        final XsltExecutable xsltExecutable = Transform.XSLT_EXECUTABLE_CACHE.get(executableHash(options), key -> {
+            try {
+                return compileExecutable(options);
+            } catch (final XPathException e) {
+                compileException.value = e;
+                return null;
+            }
+        });
+        if (compileException.value != null) {
+            // if we could not compile the xslt, rethrow the error
+            throw compileException.value;
+        }
+        return xsltExecutable;
+    }
+
+    private String executableHash(final Options options) {
         final String paramHash = Tuple(
                 options.stylesheetParams,
                 options.staticParams).toString();
 
-        final String locationHash = Tuple(
-                options.resolvedStylesheetBaseURI.map(AnyURIValue::getStringValue).orElse(""),
-                options.sourceTextChecksum.orElse(0L),
-                uniquifier,
-                options.stylesheetNodeDocumentPath,
-                options.stylesheetNodeDocumentPath).toString();
-
-        return Tuple(locationHash, paramHash).toString();
+        return Tuple(options.stylesheetCacheKey.orElseThrow(), paramHash).toString();
     }
 
     private class TemplateInvocation {

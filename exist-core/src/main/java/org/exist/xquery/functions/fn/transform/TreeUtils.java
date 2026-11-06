@@ -23,7 +23,6 @@
 package org.exist.xquery.functions.fn.transform;
 
 import net.sf.saxon.s9api.XdmNode;
-import org.exist.xquery.value.NodeValue;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -35,30 +34,6 @@ public class TreeUtils {
 
     private TreeUtils() {
         super();
-    }
-
-    static StringBuilder pathTo(final Node node) {
-        if (node instanceof Document document) {
-            return new StringBuilder().append(document.getDocumentURI());
-        }
-        final List<Node> priors = new ArrayList<>();
-        Node prev = node;
-        while (prev != null) {
-            priors.add(prev);
-            prev = prev.getPreviousSibling();
-        }
-        final Node parent = priors.getFirst().getParentNode();
-        final StringBuilder sb;
-        if (parent == null || parent instanceof Document) {
-            sb = new StringBuilder();
-        } else {
-            sb = pathTo(parent).append('/');
-        }
-        for (final Node prior : priors) {
-            sb.append(((NodeValue)prior).getQName()).append(';');
-        }
-
-        return sb;
     }
 
     static List<Integer> treeIndex(final Node node) {
