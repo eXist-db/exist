@@ -595,15 +595,15 @@ public class NewArrayNodeSet extends AbstractArrayNodeSet implements ExtNodeSet,
      * empty. Keeping the duplicate-suppression state per call confines it to the evaluation that
      * created it. See issue #6690.</p>
      *
-     * @param stamped the per-call record of stamps applied so far
+     * @param stamped the per-call record of stamps applied so far, or null if this call keeps none
      * @param idx the index into {@link #nodes} of the candidate node
      * @param reference the context node being matched against
      * @param contextId the context id of the current evaluation
      * @return true if the candidate should be skipped as a duplicate
      */
-    private boolean alreadyStampedInThisCall(final Map<Integer, Integer> stamped, final int idx,
+    private boolean alreadyStampedInThisCall(@Nullable final Map<Integer, Integer> stamped, final int idx,
             final NodeProxy reference, final int contextId) {
-        if (contextId == Expression.IGNORE_CONTEXT || reference.getContext() == null) {
+        if (stamped == null || contextId == Expression.IGNORE_CONTEXT || reference.getContext() == null) {
             return false;
         }
         final Integer previous = stamped.get(idx);
@@ -620,30 +620,33 @@ public class NewArrayNodeSet extends AbstractArrayNodeSet implements ExtNodeSet,
      * evaluation. Nothing is recorded when nothing is stamped: with {@code IGNORE_CONTEXT}, or with
      * {@code NO_CONTEXT_ID} when the reference has no context to copy.</p>
      *
-     * @param stamped the per-call record of stamps applied so far
+     * @param stamped the per-call record of stamps applied so far, or null if this call keeps none
      * @param idx the index into {@link #nodes} of the node to stamp
      * @param reference the context node
      * @param contextId the context id of the current evaluation
      */
-    private void stampContext(final Map<Integer, Integer> stamped, final int idx, final NodeProxy reference, final int contextId) {
+    private void stampContext(@Nullable final Map<Integer, Integer> stamped, final int idx, final NodeProxy reference, final int contextId) {
         if (Expression.IGNORE_CONTEXT == contextId) {
             return;
         }
         if (Expression.NO_CONTEXT_ID == contextId) {
             NodeProxy.propagatePredicateContextFrom(nodes[idx], reference, contextId);
-            if (reference.getContext() != null) {
+            if (stamped != null && reference.getContext() != null) {
                 stamped.put(idx, reference.getContext().getContextId());
             }
         } else {
             nodes[idx].addContextNode(contextId, reference);
-            stamped.put(idx, contextId);
+            if (stamped != null) {
+                stamped.put(idx, contextId);
+            }
         }
     }
 
     @Override
     public NodeSet selectPrecedingSiblings(final NodeSet contextSet, final int contextId) {
         sort();
-        final Map<Integer, Integer> stamped = new HashMap<>();
+        // only a call that stamps a context checks for duplicates
+        final Map<Integer, Integer> stamped = contextId == Expression.IGNORE_CONTEXT ? null : new HashMap<>();
         final NodeSet result = new NewArrayNodeSet();
         for(final NodeProxy reference : contextSet) {
             final NodeId parentId = reference.getNodeId().getParentId();
@@ -716,7 +719,8 @@ public class NewArrayNodeSet extends AbstractArrayNodeSet implements ExtNodeSet,
     @Override
     public NodeSet selectFollowingSiblings(final NodeSet contextSet, final int contextId) {
         sort();
-        final Map<Integer, Integer> stamped = new HashMap<>();
+        // only a call that stamps a context checks for duplicates
+        final Map<Integer, Integer> stamped = contextId == Expression.IGNORE_CONTEXT ? null : new HashMap<>();
         final NodeSet result = new NewArrayNodeSet();
         for(final NodeProxy reference : contextSet) {
             final NodeId parentId = reference.getNodeId().getParentId();
@@ -790,7 +794,9 @@ public class NewArrayNodeSet extends AbstractArrayNodeSet implements ExtNodeSet,
     @Override
     public NodeSet selectFollowing(final NodeSet pl, final int position, final int contextId) throws XPathException, UnsupportedOperationException {
         sort();
-        final Map<Integer, Integer> stamped = new HashMap<>();
+        // only a call with a context id of its own checks for duplicates
+        final Map<Integer, Integer> stamped = contextId == Expression.IGNORE_CONTEXT || contextId == Expression.NO_CONTEXT_ID
+                ? null : new HashMap<>();
         final NodeSet result = new NewArrayNodeSet();
         for(final NodeProxy reference : pl) {
             final int idx = findDoc(reference.getOwnerDocument());
@@ -840,7 +846,9 @@ public class NewArrayNodeSet extends AbstractArrayNodeSet implements ExtNodeSet,
             final int contextId) throws XPathException,
             UnsupportedOperationException {
         sort();
-        final Map<Integer, Integer> stamped = new HashMap<>();
+        // only a call with a context id of its own checks for duplicates
+        final Map<Integer, Integer> stamped = contextId == Expression.IGNORE_CONTEXT || contextId == Expression.NO_CONTEXT_ID
+                ? null : new HashMap<>();
         final NodeSet result = new NewArrayNodeSet();
         for(final NodeProxy reference : pl) {
             final int idx = findDoc(reference.getOwnerDocument());
