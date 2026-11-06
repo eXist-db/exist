@@ -7,6 +7,7 @@ on:
 
 permissions:
   contents: write
+  packages: read
 
 jobs:
   prethink:
@@ -40,6 +41,12 @@ jobs:
           mod config moderne edit https://app.moderne.io --token ${{ secrets.MODERNE_TOKEN }}
           mod config recipes jar install io.moderne.recipe:rewrite-prethink:LATEST
 
+      - name: Install eXist-db custom Prethink recipes
+        run: |
+          mod config recipes artifacts maven add https://maven.pkg.github.com/eXist-db/exist-moderne-recipes \
+            --user "${{ github.actor }}" --password "${{ secrets.GITHUB_TOKEN }}"
+          mod config recipes jar install org.exist.moderne:exist-moderne-recipes:1.0.0
+
       - uses: ./.github/actions/maven-github-settings
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -52,6 +59,31 @@ jobs:
 
       - name: Apply changes
         run: mod git apply . --last-recipe-run
+
+      - name: Run eXist-db dynamic-invocation coverage recipe
+        run: mod run . --recipe org.exist.moderne.XQueryDynamicInvocationCoverage --no-patch
+
+      - name: Merge dynamic-invocation coverage into Prethink context
+        run: |
+          RUN_DIR=$(ls -td .moderne/run/*/ | head -1)
+          python3 - "${RUN_DIR}datatables/org.exist.moderne.XQueryDynamicInvocationCoverageTable.csv.gz" <<'EOF'
+          import csv
+          import gzip
+          import sys
+
+          with gzip.open(sys.argv[1], "rt", newline="") as f:
+              data_lines = [l for l in f if not l.startswith("# ")]
+
+          reader = csv.reader(data_lines)
+          next(reader)  # repositoryOrigin,repositoryPath,repositoryBranch,sourcePath,className,localName,dynamicallyInvokedInTests,matchingTestPaths
+          rows = [row[3:] for row in reader]
+
+          with open(".moderne/context/xquery-dynamic-invocation-coverage.csv", "w", newline="") as f:
+              writer = csv.writer(f, lineterminator="\n")
+              writer.writerow(["Source path", "Class name", "QName local name",
+                                "Dynamically invoked in tests", "Matching test paths"])
+              writer.writerows(rows)
+          EOF
 
       - name: Commit and push
         run: |
