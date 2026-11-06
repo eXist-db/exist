@@ -21,6 +21,7 @@
  */
 package org.exist.launcher;
 
+import org.exist.ExistSystemProperties;
 import org.exist.jetty.JettyStart;
 import org.exist.jetty.JettyStartListener;
 import org.exist.storage.BrokerPool;
@@ -32,8 +33,6 @@ import java.io.Serial;
 import java.net.URL;
 import java.util.Observable;
 import java.util.Observer;
-
-import org.exist.SystemProperties;
 
 /**
  * Display a splash screen showing the eXist-db logo and a status line.
@@ -69,11 +68,11 @@ public class SplashScreen extends JFrame implements JettyStartListener, Observer
         getContentPane().add(imageLabel, BorderLayout.NORTH);
 
         // version label
-        final SystemProperties sysProps = SystemProperties.getInstance();
+        final ExistSystemProperties sysProps = ExistSystemProperties.getInstance();
         final StringBuilder builder = new StringBuilder();
 	    builder.append("Version ");
-        builder.append(sysProps.getSystemProperty("product-version", "unknown"));
-        final String gitCommit = sysProps.getSystemProperty("git-commit");
+        builder.append(sysProps.getExistSystemProperty(ExistSystemProperties.PROP_PRODUCT_VERSION, "unknown"));
+        final String gitCommit = sysProps.getExistSystemProperty(ExistSystemProperties.PROP_GIT_COMMIT);
         if (gitCommit != null && !gitCommit.isEmpty()) {
             builder.append(" (");
             builder.append(gitCommit, 0, Math.min(7, gitCommit.length()));
