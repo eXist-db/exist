@@ -1,0 +1,29 @@
+exist-architecture-tests/AGENTS.md
+  s_a5cd43af656534::t_da41fa5e3ec0b5 10-11
+exist-architecture-tests/src/test/java/org/exist/architecture/ArchitectureTest.java
+  s_a5cd43af656534::t_ae174f46534bb2 42-44
+exist-architecture-tests/src/test/java/org/exist/architecture/LocaleRules.java
+  s_a5cd43af656534::t_c114d605e7c9e1 1-71
+exist-architecture-tests/src/test/resources/archunit_store/2e0cab44-2e6d-4d27-96be-3a6e40c11ed6
+  s_a5cd43af656534::t_951786a8073928 1-30
+exist-architecture-tests/src/test/resources/archunit_store/aabc546a-557a-4f31-b9ac-1dbd42db509d
+  s_a5cd43af656534::t_ac30b3d2364dee 1-38
+exist-architecture-tests/src/test/resources/archunit_store/stored.rules
+  s_a5cd43af656534::t_434dfb49a52abc 2-3,6
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "08e1488f4d10e3daa2c5c4efc506e1468ddce718",
+  "prompts": {},
+  "sessions": {
+    "s_a5cd43af656534": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "0c27615c-f7ee-4d9b-a125-a7e63f4914bc",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
