@@ -1,0 +1,33 @@
+exist-core/src/main/java/org/exist/storage/BrokerPool.java
+  s_423afd188df03d::t_a53cbeaac9f661 2038-2042
+  s_423afd188df03d::t_0b054b1fcd11a8 2044,2050-2051
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/LuceneVectorFieldConfig.java
+  s_423afd188df03d::t_d9e381d8c99de7 424,428-436
+  s_423afd188df03d::t_8da2b337d8652c 422-423
+  s_423afd188df03d::t_92a2927321cbf9 105-109
+  s_423afd188df03d::t_7a6ebff490b67e 56-57
+  s_423afd188df03d::t_cc965a4e230a13 399,409,425-427
+  s_423afd188df03d::t_dc4fdd48209bf8 104
+  s_423afd188df03d::t_341b2239f55f1d 421
+exist-core/src/main/java/org/exist/indexing/IndexManager.java
+  s_423afd188df03d::t_a8ace3b2137059 72-76,84-93,96,98
+  s_423afd188df03d::t_fc540c430dda1d 71,94-95,97,99-106
+  s_423afd188df03d::t_955b5badbc7655 41
+  s_423afd188df03d::t_a7d3fea6acfcb4 107
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "13ad59ce7fec71ada8d51e18d2f39555ee4ad071",
+  "prompts": {},
+  "sessions": {
+    "s_423afd188df03d": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "e2edcafa-3c62-4825-b6bc-2030158e3989",
+        "model": "default"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
