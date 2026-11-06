@@ -29,6 +29,7 @@ import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Enumeration;
+import java.util.Locale;
 import java.util.regex.Pattern;
 import jakarta.activation.MimeType;
 import jakarta.activation.MimeTypeParameterList;
@@ -281,7 +282,7 @@ public class MessageFunctions extends BasicFunction {
 
     private String formatDate(Date date) {
         String formatted = "";
-        SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT);
+        SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT, Locale.ROOT);
         String temp = sdf.format(date);
         formatted = temp.substring(0, temp.length() - 2) + ":" + temp.substring(temp.length() - 2);
         return (formatted);

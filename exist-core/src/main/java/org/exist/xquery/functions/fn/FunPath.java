@@ -164,7 +164,7 @@ public class FunPath extends BasicFunction {
                 // node siblings
                 final int textNodePosition = getNodePosition(node);
                 if (textNodePosition > 0) {
-                    value.append("/text()[%d]".formatted(textNodePosition));
+                    value.append("/text()[" + textNodePosition + "]");
                 }
                 break;
 
@@ -174,7 +174,7 @@ public class FunPath extends BasicFunction {
                 // its comment node siblings.
                 final int commentNodePosition = getNodePosition(node);
                 if (commentNodePosition > 0) {
-                    value.append("/comment()[%d]".formatted(commentNodePosition));
+                    value.append("/comment()[" + commentNodePosition + "]");
                 }
                 break;
 
@@ -185,7 +185,7 @@ public class FunPath extends BasicFunction {
                 // like-named processing-instruction node siblings.
                 int processingInstructionNodePosition = getNodePosition(node);
                 if (processingInstructionNodePosition > 0) {
-                    value.append("/processing-instruction(%s)[%d]".formatted(node.getNodeName(), processingInstructionNodePosition));
+                    value.append("/processing-instruction(" + node.getNodeName() + ")[" + processingInstructionNodePosition + "]");
                 }
                 break;
 
@@ -213,7 +213,7 @@ public class FunPath extends BasicFunction {
                     value.append((node.getOwnerDocument() != null && node.getOwnerDocument().getDocumentElement() != null) ? "/Q" : "Q");
                     value.append(((INode) node).getQName().toURIQualifiedName());
                     if (nodePosition > 0) {
-                        value.append("[%d]".formatted(nodePosition));
+                        value.append("[" + nodePosition + "]");
                     }
                 }
                 break;

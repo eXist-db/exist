@@ -117,8 +117,8 @@ public class Xsd11StoreTimeValidationTest {
     private static final String INSTANCE_TEMPLATE = """
             <root xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" \
             xsi:noNamespaceSchemaLocation="%s">
-                <value1>%d</value1>
-                <value2>%d</value2>
+                <value1>%s</value1>
+                <value2>%s</value2>
             </root>
             """;
 
@@ -127,8 +127,8 @@ public class Xsd11StoreTimeValidationTest {
     private static final String INSTANCE_WITH_COMMENT_AND_CDATA_TEMPLATE = """
             <root xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" \
             xsi:noNamespaceSchemaLocation="%s"><!--%s\
-            --><value1><![CDATA[%d]]></value1>
-                <value2>%d</value2>
+            --><value1><![CDATA[%s]]></value1>
+                <value2>%s</value2>
             </root>
             """;
 

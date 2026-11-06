@@ -41,13 +41,14 @@ import java.util.Properties;
 import java.util.zip.Deflater;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+import java.util.Locale;
 
 public class DataBackup implements SystemTask {
 
     private final static Logger LOG = LogManager.getLogger(DataBackup.class);
 
     public static final String DATE_FORMAT_PICTURE = "yyyyMMddHHmmssS";
-    private final SimpleDateFormat creationDateFormat = new SimpleDateFormat(DATE_FORMAT_PICTURE);
+    private final SimpleDateFormat creationDateFormat = new SimpleDateFormat(DATE_FORMAT_PICTURE, Locale.ROOT);
 
 	private Path dest;
 	private Optional<Path> lastBackup = Optional.empty();

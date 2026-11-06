@@ -41,6 +41,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import java.util.Properties;
+import java.util.Locale;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -159,7 +160,7 @@ public class ConfigurationUtility {
     }
 
     private static Path backupOriginal(final Path propFile) throws IOException {
-        final SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
+        final SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss", Locale.ROOT);
         final String bakFileName = FileUtils.fileName(propFile) + ".orig." + sdf.format(Calendar.getInstance().getTime());
         final Path bakFile = propFile.resolveSibling(bakFileName);
         Files.copy(propFile, bakFile);

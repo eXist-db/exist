@@ -107,7 +107,7 @@ class FtQueryUpdateNotificationTest {
                 declare function local:hits($term as xs:string) {
                     count(collection('/db/%s')//p[ft:query(., $term)])
                 };
-                for $round in 1 to %d
+                for $round in 1 to %s
                 for $term in (%s)
                 let $n := local:hits($term)
                 where $n ne 1

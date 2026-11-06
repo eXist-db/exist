@@ -78,6 +78,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.Locale;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -107,8 +108,6 @@ public class SystemExport {
     public final static String CONFIG_FILTERS = "backup.serialization.filters";
 
     private static final int currVersion = 1;
-
-    private final SimpleDateFormat creationDateFormat = new SimpleDateFormat(DataBackup.DATE_FORMAT_PICTURE);
 
     private int collectionCount = -1;
 
@@ -729,7 +728,7 @@ public class SystemExport {
      * @return the unique path.
      */
     public static Path getUniqueFile(final String base, final String extension, final String dir) {
-        final SimpleDateFormat creationDateFormat = new SimpleDateFormat(DataBackup.DATE_FORMAT_PICTURE);
+        final SimpleDateFormat creationDateFormat = new SimpleDateFormat(DataBackup.DATE_FORMAT_PICTURE, Locale.ROOT);
         final String filename = base + '-' + creationDateFormat.format(Calendar.getInstance().getTime());
         Path file = Path.of(dir, filename + extension);
         int version = 0;
