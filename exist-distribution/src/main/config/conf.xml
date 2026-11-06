@@ -58,7 +58,7 @@
         - http://exist-db.org/exist/apps/doc/documentation.xml
 
 -->
-<exist xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../schema/conf.xsd" schemaVersion="2.9.1">
+<exist xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../schema/conf.xsd" schemaVersion="2.10.0">
 
     <!-- 
         Configures the database backend.
@@ -955,11 +955,24 @@
                 instead. This is a legacy option for applications that test for
                 the existence of a resource with doc() or collection(); use
                 doc-available() or xmldb:collection-available() instead.
+            - resolve-namespace-as-url
+                Set to "yes" to let a module import without a location hint,
+                which is neither in the EXPath repository nor statically mapped,
+                fetch the module namespace URI itself over the network.
+                Set to "no" to raise XQST0059 without network access.
+            - url-connect-timeout
+                Connect timeout in milliseconds when reading a module, document
+                or text from a URL. 0 means no timeout.
+            - url-read-timeout
+                Read timeout in milliseconds when reading from a URL: the
+                longest wait for data between two reads. 0 means no timeout.
     -->
     <xquery enable-java-binding="no" disable-deprecated-functions="no"
             enable-query-rewriting="yes" backwardCompatible="no" 
             enforce-index-use="strict"
-            raise-error-on-failed-retrieval="yes">
+            raise-error-on-failed-retrieval="yes"
+            resolve-namespace-as-url="no"
+            url-connect-timeout="10000" url-read-timeout="30000">
         
         <builtin-modules>
 
