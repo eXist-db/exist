@@ -584,9 +584,69 @@ public class NewArrayNodeSet extends AbstractArrayNodeSet implements ExtNodeSet,
         }
     }
 
+    /**
+     * Whether this call has already stamped {@code nodes[idx]} with a context bearing the same
+     * context id as {@code reference}'s.
+     *
+     * <p>This replaces reading the stamp back off the {@code NodeProxy}. The proxies in this set
+     * are shared with {@code LocationStep}'s cached structural-index result, which is held for a
+     * whole query execution, so a stamp read from the proxy could have been left by a *previous*
+     * evaluation of the same step — in which case every node was suppressed and the step returned
+     * empty. Keeping the duplicate-suppression state per call confines it to the evaluation that
+     * created it. See issue #6690.</p>
+     *
+     * @param stamped the per-call record of stamps applied so far, or null if this call keeps none
+     * @param idx the index into {@link #nodes} of the candidate node
+     * @param reference the context node being matched against
+     * @param contextId the context id of the current evaluation
+     * @return true if the candidate should be skipped as a duplicate
+     */
+    private boolean alreadyStampedInThisCall(@Nullable final Map<Integer, Integer> stamped, final int idx,
+            final NodeProxy reference, final int contextId) {
+        if (stamped == null || contextId == Expression.IGNORE_CONTEXT || reference.getContext() == null) {
+            return false;
+        }
+        final Integer previous = stamped.get(idx);
+        return previous != null && previous == reference.getContext().getContextId();
+    }
+
+    /**
+     * Stamps {@code nodes[idx]} with {@code reference} as its context for this evaluation, and records
+     * the context id this call stamped it with, so that a later reference in the same call sees it as a
+     * duplicate.
+     *
+     * <p>The id recorded is the one applied here, not read back off the proxy: {@code addContextNode}
+     * appends to the proxy's context chain, so its head may still be a context left by an earlier
+     * evaluation. Nothing is recorded when nothing is stamped: with {@code IGNORE_CONTEXT}, or with
+     * {@code NO_CONTEXT_ID} when the reference has no context to copy.</p>
+     *
+     * @param stamped the per-call record of stamps applied so far, or null if this call keeps none
+     * @param idx the index into {@link #nodes} of the node to stamp
+     * @param reference the context node
+     * @param contextId the context id of the current evaluation
+     */
+    private void stampContext(@Nullable final Map<Integer, Integer> stamped, final int idx, final NodeProxy reference, final int contextId) {
+        if (Expression.IGNORE_CONTEXT == contextId) {
+            return;
+        }
+        if (Expression.NO_CONTEXT_ID == contextId) {
+            NodeProxy.propagatePredicateContextFrom(nodes[idx], reference, contextId);
+            if (stamped != null && reference.getContext() != null) {
+                stamped.put(idx, reference.getContext().getContextId());
+            }
+        } else {
+            nodes[idx].addContextNode(contextId, reference);
+            if (stamped != null) {
+                stamped.put(idx, contextId);
+            }
+        }
+    }
+
     @Override
     public NodeSet selectPrecedingSiblings(final NodeSet contextSet, final int contextId) {
         sort();
+        // only a call that stamps a context checks for duplicates
+        final Map<Integer, Integer> stamped = contextId == Expression.IGNORE_CONTEXT ? null : new HashMap<>();
         final NodeSet result = new NewArrayNodeSet();
         for(final NodeProxy reference : contextSet) {
             final NodeId parentId = reference.getNodeId().getParentId();
@@ -637,20 +697,11 @@ public class NewArrayNodeSet extends AbstractArrayNodeSet implements ExtNodeSet,
                     break;
                 }
                 if(currentId.getTreeLevel() == refId.getTreeLevel() && currentId.compareTo(refId) < 0) {
-                    if (contextId != Expression.IGNORE_CONTEXT
-                            && nodes[i].getContext() != null
-                            && reference.getContext() != null
-                            && nodes[i].getContext().getContextId() == reference.getContext().getContextId()) {
+                    if (alreadyStampedInThisCall(stamped, i, reference, contextId)) {
                         continue;
                     }
 
-                    if(Expression.IGNORE_CONTEXT != contextId) {
-                        if(Expression.NO_CONTEXT_ID == contextId) {
-                            NodeProxy.propagatePredicateContextFrom(nodes[i], reference, contextId);
-                        } else {
-                            nodes[i].addContextNode(contextId, reference);
-                        }
-                    }
+                    stampContext(stamped, i, reference, contextId);
                     result.add(nodes[i]);
                 }
             }
@@ -668,6 +719,8 @@ public class NewArrayNodeSet extends AbstractArrayNodeSet implements ExtNodeSet,
     @Override
     public NodeSet selectFollowingSiblings(final NodeSet contextSet, final int contextId) {
         sort();
+        // only a call that stamps a context checks for duplicates
+        final Map<Integer, Integer> stamped = contextId == Expression.IGNORE_CONTEXT ? null : new HashMap<>();
         final NodeSet result = new NewArrayNodeSet();
         for(final NodeProxy reference : contextSet) {
             final NodeId parentId = reference.getNodeId().getParentId();
@@ -721,20 +774,11 @@ public class NewArrayNodeSet extends AbstractArrayNodeSet implements ExtNodeSet,
                 }
                 enteredSubtree = true;
                 if(currentId.getTreeLevel() == refId.getTreeLevel() && currentId.compareTo(refId) > 0) {
-                    if (contextId != Expression.IGNORE_CONTEXT
-                            && nodes[i].getContext() != null
-                            && reference.getContext() != null
-                            && nodes[i].getContext().getContextId() == reference.getContext().getContextId()) {
+                    if (alreadyStampedInThisCall(stamped, i, reference, contextId)) {
                         continue;
                     }
 
-                    if(Expression.IGNORE_CONTEXT != contextId) {
-                        if(Expression.NO_CONTEXT_ID == contextId) {
-                            NodeProxy.propagatePredicateContextFrom(nodes[i], reference, contextId);
-                        } else {
-                            nodes[i].addContextNode(contextId, reference);
-                        }
-                    }
+                    stampContext(stamped, i, reference, contextId);
                     result.add(nodes[i]);
                 }
             }
@@ -750,6 +794,9 @@ public class NewArrayNodeSet extends AbstractArrayNodeSet implements ExtNodeSet,
     @Override
     public NodeSet selectFollowing(final NodeSet pl, final int position, final int contextId) throws XPathException, UnsupportedOperationException {
         sort();
+        // only a call with a context id of its own checks for duplicates
+        final Map<Integer, Integer> stamped = contextId == Expression.IGNORE_CONTEXT || contextId == Expression.NO_CONTEXT_ID
+                ? null : new HashMap<>();
         final NodeSet result = new NewArrayNodeSet();
         for(final NodeProxy reference : pl) {
             final int idx = findDoc(reference.getOwnerDocument());
@@ -771,21 +818,12 @@ public class NewArrayNodeSet extends AbstractArrayNodeSet implements ExtNodeSet,
                 }
                 if(!reference.getNodeId().isDescendantOf(nodes[j].getNodeId())) {
                     if(position < 0 || ++n == position) {
-                        if (contextId != Expression.IGNORE_CONTEXT
-                                && contextId != Expression.NO_CONTEXT_ID
-                                && nodes[j].getContext() != null
-                                && reference.getContext() != null
-                                && nodes[j].getContext().getContextId() == reference.getContext().getContextId()) {
+                        if (contextId != Expression.NO_CONTEXT_ID
+                                && alreadyStampedInThisCall(stamped, j, reference, contextId)) {
                             continue;
                         }
 
-                        if(Expression.IGNORE_CONTEXT != contextId) {
-                            if(Expression.NO_CONTEXT_ID == contextId) {
-                                NodeProxy.propagatePredicateContextFrom(nodes[j], reference, contextId);
-                            } else {
-                                nodes[j].addContextNode(contextId, reference);
-                            }
-                        }
+                        stampContext(stamped, j, reference, contextId);
                         result.add(nodes[j]);
                     }
                     if(n == position) {
@@ -808,6 +846,9 @@ public class NewArrayNodeSet extends AbstractArrayNodeSet implements ExtNodeSet,
             final int contextId) throws XPathException,
             UnsupportedOperationException {
         sort();
+        // only a call with a context id of its own checks for duplicates
+        final Map<Integer, Integer> stamped = contextId == Expression.IGNORE_CONTEXT || contextId == Expression.NO_CONTEXT_ID
+                ? null : new HashMap<>();
         final NodeSet result = new NewArrayNodeSet();
         for(final NodeProxy reference : pl) {
             final int idx = findDoc(reference.getOwnerDocument());
@@ -826,21 +867,12 @@ public class NewArrayNodeSet extends AbstractArrayNodeSet implements ExtNodeSet,
             for(int j = i; j >= documentNodesOffset[idx]; j--) {
                 if(!reference.getNodeId().isDescendantOf(nodes[j].getNodeId())) {
                     if(position < 0 || ++n == position) {
-                        if (contextId != Expression.IGNORE_CONTEXT
-                                && contextId != Expression.NO_CONTEXT_ID
-                                && nodes[j].getContext() != null
-                                && reference.getContext() != null
-                                && nodes[j].getContext().getContextId() == reference.getContext().getContextId()) {
+                        if (contextId != Expression.NO_CONTEXT_ID
+                                && alreadyStampedInThisCall(stamped, j, reference, contextId)) {
                             continue;
                         }
 
-                        if(Expression.IGNORE_CONTEXT != contextId) {
-                            if(Expression.NO_CONTEXT_ID == contextId) {
-                                NodeProxy.propagatePredicateContextFrom(nodes[j], reference, contextId);
-                            } else {
-                                nodes[j].addContextNode(contextId, reference);
-                            }
-                        }
+                        stampContext(stamped, j, reference, contextId);
                         result.add(nodes[j]);
                     }
                     if(n == position) {
