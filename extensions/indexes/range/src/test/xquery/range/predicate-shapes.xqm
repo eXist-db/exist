@@ -214,3 +214,38 @@ declare
 function rps:field-function-in-a-predicate-reports-basic() {
     collection($rps:COLLECTION)//other[range:field-eq("rps-field", "hit")]
 };
+
+(: an anchored fn:matches on the context item uses the index of the step it is on, as range:matches does.
+   See https://github.com/eXist-db/exist/issues/6983 :)
+declare
+    %test:assertEquals("1", "2")
+function rps:anchored-matches-of-self() {
+    sort(collection($rps:COLLECTION)//item[matches(., "^hit$")]/@n/string())
+};
+
+declare
+    %test:stats
+    %test:assertXPath("exists($result//stats:index[@type eq 'new-range'][@optimization-level eq 'OPTIMIZED'])")
+function rps:anchored-matches-of-self-reports-optimized() {
+    collection($rps:COLLECTION)//item[matches(., "^hit$")]
+};
+
+declare
+    %test:assertEquals("c1", "c2")
+function rps:anchored-matches-of-self-on-a-nested-step() {
+    sort(collection($rps:COLLECTION)//sec[matches(., "^hit$")]/@n/string())
+};
+
+declare
+    %test:assertEquals("1", "2")
+function rps:anchored-matches-of-self-with-flags() {
+    sort(collection($rps:COLLECTION)//item[matches(., "^HIT$", "i")]/@n/string())
+};
+
+(: an unanchored pattern stays with fn:matches, which evaluates itself :)
+declare
+    %test:stats
+    %test:assertXPath("empty($result//stats:index[@optimization-level eq 'OPTIMIZED'])")
+function rps:unanchored-matches-of-self-reports-basic() {
+    collection($rps:COLLECTION)//item[matches(., "hit")]
+};

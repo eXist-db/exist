@@ -87,7 +87,13 @@ public class RangeQueryRewriter extends QueryRewriter {
                     }
 
                     // check if inner steps are on an axis we can optimize
-                    if (innerExpr instanceof InternalFunctionCall fcall) {
+                    if (innerExpr instanceof InternalFunctionCall fcall
+                            && fcall.getFunction() instanceof org.exist.xquery.functions.fn.FunMatches
+                            && steps.size() == 1 && steps.getFirst().getAxis() == Constants.SELF_AXIS) {
+                        // fn:matches finds no name in "." and reports no axis; the lookup takes the name
+                        // from this step, as Lookup.analyze does, so the axis is this step's too
+                        axis = locationStep.getAxis();
+                    } else if (innerExpr instanceof InternalFunctionCall fcall) {
                         axis = ((Optimizable) fcall.getFunction()).getOptimizeAxis();
                     } else {
                         axis = ((Optimizable) innerExpr).getOptimizeAxis();
