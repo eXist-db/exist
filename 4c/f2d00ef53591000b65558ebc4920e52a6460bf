@@ -1,0 +1,19 @@
+exist-core/src/main/java/org/exist/indexing/IndexManager.java
+  s_423afd188df03d::t_03c2c5bb4291d5 294,297-300
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "4cf2d00ef53591000b65558ebc4920e52a6460bf",
+  "prompts": {},
+  "sessions": {
+    "s_423afd188df03d": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "e2edcafa-3c62-4825-b6bc-2030158e3989",
+        "model": "default"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
