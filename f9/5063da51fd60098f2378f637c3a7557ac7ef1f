@@ -1,0 +1,74 @@
+extensions/indexes/range/src/test/java/org/exist/indexing/range/IndexFormatRebuildTest.java
+  s_cda7b57354762d::t_161c0b5515a00f 292-293
+  s_cda7b57354762d::t_6d15cfe9ad35ce 1-290
+  s_cda7b57354762d::t_d5608b1e8d994e 291
+exist-core/src/main/java/org/exist/storage/BrokerPool.java
+  s_cda7b57354762d::t_5152fb531ca6bd 650-657,2020-2043
+  s_cda7b57354762d::t_bf23ad2be41b66 83,2044-2064
+exist-core/src/main/java/org/exist/storage/BrokerPoolConstants.java
+  s_cda7b57354762d::t_a8d0dd61ac4fed 85-90
+exist-core/src/main/java/org/exist/indexing/Index.java
+  s_cda7b57354762d::t_973b80c657a2e8 132-134,136,138,141
+  s_cda7b57354762d::t_2aa2d7f55028e3 120-131,135,137,140
+  s_cda7b57354762d::t_29d2df2ffe3c53 139
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/LuceneIndex.java
+  s_cda7b57354762d::t_aae2db2255d924 76-82,84,86-94,181,188-195,257-293
+  s_cda7b57354762d::t_096e49e0aa7d5a 163-170
+  s_cda7b57354762d::t_93e10febdf14ef 171-180
+  s_cda7b57354762d::t_9c9d3fe64e6725 83,85
+exist-core/src/main/java/org/exist/storage/NativeBroker.java
+  s_cda7b57354762d::t_e40d6995b88804 4035-4039
+exist-core/src/main/java/org/exist/indexing/IndexManager.java
+  s_cda7b57354762d::t_5561299cb791e7 291-293,295-296,301-302,323,325,327,332
+  s_cda7b57354762d::t_53bcd7b06e78f5 324,326,328-331,333
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/LuceneFieldNames.java
+  s_cda7b57354762d::t_8a68de479c0459 138-141
+  s_cda7b57354762d::t_eb4c237731a30a 1-120,123-137
+  s_cda7b57354762d::t_995b4e177fd3e4 121-122
+extensions/indexes/lucene/src/test/xquery/lucene/reserved-field-names.xqm
+  s_cda7b57354762d::t_310c4a5d3fab77 1-110
+extensions/indexes/range/src/main/java/org/exist/indexing/range/RangeIndexConfigField.java
+  s_cda7b57354762d::t_85bdef10b572bd 24,62
+extensions/indexes/lucene/src/test/java/org/exist/indexing/lucene/LuceneFieldNamesTest.java
+  s_cda7b57354762d::t_8088ee1be95881 1-107
+extensions/indexes/lucene/src/test/java/org/exist/indexing/lucene/LuceneBinaryFieldLookupTest.java
+  s_cda7b57354762d::t_9929f370991e46 195,211
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/LuceneMatchListener.java
+  s_cda7b57354762d::t_4823f33c2f2c85 287
+extensions/indexes/lucene/src/test/java/org/exist/indexing/lucene/LuceneIndexWorkerBatchSizeTest.java
+  s_cda7b57354762d::t_4002d8564f7161 71,73
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/LuceneVectorFieldConfig.java
+  s_cda7b57354762d::t_a8e94d63b021f1 120
+extensions/indexes/lucene/src/test/java/org/exist/indexing/lucene/LuceneIndexScanSparseDocValuesTest.java
+  s_cda7b57354762d::t_5a94aa349b9513 110,137,159
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/LuceneIndexWorker.java
+  s_cda7b57354762d::t_cb1a6474c02ffa 85-88,541,599,644,692,774,795,833,1091,1420,1728,1730,1836,2017-2019,2229,2283,2451,2455,2466,2474,2476,2484
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/InContextQuery.java
+  s_cda7b57354762d::t_a06ed3dca6bcf0 86-87
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/LuceneFieldConfig.java
+  s_cda7b57354762d::t_c38b80925a2583 88
+exist-core-jmh/src/main/java/org/exist/indexing/lucene/ReindexDeleteStrategyBenchmark.java
+  s_cda7b57354762d::t_81dfd3e205b271 91,237
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/LuceneIndexConfig.java
+  s_cda7b57354762d::t_f9ca984bbc5a63 107
+extensions/indexes/range/src/test/xquery/range/reserved-field-names.xqm
+  s_cda7b57354762d::t_b048bed2c31abf 1-119
+extensions/indexes/range/src/main/java/org/exist/indexing/range/RangeIndexWorker.java
+  s_cda7b57354762d::t_3ed580ee920b9a 51,77-81,595,644,746,922-924,1188
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "f95063da51fd60098f2378f637c3a7557ac7ef1f",
+  "prompts": {},
+  "sessions": {
+    "s_cda7b57354762d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "9b56b1e3-1c21-445f-b4ef-9451f54523c2",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}

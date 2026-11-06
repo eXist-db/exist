@@ -1,0 +1,31 @@
+extensions/indexes/lucene/src/test/java/org/exist/indexing/lucene/RecomputedVectorsTest.java
+  s_423afd188df03d::t_f73f1c9e2d0205 1-70
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/RecomputedVectors.java
+  s_423afd188df03d::t_a48b6d8de7e66a 1-102
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/LuceneVectorFieldConfig.java
+  s_423afd188df03d::t_0c84c42ab309ab 390-393
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/LuceneIndex.java
+  s_423afd188df03d::t_ff87dd5cda0220 252
+  s_423afd188df03d::t_1eb2795f9525f4 96-104
+  s_423afd188df03d::t_73413aa16701c9 55
+  s_423afd188df03d::t_53dc75e5750e66 291-296
+  s_423afd188df03d::t_0d90a50d5b55c6 311-331
+exist-core/src/main/java/org/exist/indexing/IndexManager.java
+  s_423afd188df03d::t_03c2c5bb4291d5 294,297-300
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "cdd11c14c1c5f56b02a4f181e43069c12d755758",
+  "prompts": {},
+  "sessions": {
+    "s_423afd188df03d": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "e2edcafa-3c62-4825-b6bc-2030158e3989",
+        "model": "default"
+      },
+      "human_author": null
+    }
+  }
+}
