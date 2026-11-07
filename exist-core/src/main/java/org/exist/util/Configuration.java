@@ -31,7 +31,7 @@ import org.exist.repo.Deployment;
 
 import org.exist.resolver.ResolverFactory;
 import org.exist.start.Main;
-import org.exist.source.URLSource;
+import org.exist.source.UrlConnections;
 import org.exist.storage.BrokerPoolConstants;
 import org.exist.storage.lock.LockManager;
 import org.exist.storage.lock.LockTable;
@@ -577,8 +577,8 @@ public class Configuration implements ErrorHandler {
         configureProperty(xquery, XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL_ATTRIBUTE, PROPERTY_XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL, Configuration::asBoolean, XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL_DEFAULT);
         configureProperty(xquery, PerformanceStats.CONFIG_ATTR_TRACE, PerformanceStats.CONFIG_PROPERTY_TRACE);
         configureProperty(xquery, RESOLVE_NAMESPACE_AS_URL_ATTRIBUTE, PROPERTY_RESOLVE_NAMESPACE_AS_URL, Configuration::asBoolean, RESOLVE_NAMESPACE_AS_URL_DEFAULT);
-        configureProperty(xquery, URL_CONNECT_TIMEOUT_ATTRIBUTE, PROPERTY_URL_CONNECT_TIMEOUT, Configuration::asNonNegativeInteger, URLSource.DEFAULT_CONNECT_TIMEOUT);
-        configureProperty(xquery, URL_READ_TIMEOUT_ATTRIBUTE, PROPERTY_URL_READ_TIMEOUT, Configuration::asNonNegativeInteger, URLSource.DEFAULT_READ_TIMEOUT);
+        configureProperty(xquery, URL_CONNECT_TIMEOUT_ATTRIBUTE, PROPERTY_URL_CONNECT_TIMEOUT, Configuration::asNonNegativeInteger, UrlConnections.DEFAULT_CONNECT_TIMEOUT);
+        configureProperty(xquery, URL_READ_TIMEOUT_ATTRIBUTE, PROPERTY_URL_READ_TIMEOUT, Configuration::asNonNegativeInteger, UrlConnections.DEFAULT_READ_TIMEOUT);
 
         // built-in-modules
         final Map<String, Class<?>> classMap = new HashMap<>();

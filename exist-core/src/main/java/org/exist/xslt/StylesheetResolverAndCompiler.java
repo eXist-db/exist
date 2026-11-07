@@ -40,6 +40,8 @@ import org.apache.logging.log4j.Logger;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.LockedDocument;
 import org.exist.security.PermissionDeniedException;
+import org.exist.source.UrlConnections;
+import org.exist.source.UrlConnections.Timeouts;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock.LockMode;
@@ -110,7 +112,7 @@ public class StylesheetResolverAndCompiler implements Stylesheet {
 
     } else {
       final URL url = new URL(uri);
-      final URLConnection connection = url.openConnection();
+      final URLConnection connection = UrlConnections.open(url, Timeouts.from(broker.getConfiguration()));
       long modified = connection.getLastModified();
       if (templates == null || modified > lastModified || modified == 0) {
         if (LOG.isDebugEnabled()) {

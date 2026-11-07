@@ -36,9 +36,12 @@ import org.exist.collections.MutableCollection;
 import org.exist.dom.QName;
 import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.dom.memtree.NodeImpl;
+import org.exist.source.UrlConnections;
+import org.exist.source.UrlConnections.Timeouts;
 import org.exist.storage.BrokerPool;
 import org.exist.util.Configuration;
 import org.exist.validation.GrammarPool;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -190,10 +193,7 @@ public class GrammarTooling extends BasicFunction  {
             for (final SequenceIterator i = args[0].iterate(); i.hasNext();) {
                 String url = i.nextItem().getStringValue();
                 
-                // Fix database urls
-                if(url.startsWith("/")){
-                    url="xmldb:exist://"+url;
-                }
+                url = XmldbURI.embeddedServerUrl(url);
 
                 LOG.debug("Parsing {}", url);
                 
@@ -201,7 +201,7 @@ public class GrammarTooling extends BasicFunction  {
                 try {
                     if(url.endsWith(".xsd")){
                         
-                        final InputStream is = new URL(url).openStream();
+                        final InputStream is = UrlConnections.openStream(new URL(url), Timeouts.from(config));
                         final XMLInputSource xis = new XMLInputSource(null, url, url, is, null);
                         final Grammar schema = parser.preparseGrammar(TYPE_XSD, xis);
                         is.close();
