@@ -68,9 +68,9 @@ class LuceneIndexWorkerBatchSizeTest {
         assertEquals(2, bq.clauses().size());
         assertEquals(BooleanClause.Occur.MUST, bq.clauses().getFirst().occur());
         assertEquals(BooleanClause.Occur.MUST, bq.clauses().get(1).occur());
-        assertTrue(bq.clauses().getFirst().query().toString().contains(LuceneIndexWorker.FIELD_DOC_ID_KEYWORD),
+        assertTrue(bq.clauses().getFirst().query().toString().contains(LuceneFieldNames.FIELD_DOC_ID_KEYWORD),
                 "Expected docIdKeyword delete path");
-        assertTrue(bq.clauses().get(1).query().toString().contains(LuceneUtil.FIELD_NODE_ID_DV),
+        assertTrue(bq.clauses().get(1).query().toString().contains(LuceneFieldNames.FIELD_NODE_ID_DV),
                 "Expected node-scoped delete guard");
     }
 }

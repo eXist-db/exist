@@ -82,6 +82,10 @@ import java.util.*;
 import java.util.Set;
 import java.util.stream.IntStream;
 
+import static org.exist.indexing.lucene.LuceneFieldNames.FIELD_DOC_ID;
+import static org.exist.indexing.lucene.LuceneFieldNames.FIELD_DOC_ID_KEYWORD;
+import static org.exist.indexing.lucene.LuceneFieldNames.FIELD_DOC_URI;
+
 
 /**
  * Class for handling all Lucene operations.
@@ -134,10 +138,6 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
     private int maxCachedNodesSize = 4096 * 1024;
     
-
-    public static final String FIELD_DOC_ID = "docId";
-    public static final String FIELD_DOC_ID_KEYWORD = "docIdKeyword";
-    public static final String FIELD_DOC_URI = "docUri";
 
     /** The fewest candidates a vector query considers by default, see {@link #vectorCandidates}. */
     static final int MIN_VECTOR_CANDIDATES = 100;
@@ -538,7 +538,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     private static Query nodeScopedDeleteQuery(final Query docIdQuery) {
         return new BooleanQuery.Builder()
                 .add(docIdQuery, BooleanClause.Occur.MUST)
-                .add(new FieldExistsQuery(LuceneUtil.FIELD_NODE_ID_DV), BooleanClause.Occur.MUST)
+                .add(new FieldExistsQuery(LuceneFieldNames.FIELD_NODE_ID_DV), BooleanClause.Occur.MUST)
                 .build();
     }
 
@@ -596,7 +596,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 ByteConversion.shortToByteH((short) nodeId.units(), data, 0);
                 nodeId.serialize(data, 2);
 
-                Term it = new Term(LuceneUtil.FIELD_NODE_ID, new BytesRef(data));
+                Term it = new Term(LuceneFieldNames.FIELD_NODE_ID, new BytesRef(data));
 
                 TermQuery iq = new TermQuery(it);
                 BooleanQuery q = new BooleanQuery.Builder()
@@ -641,7 +641,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             final NodeSet resultSet = new NewArrayNodeSet();
             final LuceneConfigs configs = LuceneConfigs.of(broker, docs);
             for (final QName qname : definedIndexes) {
-                final String field = LuceneUtil.encodeQName(qname, index.getBrokerPool().getSymbols());
+                final String field = LuceneFieldNames.encodeQName(qname, index.getBrokerPool().getSymbols());
                 final Query query = perConfig(configs, (config, configDocs) -> {
                     final Analyzer analyzer = getQueryAnalyzer(configs, config, null, qname, options);
                     Query configQuery;
@@ -689,7 +689,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             final NodeSet resultSet = new NewArrayNodeSet();
             final LuceneConfigs configs = LuceneConfigs.of(broker, docs);
             for (QName qname : definedIndexes) {
-                final String field = LuceneUtil.encodeQName(qname, index.getBrokerPool().getSymbols());
+                final String field = LuceneFieldNames.encodeQName(qname, index.getBrokerPool().getSymbols());
                 final Query query = perConfig(configs, (config, configDocs) -> {
                     final Analyzer analyzer = getQueryAnalyzer(configs, config, null, qname, options);
                     final Query configQuery = queryRoot == null ? new MatchAllDocsQuery() : queryTranslator.parse(field, queryRoot, analyzer, options);
@@ -771,7 +771,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
     private static Query withBoost(final Query query, final LuceneConfig config) {
         return config.hasBoostConfig()
-                ? FunctionScoreQuery.boostByValue(query, DoubleValuesSource.fromFloatField(LuceneUtil.FIELD_BOOST))
+                ? FunctionScoreQuery.boostByValue(query, DoubleValuesSource.fromFloatField(LuceneFieldNames.FIELD_BOOST))
                 : query;
     }
 
@@ -792,7 +792,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     private Query filterByIndexType(Query query, String indexField) {
         return new BooleanQuery.Builder()
                 .add(query, BooleanClause.Occur.MUST)
-                .add(new TermQuery(new Term(LuceneUtil.FIELD_INDEX_TYPE, indexField)), BooleanClause.Occur.FILTER)
+                .add(new TermQuery(new Term(LuceneFieldNames.FIELD_INDEX_TYPE, indexField)), BooleanClause.Occur.FILTER)
                 .build();
     }
 
@@ -830,7 +830,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
      */
     private static Query withIndexType(@Nullable final Query filter, final String indexField) {
         final BooleanQuery.Builder builder = new BooleanQuery.Builder()
-                .add(new TermQuery(new Term(LuceneUtil.FIELD_INDEX_TYPE, indexField)), BooleanClause.Occur.FILTER);
+                .add(new TermQuery(new Term(LuceneFieldNames.FIELD_INDEX_TYPE, indexField)), BooleanClause.Occur.FILTER);
         if (filter != null) {
             builder.add(filter, BooleanClause.Occur.FILTER);
         }
@@ -1088,7 +1088,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             for (final QName qname : definedIndexes) {
                 for (final Map.Entry<String, List<LuceneConfigs.Group>> vectorField : getVectorFields(configs, qname).entrySet()) {
                     final String field = vectorField.getKey();
-                    final String indexField = LuceneUtil.encodeQName(qname, index.getBrokerPool().getSymbols());
+                    final String indexField = LuceneFieldNames.encodeQName(qname, index.getBrokerPool().getSymbols());
                     // the index type is part of the filter, so that the candidates are all of this qname's index
                     final Query filterQuery = inContext(withIndexType(buildVectorFilterQuery(options, vectorField.getValue()), indexField),
                             field, docs, within);
@@ -1417,7 +1417,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             pendingDoc.add(fDocIdIdx);
             pendingDoc.add(new StringField(FIELD_DOC_ID_KEYWORD, Integer.toString(currentDoc.getDocId()), Field.Store.NO));
             pendingDoc.add(new SortedNumericDocValuesField(FIELD_DOC_ID, currentDoc.getDocId()));
-            pendingDoc.add(new FloatDocValuesField(LuceneUtil.FIELD_BOOST, 1.0f));
+            pendingDoc.add(new FloatDocValuesField(LuceneFieldNames.FIELD_BOOST, 1.0f));
 
             // For binary documents the doc path needs to be stored
             final String uri = currentDoc.getURI().toString();
@@ -1725,9 +1725,9 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         final byte[] data = new byte[nodeIdLen + 2];
         ByteConversion.shortToByteH((short) nodeId.units(), data, 0);
         nodeId.serialize(data, 2);
-        final Term nodeTerm = new Term(LuceneUtil.FIELD_NODE_ID, new BytesRef(data));
+        final Term nodeTerm = new Term(LuceneFieldNames.FIELD_NODE_ID, new BytesRef(data));
         return new BooleanQuery.Builder()
-            .add(IntField.newExactQuery(LuceneIndexWorker.FIELD_DOC_ID, existDocId), BooleanClause.Occur.MUST)
+            .add(IntField.newExactQuery(FIELD_DOC_ID, existDocId), BooleanClause.Occur.MUST)
             .add(new TermQuery(nodeTerm), BooleanClause.Occur.MUST)
             .build();
     }
@@ -1833,7 +1833,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 this.docBase = context.docBase;
                 this.chainedLeafCollector = chainedLeafCollector;
                 this.docIdValues = reader.getSortedNumericDocValues(FIELD_DOC_ID);
-                this.nodeIdValues = reader.getBinaryDocValues(LuceneUtil.FIELD_NODE_ID_DV);
+                this.nodeIdValues = reader.getBinaryDocValues(LuceneFieldNames.FIELD_NODE_ID_DV);
             }
 
             @Override
@@ -2014,13 +2014,9 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         index.<Void>withReader(reader -> {
             for (final LeafReaderContext context : reader.leaves()) {
                 for (final FieldInfo info : context.reader().getFieldInfos()) {
-                    if (!FIELD_DOC_ID.equals(info.name)) {
-                        final QName name = LuceneUtil.decodeQName(info.name, index.getBrokerPool().getSymbols());
-                        if (name != null && name.getLocalPart() != null && !name.getLocalPart().isEmpty()
-                                && (qname == null || matchQName(qname, name))
-                                && !indexes.contains(name)) {
-                            indexes.add(name);
-                        }
+                    final QName name = LuceneFieldNames.decodeQName(info.name, index.getBrokerPool().getSymbols());
+                    if (name != null && (qname == null || matchQName(qname, name)) && !indexes.contains(name)) {
+                        indexes.add(name);
                     }
                 }
             }
@@ -2230,7 +2226,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         final TreeMap<String, Occurrences> map = new TreeMap<>();
         index.withReader(reader -> {
             for (QName qname : qnames) {
-                String field = LuceneUtil.encodeQName(qname, index.getBrokerPool().getSymbols());
+                String field = LuceneFieldNames.encodeQName(qname, index.getBrokerPool().getSymbols());
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("scanIndexByQName: qname={} -> field={}", qname, field);
                 }
@@ -2284,7 +2280,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 // A segment where not every document has the value, which is the case once documents without a
                 // node id share it, does not tolerate going back.
                 final SortedNumericDocValues docIdValues = leafReader.getSortedNumericDocValues(FIELD_DOC_ID);
-                final BinaryDocValues nodeIdValues = leafReader.getBinaryDocValues(LuceneUtil.FIELD_NODE_ID_DV);
+                final BinaryDocValues nodeIdValues = leafReader.getBinaryDocValues(LuceneFieldNames.FIELD_NODE_ID_DV);
                 while (postings.nextDoc() != PostingsEnum.NO_MORE_DOCS) {
                     if (liveDocs != null && !liveDocs.get(postings.docID())) {
                         continue;
@@ -2452,11 +2448,11 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 byte[] data = new byte[nodeIdLen + 2];
                 ByteConversion.shortToByteH((short) pending.nodeId.units(), data, 0);
                 pending.nodeId.serialize(data, 2);
-                doc.add(new BinaryDocValuesField(LuceneUtil.FIELD_NODE_ID_DV, new BytesRef(data)));
+                doc.add(new BinaryDocValuesField(LuceneFieldNames.FIELD_NODE_ID_DV, new BytesRef(data)));
 
                 // add separate index for node id (FIELD_NODE_ID for Term queries)
                 BinaryTokenStream bts = new BinaryTokenStream(new BytesRef(data));
-                Field fNodeIdIdx = new Field(LuceneUtil.FIELD_NODE_ID, bts, TYPE_NODE_ID);
+                Field fNodeIdIdx = new Field(LuceneFieldNames.FIELD_NODE_ID, bts, TYPE_NODE_ID);
                 doc.add(fNodeIdIdx);
 
                 String contentField = null;
@@ -2467,7 +2463,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                     // name defined in the configuration
                     contentField = pending.idxConf.isNamed()
                         ? pending.idxConf.getName()
-                        : LuceneUtil.encodeQName(pending.qname, index.getBrokerPool().getSymbols());
+                        : LuceneFieldNames.encodeQName(pending.qname, index.getBrokerPool().getSymbols());
 
                     Field fld = new TextField(contentField, pending.text.toString(), Field.Store.NO);
 
@@ -2475,9 +2471,9 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 } else {
                     contentField = pending.idxConf.isNamed()
                         ? pending.idxConf.getName()
-                        : LuceneUtil.encodeQName(pending.qname, index.getBrokerPool().getSymbols());
+                        : LuceneFieldNames.encodeQName(pending.qname, index.getBrokerPool().getSymbols());
                 }
-                doc.add(new StringField(LuceneUtil.FIELD_INDEX_TYPE, contentField, Field.Store.NO));
+                doc.add(new StringField(LuceneFieldNames.FIELD_INDEX_TYPE, contentField, Field.Store.NO));
 
                 doc.add(new IntField(FIELD_DOC_ID, currentDoc.getDocId(), Field.Store.NO));
                 doc.add(new StringField(FIELD_DOC_ID_KEYWORD, Integer.toString(currentDoc.getDocId()), Field.Store.NO));
@@ -2485,7 +2481,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 doc.add(new StoredField(FIELD_DOC_ID, currentDoc.getDocId()));
 
                 final float boostVal = pending.boost > 0 ? pending.boost : 1.0f;
-                doc.add(new FloatDocValuesField(LuceneUtil.FIELD_BOOST, boostVal));
+                doc.add(new FloatDocValuesField(LuceneFieldNames.FIELD_BOOST, boostVal));
 
                 final Analyzer customAnalyzer = pending.idxConf.getAnalyzer();
                 if (customAnalyzer != null && contentField != null) {

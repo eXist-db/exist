@@ -41,26 +41,11 @@ import org.apache.lucene.search.*;
 import org.apache.lucene.util.AttributeSource;
 import org.apache.lucene.util.BytesRef;
 
-import org.exist.dom.QName;
-import org.exist.dom.persistent.SymbolTable;
 import org.exist.numbering.NodeId;
 import org.exist.storage.BrokerPool;
 import org.exist.util.ByteConversion;
 
-import javax.xml.XMLConstants;
-
 public class LuceneUtil {
-
-    public static final String FIELD_NODE_ID = "nodeId";
-    /** DocValues-only field for nodeId; avoids conflict with indexed Field of same name (LUCENE-6019). */
-    public static final String FIELD_NODE_ID_DV = "nodeId_dv";
-
-    public static final String FIELD_DOC_ID = "docId";
-    public static final String FIELD_DOC_URI = "docUri";
-    /** Per-document boost for attribute/config-based scoring (Lucene 10: index-time boost via FloatDocValues) */
-    public static final String FIELD_BOOST = "_boost";
-    /** Identifies which index config created the Lucene doc; used to filter when multiple indexes share a collection. */
-    public static final String FIELD_INDEX_TYPE = "_idx";
 
     public static byte[] createId(final int docId, final NodeId nodeId) {
         // build id from nodeId and docId
@@ -84,44 +69,6 @@ public class LuceneUtil {
             return pool.getNodeFactory().createFromData(units, ref.bytes, ref.offset + 2);
         }
         return null;
-    }
-
-    /**
-     * Encode an element or attribute qname into a lucene field name using the
-     * internal ids for namespace and local name.
-     *
-     * @param qname the name
-     * @param symbols the symbol table
-     *
-     * @return the encoded qname
-     */
-    public static String encodeQName(final QName qname, final SymbolTable symbols) {
-        final short namespaceId = symbols.getNSSymbol(qname.getNamespaceURI());
-        final short localNameId = symbols.getSymbol(qname.getLocalPart());
-        final long nameId = qname.getNameType() | (namespaceId & 0xFFFF) << 16 | (localNameId & 0xFFFFFFFFL) << 32;
-        return Long.toHexString(nameId);
-    }
-
-    /**
-     * Decode the lucene field name into an element or attribute qname.
-     *
-     * @param s the encoded qname
-     * @param symbols the symbol table
-     *
-     * @return the qname
-     */
-    public static QName decodeQName(final String s, final SymbolTable symbols) {
-        try {
-            final long l = Long.parseLong(s, 16);
-            final short namespaceId = (short) ((l >>> 16) & 0xFFFFL);
-            final short localNameId = (short) ((l >>> 32) & 0xFFFFL);
-            final byte type = (byte) (l & 0xFFL);
-            final String namespaceURI = symbols.getNamespace(namespaceId);
-            final String localName = symbols.getName(localNameId);
-            return new QName(localName, namespaceURI, XMLConstants.DEFAULT_NS_PREFIX, type);
-        } catch (final NumberFormatException e) {
-            return null;
-        }
     }
 
     public static String[] extractFields(final Query query, final IndexReader reader) throws IOException {
