@@ -42,6 +42,7 @@ import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.config.annotation.ConfigurationClass;
 import org.exist.config.annotation.ConfigurationFieldAsAttribute;
+import org.exist.dom.persistent.SymbolTable;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.lock.FileLock;
 import org.exist.storage.txn.Checkpoint;
@@ -447,6 +448,19 @@ public final class Journal implements Closeable {
         channel.force(true);
     }
 
+    private void syncSymbols() {
+        final SymbolTable symbols = pool.getSymbols();
+        if (symbols == null) {
+            return;
+        }
+        try {
+            symbols.sync();
+        } catch (final IOException e) {
+            // still write the records: losing them would be worse than their order
+            LOG.error("Could not sync the symbol table to disk before the journal: {}", e.getMessage(), e);
+        }
+    }
+
     /**
      * Flush the buffer to disk.
      */
@@ -457,6 +471,8 @@ public final class Journal implements Closeable {
 
         try {
             if (currentBuffer.position() > 0) {
+                // the records may refer to new symbols, which must be on disk first (#2220)
+                syncSymbols();
                 currentBuffer.flip();
                 while (currentBuffer.hasRemaining()) {
                     channel.write(currentBuffer);
