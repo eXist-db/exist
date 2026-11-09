@@ -1,0 +1,25 @@
+exist-core/pom.xml
+  s_771afc54a8e08a::t_ef16f706e5afac 223,230,1038
+exist-distribution/pom.xml
+  s_771afc54a8e08a::t_9a88befb276c0b 988
+exist-installer/pom.xml
+  s_771afc54a8e08a::t_5fa3b503a2a4da 127
+exist-parent/pom.xml
+  s_771afc54a8e08a::t_e83624d59fd6ea 140
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "2a93c754dcdd9bf5314b8589a35f6a00d1064419",
+  "prompts": {},
+  "sessions": {
+    "s_771afc54a8e08a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "a89bdee5-bd1d-467f-8b69-5f434d7ddbe7",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
