@@ -985,7 +985,7 @@
                                     <executable>${project.basedir}/src/main/scripts/codesign-jansi-mac.sh</executable>
                                     <arguments>
                                         <argument>${mac.bundle.java.dir}</argument>
-                                        <argument>${jansi.version}</argument>
+                                        <argument>${jline.version}</argument>
                                         <argument>${project.build.directory}/jansi-native</argument>
                                         <argument>${mac.codesign.identity}</argument>
                                         <argument>${jline.classifier}</argument>
