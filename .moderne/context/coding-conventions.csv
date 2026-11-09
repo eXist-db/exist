@@ -27,7 +27,7 @@ naming,Util suffix for classes,Util,,project-wide
 naming,parse* method naming pattern,parseParameters,,project-wide
 imports,Static imports from org.exist.xquery.modules.cache,org.exist.xquery.modules.cache.CacheModule.*,,project-wide
 naming,Config suffix for classes,CacheConfig,,project-wide
-naming,Tests suffix for classes,RangeTests,,project-wide
+naming,Tests suffix for classes,RangeReferenceTests,,project-wide
 imports,Static imports from org.easymock,org.easymock.EasyMock.*,,project-wide
 imports,Static imports from org.exist.collections,org.exist.collections.CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE,,project-wide
 imports,Static imports from org.exist.indexing.lucene,org.exist.indexing.lucene.LuceneIndexConfig.MATCH_ATTR,,project-wide
