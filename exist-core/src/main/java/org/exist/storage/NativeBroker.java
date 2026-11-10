@@ -50,6 +50,7 @@ import org.exist.storage.blob.BlobId;
 import org.exist.storage.blob.BlobStore;
 import org.exist.storage.btree.*;
 import org.exist.storage.dom.DOMFile;
+import org.exist.storage.dom.EntryPolicy;
 import org.exist.storage.dom.DOMTransaction;
 import org.exist.storage.dom.NodeIterator;
 import org.exist.storage.dom.RawNodeIterator;
@@ -196,7 +197,7 @@ public class NativeBroker implements DBBroker {
 
     private final IndexSpec indexConfiguration;
 
-    private int defaultIndexDepth;
+    private EntryPolicy entryPolicy;
 
     private final XmlSerializerPool xmlSerializerPool;
 
@@ -238,10 +239,11 @@ public class NativeBroker implements DBBroker {
             nodesCountThreshold = nodesCountThreshold * 1000;
         }
 
-        defaultIndexDepth = config.getInteger(PROPERTY_INDEX_DEPTH);
-        if(defaultIndexDepth < 0) {
-            defaultIndexDepth = DEFAULT_INDEX_DEPTH;
+        int indexDepth = config.getInteger(PROPERTY_INDEX_DEPTH);
+        if(indexDepth < 0) {
+            indexDepth = DEFAULT_INDEX_DEPTH;
         }
+        this.entryPolicy = new EntryPolicy(indexDepth);
 
         this.indexConfiguration = (IndexSpec) config.getProperty(Indexer.PROPERTY_INDEXER_CONFIG);
         this.xmlSerializerPool = new XmlSerializerPool(this, config, 5);
@@ -573,8 +575,24 @@ public class NativeBroker implements DBBroker {
         return ALL_STORAGE_FILES;
     }
 
+    /**
+     * Returns the index depth.
+     *
+     * @return the number of levels whose elements have an entry in the DOM B-tree
+     * @deprecated ask {@link #getEntryPolicy()} whether a node gets an entry instead of comparing levels with the depth
+     */
+    @Deprecated
     public int getDefaultIndexDepth() {
-        return defaultIndexDepth;
+        return entryPolicy.getIndexDepth();
+    }
+
+    /**
+     * Returns the rule that decides which nodes get an entry in the DOM B-tree.
+     *
+     * @return the entry policy
+     */
+    public EntryPolicy getEntryPolicy() {
+        return entryPolicy;
     }
 
     @Override
@@ -3489,13 +3507,10 @@ public class NativeBroker implements DBBroker {
             @Override
             public Object start() throws ReadOnlyException {
                 final long address;
-                if(nodeType == Node.TEXT_NODE
-                    || nodeType == Node.ATTRIBUTE_NODE
-                    || nodeType == Node.CDATA_SECTION_NODE
-                    || node.getNodeId().getTreeLevel() > defaultIndexDepth) {
-                    address = domDb.add(transaction, data);
-                } else {
+                if(entryPolicy.entryOnStore(nodeType, node.getNodeId().getTreeLevel())) {
                     address = domDb.put(transaction, new NodeRef(doc.getDocId(), node.getNodeId()), data);
+                } else {
+                    address = domDb.add(transaction, data);
                 }
                 if(address == BFile.UNKNOWN_ADDRESS) {
                     LOG.error("address is missing");
@@ -4462,8 +4477,8 @@ public class NativeBroker implements DBBroker {
          */
         public void store() {
             final DocumentImpl doc = node.getOwnerDocument();
-            // we store all nodes at level 1 (see - https://github.com/eXist-db/exist/issues/1691), and only element nodes after!
-            if(indexMode == IndexMode.STORE && (level == 1 || (node.getNodeType() == Node.ELEMENT_NODE && level <= defaultIndexDepth))) {
+            // all nodes at level 1 get an entry, and only element nodes after, see EntryPolicy
+            if(indexMode == IndexMode.STORE && entryPolicy.entryOnReindex(node.getNodeType(), level)) {
                 //TODO : used to be this, but NativeBroker.this avoids an owner change
                 new DOMTransaction(NativeBroker.this, domDb, () -> lockManager.acquireBtreeWriteLock(domDb.getLockName())) {
                     @Override

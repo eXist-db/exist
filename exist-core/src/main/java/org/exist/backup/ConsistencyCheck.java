@@ -39,6 +39,7 @@ import org.exist.storage.btree.BTreeCallback;
 import org.exist.storage.btree.Value;
 import org.exist.storage.dom.DOMFile;
 import org.exist.storage.dom.DOMTransaction;
+import org.exist.storage.dom.EntryPolicy;
 import org.exist.storage.index.CollectionStore;
 import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.txn.Txn;
@@ -56,7 +57,7 @@ import java.util.*;
 public class ConsistencyCheck {
     private final DBBroker broker;
     private final Txn transaction;
-    private final int defaultIndexDepth;
+    private final EntryPolicy entryPolicy;
     private final boolean directAccess;
     private final boolean checkDocs;
 
@@ -72,7 +73,7 @@ public class ConsistencyCheck {
     public ConsistencyCheck(final DBBroker broker, final Txn transaction, final boolean directAccess, final boolean checkDocs) {
         this.broker = broker;
         this.transaction = transaction;
-        this.defaultIndexDepth = ((NativeBroker) broker).getDefaultIndexDepth();
+        this.entryPolicy = ((NativeBroker) broker).getEntryPolicy();
         this.directAccess = directAccess;
         this.checkDocs = checkDocs;
     }
@@ -374,7 +375,10 @@ public class ConsistencyCheck {
                             }
 
                             case XMLStreamReader.START_ELEMENT: {
-                                if (nodeId.getTreeLevel() <= defaultIndexDepth) {
+                                // the check asks only about elements, and for an element both forms of the entry rule,
+                                // stored and rebuilt, agree: it has an entry up to the index depth. So this is the old
+                                // level check, asked of the one place that holds the rule instead of a third copy of it
+                                if (entryPolicy.entryOnStore(Node.ELEMENT_NODE, nodeId.getTreeLevel())) {
 
                                     // check dom.dbx btree, which maps the node
                                     // id to the node's storage address
