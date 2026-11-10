@@ -2352,13 +2352,14 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
      * global symbol table.
      *
      * @param nodeId the node if
+     * @param address the storage address of the node, or {@link StoredNode#UNKNOWN_NODE_IMPL_ADDRESS} if it is not known
      * @param qname the qname of the node
      * @param path the node path
      * @param config the lucene index config
      * @param content the content of the node
      */
-    protected void indexText(final NodeId nodeId, final QName qname, final NodePath path, final LuceneIndexConfig config, final CharSequence content) {
-        final PendingDoc pending = new PendingDoc(nodeId, qname, path, content, config.getBoost(), config);
+    protected void indexText(final NodeId nodeId, final long address, final QName qname, final NodePath path, final LuceneIndexConfig config, final CharSequence content) {
+        final PendingDoc pending = new PendingDoc(nodeId, address, qname, path, content, config.getBoost(), config);
         addPending(pending);
     }
 
@@ -2368,13 +2369,14 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
      *
      * @param attribs the attributes
      * @param nodeId the node id
+     * @param address the storage address of the node, or {@link StoredNode#UNKNOWN_NODE_IMPL_ADDRESS} if it is not known
      * @param qname the qname of the node
      * @param path the path of the node
      * @param config the lucene index config
      * @param content the content of the node
      */
-    protected void indexText(final java.util.Collection<AttrImpl> attribs, final NodeId nodeId, final QName qname, final NodePath path, final LuceneIndexConfig config, final CharSequence content) {
-        final PendingDoc pending = new PendingDoc(nodeId, qname, path, content, config.getAttrBoost(attribs), config);
+    protected void indexText(final java.util.Collection<AttrImpl> attribs, final NodeId nodeId, final long address, final QName qname, final NodePath path, final LuceneIndexConfig config, final CharSequence content) {
+        final PendingDoc pending = new PendingDoc(nodeId, address, qname, path, content, config.getAttrBoost(attribs), config);
         addPending(pending);
     }
     
@@ -2386,7 +2388,12 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 	    }
     }
 
-    private record PendingDoc(NodeId nodeId, QName qname, NodePath path, CharSequence text, float boost,
+    /**
+     * A node waiting to be written. The address is kept with the node id so that field expressions can be evaluated
+     * against a node that is read directly: without it every lookup walks the document from the nearest ancestor that
+     * has an entry in the DOM B-tree, which is quadratic in the number of indexed nodes below {@code index-depth}.
+     */
+    private record PendingDoc(NodeId nodeId, long address, QName qname, NodePath path, CharSequence text, float boost,
                               LuceneIndexConfig idxConf) {
     }
 
@@ -2419,7 +2426,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
                 final short nodeType = pending.qname.getNameType() == ElementValue.ATTRIBUTE
                         ? Node.ATTRIBUTE_NODE : Node.ELEMENT_NODE;
-                final NodeProxy contextNode = new NodeProxy(null, currentDoc, pending.nodeId, nodeType);
+                final NodeProxy contextNode = new NodeProxy(null, currentDoc, pending.nodeId, nodeType, pending.address);
                 List<AbstractFieldConfig> facetConfigs = pending.idxConf.getFacetsAndFields();
                 final ReindexScope scope = broker.getIndexController().getReindexScope();
                 facetConfigs.forEach(config -> {
@@ -2610,13 +2617,13 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                                             attributes.add((AttrImpl) attributes1.item(i));
                                         }
                                     }
-                                    indexText(attributes, element.getNodeId(), element.getQName(), path, extractor.getIndexConfig(), extractor.getText());
+                                    indexText(attributes, element.getNodeId(), element.getInternalAddress(), element.getQName(), path, extractor.getIndexConfig(), extractor.getText());
                                     if (wasEmpty) {
                                         attributes.clear();
                                     }
                                 } else {
                                     // no attribute matching, index normally
-                                    indexText(element.getNodeId(), element.getQName(), path, extractor.getIndexConfig(), extractor.getText());
+                                    indexText(element.getNodeId(), element.getInternalAddress(), element.getQName(), path, extractor.getIndexConfig(), extractor.getText());
                                 }
                             }
                         }
@@ -2639,6 +2646,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 attribCopy = (AttrImpl) NodePool.getInstance().borrowNode(Node.ATTRIBUTE_NODE);
                 attribCopy.setValue(attrib.getValue());
                 attribCopy.setNodeId(attrib.getNodeId());
+                attribCopy.setInternalAddress(attrib.getInternalAddress());
                 attribCopy.setQName(attrib.getQName());
                 attributes.add(attribCopy);
             }
@@ -2656,7 +2664,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 			    if (configuration.shouldReindexOnAttributeChange()) {
 				appendAttrToBeIndexedLater(attribCopy, new NodePath(path), configuration);
 			    } else {
-				indexText(attrib.getNodeId(), attrib.getQName(), path, configuration, attrib.getValue());
+				indexText(attrib.getNodeId(), attrib.getInternalAddress(), attrib.getQName(), path, configuration, attrib.getValue());
 			    }
                         }
                     }
@@ -2707,7 +2715,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                     if (mode == ReindexMode.STORE && config != null) {
                         for (PendingAttr pending : pendingAttrs) {
                             AttrImpl attr = pending.attr;
-                            indexText(attributes, attr.getNodeId(), attr.getQName(), pending.path, pending.conf, attr.getValue());
+                            indexText(attributes, attr.getNodeId(), attr.getInternalAddress(), attr.getQName(), pending.path, pending.conf, attr.getValue());
                         }
                     }
                 } finally {
