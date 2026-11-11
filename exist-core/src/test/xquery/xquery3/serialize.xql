@@ -981,9 +981,18 @@ function ser:serialize-html-4-head-attribute() {
 
 (: test for https://github.com/eXist-db/exist/issues/6587 :)
 declare
-    %test:assertEquals('<!DOCTYPE html><html><head n="1"><meta http-equiv="Content-Type" content="application/xhtml+xml; charset=UTF-8" /><title>t</title></head><body></body></html>')
+    %test:assertEquals('<!DOCTYPE html><html><head n="1"><meta charset="UTF-8" /><title>t</title></head><body></body></html>')
 function ser:serialize-xhtml-5-head-attribute() {
     <html><head n="1"><title>t</title></head><body/></html>
+    => serialize(map { "method": "xhtml" })
+};
+
+(: with HTML5, the xhtml method also writes the charset form of the meta, and drops an http-equiv one,
+   see Serialization 4.0 draft, 6.1.18 :)
+declare
+    %test:assertEquals('<!DOCTYPE html><html><head><meta charset="UTF-8" /><title>t</title></head><body></body></html>')
+function ser:serialize-xhtml-5-replaces-http-equiv-meta() {
+    <html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"/><title>t</title></head><body/></html>
     => serialize(map { "method": "xhtml" })
 };
 
@@ -997,7 +1006,7 @@ function ser:serialize-xhtml-1-head-attribute() {
 
 (: for the xhtml method, version is the XML version, and the HTML version stays 5.0, see Serialization 3.1, 6.1.1 :)
 declare
-    %test:assertEquals('<!DOCTYPE html><html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /></head><body><br /></body></html>')
+    %test:assertEquals('<!DOCTYPE html><html><head><meta charset="UTF-8" /></head><body><br /></body></html>')
 function ser:serialize-xhtml-version-is-xml-version() {
     <html><head/><body><br/></body></html>
     => serialize(

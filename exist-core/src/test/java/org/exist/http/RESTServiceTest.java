@@ -1823,7 +1823,7 @@ try {
     }
 
     @Test
-    void getStoredHtmlDocWritesCharsetOnce() throws IOException {
+    void getStoredHtmlDocWritesCharsetMeta() throws IOException {
         doPut("<html><head/><body/></html>", "head-meta.html", HttpStatus.CREATED_201);
 
         final HttpURLConnection connect = getConnection(getCollectionUri() + "/head-meta.html");
@@ -1836,8 +1836,8 @@ try {
             assertEquals(HttpStatus.OK_200, r, "Server returned response code " + r);
 
             final String response = readResponse(connect.getInputStream());
-            assertTrue(response.contains("<meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\" />"),
-                    "Expected a single charset in the content-type meta: " + response);
+            assertTrue(response.contains("<meta charset=\"UTF-8\" />"),
+                    "Expected the HTML5 charset meta: " + response);
         } finally {
             connect.disconnect();
         }

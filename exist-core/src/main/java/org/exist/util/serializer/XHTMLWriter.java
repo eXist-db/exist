@@ -847,12 +847,12 @@ public class XHTMLWriter extends IndentingXMLWriter {
             final String encoding = outputProperties.getProperty(OutputKeys.ENCODING, "UTF-8");
             final Writer writer = getWriter();
 
-            // HTML5 method uses <meta charset="UTF-8">
-            // XHTML and HTML4 use <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+            // HTML5 uses <meta charset="UTF-8">, with the html and the xhtml method (Serialization 4.0 draft, 6.1.18 and 7.5.14)
+            // HTML4 and XHTML 1.x use <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
             // XHTML mode requires self-closing tags (/>)  for valid XML output —
             // the URL rewrite pipeline re-parses this as XML in the view step.
             final boolean selfClose = !isHtmlMethod();
-            if (isHtmlMethod() && isHtml5Version()) {
+            if (isHtml5Version()) {
                 writer.write("<meta charset=\"");
                 writer.write(encoding);
                 writer.write(selfClose ? "\" />" : "\">");
