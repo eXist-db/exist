@@ -427,7 +427,16 @@ public class SerializerUtils {
     }
 
     public static void setProperty(final String key, final String value, final Properties properties,
-                                   final Function<String, String> prefixToNs) {
+                                   final Function<String, String> prefixToNs) throws XPathException {
+        // html-version is an xs:decimal (Serialization 3.1, 3); the map form of fn:serialize rejects other values by type
+        if (EXistOutputKeys.HTML_VERSION.equals(key)) {
+            try {
+                new DecimalValue(value);
+            } catch (final XPathException e) {
+                throw new XPathException(ErrorCodes.SEPM0016,
+                        "The value of the html-version serialization parameter must be an xs:decimal, was: " + value, e);
+            }
+        }
         final ParameterConvention<String> parameterConvention = W3C_PARAMETER_CONVENTIONS_BY_NAME.get(key);
         if (parameterConvention == null || parameterConvention.getType() != Type.QNAME) {
             properties.setProperty(key, value);

@@ -748,6 +748,29 @@ try {
     }
 
     @Test
+    void queryGetInvalidHtmlVersionOption() throws IOException {
+        final String query = """
+                declare namespace output = "http://www.w3.org/2010/xslt-xquery-serialization";
+                declare option output:method "html";
+                declare option output:html-version "abc";
+                <html/>
+                """;
+        final String uri = getCollectionUri() + "?_wrap=no&_query=" + URLEncoder.encode(query, UTF_8);
+        final HttpURLConnection connect = getConnection(uri);
+        try {
+            connect.setRequestMethod("GET");
+            connect.connect();
+
+            final int r = connect.getResponseCode();
+            assertEquals(HttpStatus.BAD_REQUEST_400, r, "Server returned response code " + r);
+            final String response = readResponse(connect.getErrorStream());
+            assertTrue(response.contains("SEPM0016"), "Expected SEPM0016 in: " + response);
+        } finally {
+            connect.disconnect();
+        }
+    }
+
+    @Test
     void requestModule() throws IOException {
         String uri = getCollectionUri() + "?_query=request:get-uri()&_wrap=no";
         HttpURLConnection connect = getConnection(uri);

@@ -1028,6 +1028,29 @@ function ser:serialize-html-version-is-html-version() {
         </output:serialization-parameters>)
 };
 
+(: html-version is an xs:decimal (Serialization 3.1, 3), the map form rejects other values by type :)
+declare
+    %test:assertError("SEPM0016")
+function ser:serialize-html-version-not-a-decimal() {
+    <html><head/></html>
+    => serialize(
+        <output:serialization-parameters>
+            <output:method value="html"/>
+            <output:html-version value="abc"/>
+        </output:serialization-parameters>)
+};
+
+declare
+    %test:assertEquals('<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"></head></html>')
+function ser:serialize-html-version-decimal-with-whitespace() {
+    <html><head/></html>
+    => serialize(
+        <output:serialization-parameters>
+            <output:method value="html"/>
+            <output:html-version value=" 4.01 "/>
+        </output:serialization-parameters>)
+};
+
 (: the media-type parameter must not contain a charset (Serialization 3.1, 3); one given anyway is not written twice :)
 declare
     %test:assertEquals('<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"></head></html>')
