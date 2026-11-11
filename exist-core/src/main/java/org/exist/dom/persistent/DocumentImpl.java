@@ -41,6 +41,7 @@ import org.exist.storage.io.VariableByteOutputStream;
 import org.exist.storage.lock.EnsureContainerLocked;
 import org.exist.storage.lock.EnsureLocked;
 import org.exist.storage.txn.Txn;
+import org.exist.util.ByteArrayPool;
 import org.exist.util.MimeType;
 import org.exist.util.XMLString;
 import org.exist.xmldb.XmldbURI;
@@ -983,9 +984,9 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
         try(final DBBroker broker = pool.getBroker()) {
             final NodePath oldPath = oldNode.getPath();
             if(oldNode.getNodeType() == ELEMENT_NODE) {
-                replaceDocumentElement(transaction, broker, oldNode, oldPath, newNode, index);
+                replaceDocumentElement(transaction, broker, oldNode, oldPath, newNode, oldNode, index);
             } else {
-                replaceStoredChild(transaction, broker, oldNode, oldPath, newNode, index);
+                replaceStoredChild(transaction, broker, oldNode, oldPath, newNode, oldNode, index);
             }
             broker.flush();
         } catch(final EXistException e) {
@@ -1014,7 +1015,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
      * indexes, and index them again under the new element, as {@link ElementImpl#updateChild} does.
      */
     private void replaceDocumentElement(final Txn transaction, final DBBroker broker, final IStoredNode<?> oldNode,
-            final NodePath oldPath, final IStoredNode<?> newNode, final int index) {
+            final NodePath oldPath, final IStoredNode<?> newNode, final IStoredNode<?> after, final int index) {
         final IndexController indexes = broker.getIndexController();
         final NativeValueIndex valueIndex = broker.getValueIndex();
         indexes.setDocument(this);
@@ -1023,7 +1024,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
         final IStoredNode<?> valueReindexRoot = valueIndex.getReindexRoot(oldNode, oldPath);
         valueIndex.reindex(valueReindexRoot);
 
-        final NodePath path = replaceStoredChild(transaction, broker, oldNode, oldPath, newNode, index);
+        final NodePath path = replaceStoredChild(transaction, broker, oldNode, oldPath, newNode, after, index);
         broker.endElement(newNode, path, null);
 
         indexes.reindex(transaction, newNode, ReindexMode.STORE);
@@ -1032,16 +1033,16 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
     }
 
     /**
-     * Write the new child directly after the old one, then remove the old one, so that a child with no
-     * previous sibling can be replaced too.
+     * Write the new child after {@code after}, which is the old child itself or a node stored after it, then
+     * remove the old child, so that a child with no previous sibling can be replaced too.
      *
      * @return the path of the new child
      */
     private NodePath replaceStoredChild(final Txn transaction, final DBBroker broker, final IStoredNode<?> oldNode,
-            final NodePath oldPath, final IStoredNode<?> newNode, final int index) {
+            final NodePath oldPath, final IStoredNode<?> newNode, final IStoredNode<?> after, final int index) {
         final long oldAddress = oldNode.getInternalAddress();
         newNode.setNodeId(oldNode.getNodeId());
-        broker.insertNodeAfter(transaction, oldNode, newNode);
+        broker.insertNodeAfter(transaction, after, newNode);
         oldNode.setInternalAddress(oldAddress);
         broker.removeNode(transaction, oldNode, oldPath, null);
         broker.endRemove(transaction);
@@ -1052,13 +1053,162 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
     }
 
     /**
-     * Remove a child of the document, with its descendants.
+     * Insert comments and processing instructions before a child of the document.
+     */
+    @Override
+    @EnsureContainerLocked(mode=WRITE_LOCK)
+    public void insertBefore(final Txn transaction, final NodeList nodes, final Node refChild) throws DOMException {
+        insertChildren(transaction, nodes, childIndex(storedChild(refChild)));
+    }
+
+    /**
+     * Insert comments and processing instructions after a child of the document.
+     */
+    @Override
+    @EnsureContainerLocked(mode=WRITE_LOCK)
+    public void insertAfter(final Txn transaction, final NodeList nodes, final Node refChild) throws DOMException {
+        insertChildren(transaction, nodes, childIndex(storedChild(refChild)) + 1);
+    }
+
+    private static IStoredNode<?> storedChild(final Node child) throws DOMException {
+        if(!(child instanceof final IStoredNode<?> storedChild)) {
+            throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, "Node does not belong to this document");
+        }
+        return storedChild;
+    }
+
+    /**
+     * Insert comments and processing instructions as children of the document, from position {@code index}.
+     *
+     * The nodes are stored in document order, after the last descendant of the child before them. The first
+     * child of a document is also the first node stored for it, which is where, for example,
+     * {@link org.exist.storage.NativeBroker#defragXMLResource} starts to free the document's pages. So to
+     * insert before the first child, the nodes are stored after it, and its own record is then moved after
+     * them: for the document element, that is the element itself, not its descendants.
+     */
+    private void insertChildren(final Txn transaction, final NodeList nodes, final int index) throws DOMException {
+        checkInsertableChildren(nodes);
+        final int count = nodes.getLength();
+        if(count == 0) {
+            return;
+        }
+        try(final DBBroker broker = pool.getBroker()) {
+            final IStoredNode<?> previous = index > 0 ? storedChildAt(broker, index - 1) : null;
+            final IStoredNode<?> following = index < children ? storedChildAt(broker, index) : null;
+            final NodeId followingId = following == null ? null : following.getNodeId();
+            final NodeId firstId = previous == null ? followingId.insertBefore() : previous.getNodeId().insertNode(followingId);
+            final IStoredNode<?> after = previous instanceof final StoredNode<?> storedPrevious ? storedPrevious.getLastNode(previous) : following;
+            final IStoredNode<?> last = storeNewChildren(transaction, broker, nodes, firstId, followingId, after, index);
+
+            if(previous == null) {
+                // the old first child is still stored before the new nodes: move its own record after them
+                moveRecordAfter(transaction, broker, following, last, index + count);
+            }
+            broker.flush();
+        } catch(final EXistException e) {
+            throw new DOMException(DOMException.INVALID_STATE_ERR, e.getMessage());
+        }
+    }
+
+    /**
+     * Store new children of the document after {@code after}, and record them as its children from
+     * position {@code index}.
+     *
+     * @return the last of the new children
+     */
+    private IStoredNode<?> storeNewChildren(final Txn transaction, final DBBroker broker, final NodeList nodes,
+            final NodeId firstId, @Nullable final NodeId followingId, final IStoredNode<?> after, final int index) {
+        final int count = nodes.getLength();
+        final long[] newChildAddress = new long[children + count];
+        System.arraycopy(childAddress, 0, newChildAddress, 0, index);
+        System.arraycopy(childAddress, index, newChildAddress, index + count, children - index);
+
+        IStoredNode<?> last = after;
+        NodeId nodeId = firstId;
+        for(int i = 0; i < count; i++) {
+            final IStoredNode<?> node = newDocumentChild(nodes.item(i), nodeId);
+            broker.insertNodeAfter(transaction, last, node);
+            broker.indexNode(transaction, node, node.getPath());
+            newChildAddress[index + i] = node.getInternalAddress();
+            last = node;
+            nodeId = nextSiblingId(nodeId, followingId);
+        }
+        childAddress = newChildAddress;
+        children += count;
+        return last;
+    }
+
+    /**
+     * A document can have only one document element, and a stored document has no text at its top level.
+     */
+    private static void checkInsertableChildren(final NodeList nodes) throws DOMException {
+        for(int i = 0; i < nodes.getLength(); i++) {
+            switch(nodes.item(i).getNodeType()) {
+                case COMMENT_NODE, PROCESSING_INSTRUCTION_NODE -> { }
+                case ELEMENT_NODE -> throw new DOMException(DOMException.HIERARCHY_REQUEST_ERR,
+                        "A document can have only one document element");
+                default -> throw new DOMException(DOMException.HIERARCHY_REQUEST_ERR,
+                        "Only comments and processing instructions can be inserted around the document element");
+            }
+        }
+    }
+
+    private IStoredNode<?> storedChildAt(final DBBroker broker, final int index) {
+        return broker.objectWith(new NodeProxy(getExpression(), this, NodeId.DOCUMENT_NODE, childAddress[index]));
+    }
+
+    private IStoredNode<?> newDocumentChild(final Node node, final NodeId nodeId) {
+        final IStoredNode<?> child;
+        if(node.getNodeType() == COMMENT_NODE) {
+            final CommentImpl comment = new CommentImpl(getExpression(), ((Comment) node).getData());
+            comment.setNodeId(nodeId);
+            child = comment;
+        } else {
+            final ProcessingInstruction pi = (ProcessingInstruction) node;
+            child = new ProcessingInstructionImpl(getExpression(), nodeId, pi.getTarget(), pi.getData());
+        }
+        child.setOwnerDocument(this);
+        return child;
+    }
+
+    /**
+     * The id of the next sibling, which must stay before the following node's.
+     */
+    private static NodeId nextSiblingId(final NodeId nodeId, @Nullable final NodeId followingId) {
+        final NodeId next = nodeId.nextSibling();
+        return followingId != null && next.equals(followingId) ? nodeId.insertNode(followingId) : next;
+    }
+
+    /**
+     * Move the record of a child of the document after {@code after}, keeping its node id.
+     */
+    private void moveRecordAfter(final Txn transaction, final DBBroker broker, final IStoredNode<?> child,
+            final IStoredNode<?> after, final int index) {
+        final byte[] data = child.serialize();
+        final IStoredNode<?> copy = StoredNode.deserialize(data, 0, data.length, this);
+        ByteArrayPool.releaseByteArray(data);
+        copy.setOwnerDocument(this);
+        final NodePath path = child.getPath();
+        if(child.getNodeType() == ELEMENT_NODE) {
+            replaceDocumentElement(transaction, broker, child, path, copy, after, index);
+        } else {
+            replaceStoredChild(transaction, broker, child, path, copy, after, index);
+        }
+    }
+
+    /**
+     * Remove a comment or processing instruction around the document element. A stored document always has a
+     * document element: it can be replaced, but not removed.
      */
     @Override
     @EnsureContainerLocked(mode=WRITE_LOCK)
     public Node removeChild(final Txn transaction, final Node oldChild) throws DOMException {
         if(!(oldChild instanceof IStoredNode<?> oldNode)) {
             throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, "Node does not belong to this document");
+        }
+        if(oldNode.getNodeType() == ELEMENT_NODE) {
+            throw new DOMException(DOMException.HIERARCHY_REQUEST_ERR,
+                    "The document element of a stored document cannot be removed, only replaced");
         }
         final int index = childIndex(oldNode);
         try(final DBBroker broker = pool.getBroker()) {
@@ -1077,13 +1227,47 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
         return oldChild;
     }
 
+    /**
+     * The child of this document after or before {@code child}, in the order the children are recorded in.
+     *
+     * Nodes inserted around the document element get node ids in between those of their siblings, so a
+     * sibling cannot be found by computing its node id from the child's.
+     *
+     * @param child a child of this document
+     * @param next true for the child after it, false for the one before it
+     * @return the sibling, or null if there is none
+     */
+    @Nullable IStoredNode<?> getSiblingOfChild(final IStoredNode<?> child, final boolean next) {
+        final int childIndex = findChildIndex(child);
+        try(final DBBroker broker = pool.getBroker()) {
+            if(childIndex < 0) {
+                // a node without the address of a recorded child: fall back to computing the sibling's id
+                final NodeId siblingId = next ? child.getNodeId().nextSibling() : child.getNodeId().precedingSibling();
+                return broker.objectWith(this, siblingId);
+            }
+            final int index = childIndex + (next ? 1 : -1);
+            return index < 0 || index >= children ? null : storedChildAt(broker, index);
+        } catch(final EXistException e) {
+            LOG.error("Internal error while reading a sibling of a document child: {}", e.getMessage(), e);
+            return null;
+        }
+    }
+
     private int childIndex(final IStoredNode<?> child) {
+        final int index = findChildIndex(child);
+        if(index < 0) {
+            throw new DOMException(DOMException.NOT_FOUND_ERR, "Node is not a child of this document");
+        }
+        return index;
+    }
+
+    private int findChildIndex(final IStoredNode<?> child) {
         for(int i = 0; i < children; i++) {
             if(StorageAddress.equals(childAddress[i], child.getInternalAddress())) {
                 return i;
             }
         }
-        throw new DOMException(DOMException.NOT_FOUND_ERR, "Node is not a child of this document");
+        return -1;
     }
 
     @Override
@@ -1097,6 +1281,20 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
         } catch(final EXistException e) {
             LOG.warn("Exception while inserting node: {}", e.getMessage(), e);
             //TODO : throw exception ?
+        }
+        return null;
+    }
+
+    @Override
+    @EnsureContainerLocked(mode=READ_LOCK)
+    public Node getLastChild() {
+        if(children == 0) {
+            return null;
+        }
+        try(final DBBroker broker = pool.getBroker()) {
+            return storedChildAt(broker, children - 1);
+        } catch(final EXistException e) {
+            LOG.warn("Exception while reading the last child of the document: {}", e.getMessage(), e);
         }
         return null;
     }
