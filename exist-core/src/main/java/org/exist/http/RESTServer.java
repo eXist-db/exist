@@ -2494,7 +2494,8 @@ public class RESTServer {
             final String mimeType = resolveXmlContentType(resource, serializer, asMimeType, encoding, response);
             if (mimeType.equals(MimeType.HTML_TYPE.getName())) {
                 outputProperties.setProperty("method", "xhtml");
-                outputProperties.setProperty("media-type", "text/html; charset=" + encoding);
+                // the charset is not part of the media-type parameter (Serialization 3.1, 3); the encoding parameter sets it
+                outputProperties.setProperty("media-type", MimeType.HTML_TYPE.getName());
                 outputProperties.setProperty("indent", "yes");
                 outputProperties.setProperty("omit-xml-declaration", "no");
             }

@@ -859,7 +859,7 @@ public class XHTMLWriter extends IndentingXMLWriter {
             } else {
                 final String mediaType = outputProperties.getProperty(OutputKeys.MEDIA_TYPE, "text/html");
                 writer.write("<meta http-equiv=\"Content-Type\" content=\"");
-                writer.write(mediaType);
+                writer.write(withoutCharset(mediaType));
                 writer.write("; charset=");
                 writer.write(encoding);
                 writer.write(selfClose ? "\" />" : "\">");
@@ -867,5 +867,21 @@ public class XHTMLWriter extends IndentingXMLWriter {
         } catch (IOException e) {
             throw new TransformerException(e.getMessage(), e);
         }
+    }
+
+    /**
+     * The media-type parameter must not contain a charset (Serialization 3.1, 3), as the meta
+     * adds the encoding. Drop one that is there anyway, so that the charset is not written twice.
+     */
+    private static String withoutCharset(final String mediaType) {
+        final String[] parts = mediaType.split(";");
+        final StringBuilder result = new StringBuilder(parts[0].trim());
+        for (int i = 1; i < parts.length; i++) {
+            final String parameter = parts[i].trim();
+            if (!parameter.regionMatches(true, 0, "charset=", 0, 8)) {
+                result.append("; ").append(parameter);
+            }
+        }
+        return result.toString();
     }
 }

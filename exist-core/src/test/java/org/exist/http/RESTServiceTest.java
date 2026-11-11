@@ -1823,6 +1823,27 @@ try {
     }
 
     @Test
+    void getStoredHtmlDocWritesCharsetOnce() throws IOException {
+        doPut("<html><head/><body/></html>", "head-meta.html", HttpStatus.CREATED_201);
+
+        final HttpURLConnection connect = getConnection(getCollectionUri() + "/head-meta.html");
+        try {
+            connect.setRequestProperty("Authorization", "Basic " + credentials);
+            connect.setRequestMethod("GET");
+            connect.connect();
+
+            final int r = connect.getResponseCode();
+            assertEquals(HttpStatus.OK_200, r, "Server returned response code " + r);
+
+            final String response = readResponse(connect.getInputStream());
+            assertTrue(response.contains("<meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\" />"),
+                    "Expected a single charset in the content-type meta: " + response);
+        } finally {
+            connect.disconnect();
+        }
+    }
+
+    @Test
     void getXmlDeclDefault() throws IOException {
         final HttpURLConnection connect = getConnection(getResourceWithXmlDeclUri());
         try {

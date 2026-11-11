@@ -1019,6 +1019,21 @@ function ser:serialize-html-version-is-html-version() {
         </output:serialization-parameters>)
 };
 
+(: the media-type parameter must not contain a charset (Serialization 3.1, 3); one given anyway is not written twice :)
+declare
+    %test:assertEquals('<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"></head></html>')
+function ser:serialize-html-4-media-type-with-charset() {
+    <html><head/></html>
+    => serialize(map { "method": "html", "html-version": 4.01, "media-type": "text/html; charset=UTF-8" })
+};
+
+declare
+    %test:assertEquals('<html><head><meta http-equiv="Content-Type" content="text/html; level=1; charset=UTF-8"></head></html>')
+function ser:serialize-html-4-media-type-with-charset-and-parameter() {
+    <html><head/></html>
+    => serialize(map { "method": "html", "html-version": 4.01, "media-type": "text/html; CHARSET=utf-8; level=1" })
+};
+
 (: test for https://github.com/eXist-db/exist/issues/4736 :)
 declare
     %test:assertEquals('<!DOCTYPE html><html><body><p>hi</p></body></html>')
