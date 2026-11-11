@@ -48,6 +48,7 @@ import org.exist.collections.Collection;
 import org.exist.indexing.*;
 import org.exist.indexing.StreamListener.ReindexMode;
 import org.exist.indexing.lucene.BinaryTokenStream;
+import org.exist.indexing.lucene.LuceneFieldNames;
 import org.exist.indexing.lucene.LuceneIndexWorker;
 import org.exist.indexing.lucene.LuceneUtil;
 import org.exist.numbering.NodeId;
@@ -73,6 +74,11 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.util.*;
 
+import static org.exist.indexing.lucene.LuceneFieldNames.FIELD_ADDRESS;
+import static org.exist.indexing.lucene.LuceneFieldNames.FIELD_DOC_ID;
+import static org.exist.indexing.lucene.LuceneFieldNames.FIELD_ID;
+import static org.exist.indexing.lucene.LuceneFieldNames.FIELD_NODE_ID;
+
 /**
  * The main worker class for the range index.
  *
@@ -87,11 +93,6 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     public static final int SELF = -1;
 
     private static final Logger LOG = LogManager.getLogger(RangeIndexWorker.class);
-
-    public static final String FIELD_NODE_ID = "nodeId";
-    public static final String FIELD_DOC_ID = "docId";
-    public static final String FIELD_ADDRESS = "address";
-    public static final String FIELD_ID = "id";
 
     private static Set<String> LOAD_FIELDS = new TreeSet<>();
     static {
@@ -591,7 +592,7 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                     if (field.isNamed())
                         contentField = field.getName();
                     else
-                        contentField = LuceneUtil.encodeQName(pending.getQName(), index.getBrokerPool().getSymbols());
+                        contentField = LuceneFieldNames.encodeQName(pending.getQName(), index.getBrokerPool().getSymbols());
                     Field fld = pending.getConfig().convertToField(contentField, field.getContent().toString());
                     if (fld != null) {
                         // Register field analyzer so TextField tokenization at index time matches query-time analyzeContent.
@@ -640,7 +641,7 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             NodeSet resultSet = new NewArrayNodeSet();
             for (QName qname : definedIndexes) {
                 Query query;
-                String field = LuceneUtil.encodeQName(qname, index.getBrokerPool().getSymbols());
+                String field = LuceneFieldNames.encodeQName(qname, index.getBrokerPool().getSymbols());
                 if (keys.length > 1) {
                     BooleanQuery.Builder builder = new BooleanQuery.Builder();
                     for (AtomicValue key : keys) {
@@ -742,7 +743,7 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             }
             case null, default -> {}
         }
-        if (field == null || FIELD_DOC_ID.equals(field) || FIELD_NODE_ID.equals(field) || FIELD_ID.equals(field) || FIELD_ADDRESS.equals(field)) {
+        if (field == null || LuceneFieldNames.isInternal(field)) {
             return;
         }
         try {
@@ -918,11 +919,9 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         return index.withReader(reader -> {
             for (LeafReaderContext context : reader.leaves()) {
                 for (FieldInfo info : context.reader().getFieldInfos()) {
-                    if (!FIELD_DOC_ID.equals(info.name) && !FIELD_NODE_ID.equals(info.name) && !FIELD_ADDRESS.equals(info.name) && !FIELD_ID.equals(info.name)) {
-                        QName name = LuceneUtil.decodeQName(info.name, index.getBrokerPool().getSymbols());
-                        if (name != null && (qname == null || matchQName(qname, name)) && !indexes.contains(name)) {
-                            indexes.add(name);
-                        }
+                    QName name = LuceneFieldNames.decodeQName(info.name, index.getBrokerPool().getSymbols());
+                    if (name != null && (qname == null || matchQName(qname, name)) && !indexes.contains(name)) {
+                        indexes.add(name);
                     }
                 }
             }
@@ -1186,7 +1185,7 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         return index.withReader(reader -> {
             TreeMap<String, Occurrences> map = new TreeMap<>();
             for (QName qname : qnames) {
-                String field = LuceneUtil.encodeQName(qname, index.getBrokerPool().getSymbols());
+                String field = LuceneFieldNames.encodeQName(qname, index.getBrokerPool().getSymbols());
                 scan(docs, nodes, start, end, max, map, reader, field);
             }
             Occurrences[] occur = new Occurrences[map.size()];

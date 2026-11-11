@@ -80,6 +80,7 @@ import java.lang.ref.Reference;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.nio.file.FileStore;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.NumberFormat;
 import java.util.*;
@@ -643,6 +644,14 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
                                     task.execute(systemBroker, transaction);
                                     transaction.commit();
                                 }
+                            }
+                        }
+
+                        // an index written in another format is rebuilt from the documents
+                        if(!exportOnly && !(isRecoveryEnabled() && recovered)) {
+                            final List<String> toRebuild = indexManager.getIndexesToRebuild();
+                            if(!toRebuild.isEmpty()) {
+                                rebuildIndexes(systemBroker, toRebuild);
                             }
                         }
 
@@ -2005,6 +2014,51 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
                     this.notifyObservers(status);
                 }
             }
+        }
+    }
+
+    /**
+     * Rebuilds indexes written in another format, see {@link org.exist.indexing.Index#isRebuildRequired()}: removes all
+     * indexes and reindexes the database. A rebuild that does not finish, such as one that runs out of memory, is
+     * tried again at the next startup, but not more than {@link #MAX_INDEX_REBUILD_ATTEMPTS} times in a row: a file in
+     * the data directory counts the attempts and is removed once a rebuild leaves no index to rebuild. So a rebuild
+     * that always fails cannot keep the database from starting.
+     */
+    private void rebuildIndexes(final DBBroker systemBroker, final List<String> indexes) throws IOException, LockException {
+        final Path attemptsFile = getStoragePlace().resolve(INDEX_REBUILD_ATTEMPTS_FILE);
+        final int attempts = readIndexRebuildAttempts(attemptsFile);
+        if(attempts >= MAX_INDEX_REBUILD_ATTEMPTS) {
+            LOG.error("The indexes {} were written in another format and must be rebuilt, but {} rebuilds at startup did not finish; not trying again. Their log shows the cause; once it is fixed, delete {} to rebuild at the next startup.",
+                    indexes, attempts, attemptsFile.toAbsolutePath());
+            return;
+        }
+        Files.writeString(attemptsFile, Integer.toString(attempts + 1));
+
+        LOG.warn("Rebuilding indexes written in another format: {}", indexes);
+        reportStatus("Reindexing database files...");
+        try {
+            systemBroker.repair();
+        } catch(final PermissionDeniedException e) {
+            LOG.warn("Error while rebuilding indexes: {}", e.getMessage(), e);
+            return;
+        }
+
+        final List<String> remaining = indexManager.getIndexesToRebuild();
+        if(remaining.isEmpty()) {
+            Files.deleteIfExists(attemptsFile);
+        } else {
+            LOG.error("The indexes {} still have to be rebuilt after the rebuild at startup", remaining);
+        }
+    }
+
+    private static int readIndexRebuildAttempts(final Path attemptsFile) throws IOException {
+        if(!Files.exists(attemptsFile)) {
+            return 0;
+        }
+        try {
+            return Integer.parseInt(Files.readString(attemptsFile).trim());
+        } catch(final NumberFormatException e) {
+            return 0;
         }
     }
 

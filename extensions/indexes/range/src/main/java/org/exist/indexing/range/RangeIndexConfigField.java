@@ -21,6 +21,7 @@
  */
 package org.exist.indexing.range;
 
+import org.exist.indexing.lucene.LuceneFieldNames;
 import org.exist.indexing.range.conversion.TypeConverter;
 import org.exist.storage.NodePath;
 import org.exist.util.Configuration;
@@ -58,6 +59,7 @@ public class RangeIndexConfigField {
         if (name.isEmpty()) {
             throw new DatabaseConfigurationException("Range index module: field element requires a name attribute");
         }
+        LuceneFieldNames.checkConfiguredName(name, "a range index field");
         String match = elem.getAttribute("match");
         if (!match.isEmpty()) {
             try {

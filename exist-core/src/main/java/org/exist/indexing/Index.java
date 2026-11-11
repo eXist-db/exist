@@ -118,6 +118,28 @@ public interface Index extends AutoCloseable {
     IndexWorker getWorker(DBBroker broker);
 
     /**
+     * Whether the index has to be rebuilt from the documents before it can be used, for example because it was
+     * written in a format this version cannot read. When an index reports so after it is opened, the database is
+     * repaired at startup: all indexes are removed and the database is reindexed.
+     *
+     * @return true if the index must be rebuilt
+     */
+    default boolean isRebuildRequired() {
+        return false;
+    }
+
+    /**
+     * Called when the database has been reindexed after {@link #remove()}: the index now holds what this version
+     * writes, and records so even if removing its files left some behind, so that it is not rebuilt again at the next
+     * startup.
+     *
+     * @throws DBException if the index cannot record it
+     */
+    default void markRebuilt() throws DBException {
+        // an index that records no format has nothing to record
+    }
+
+    /**
      * Convenience method that allows to check index consistency.
      * 
      * @param broker the broker that will perform the operation.

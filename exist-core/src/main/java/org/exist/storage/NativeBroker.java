@@ -4032,6 +4032,11 @@ public class NativeBroker implements DBBroker {
         LOG.info("Reindexing database files ...");
         //Reindex from root collection
         reindexCollection(null, getCollection(XmldbURI.ROOT_COLLECTION_URI), IndexMode.REPAIR);
+        try {
+            pool.getIndexManager().markRebuilt();
+        } catch(final DBException e) {
+            LOG.error("Failed to record that the indexes were rebuilt: {}", e.getMessage(), e);
+        }
     }
 
     @Override

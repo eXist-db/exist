@@ -82,6 +82,12 @@ public interface BrokerPoolConstants {
     String PROPERTY_NODES_BUFFER = "db-connection.nodes-buffer";
     String PROPERTY_EXPORT_ONLY = "db-connection.emergency";
 
+    /** The file in the data directory that counts the startups that began rebuilding indexes written in another format. */
+    String INDEX_REBUILD_ATTEMPTS_FILE = "index-rebuild.attempts";
+
+    /** How many startups in a row try to rebuild indexes written in another format before giving up. */
+    int MAX_INDEX_REBUILD_ATTEMPTS = 3;
+
     String PROPERTY_RECOVERY_GROUP_COMMIT = "db-connection.recovery.group-commit";
     String RECOVERY_GROUP_COMMIT_ATTRIBUTE = "group-commit";
     String PROPERTY_RECOVERY_FORCE_RESTART = "db-connection.recovery.force-restart";

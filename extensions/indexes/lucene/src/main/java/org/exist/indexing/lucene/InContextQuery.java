@@ -83,8 +83,8 @@ final class InContextQuery extends Query {
                 }
                 // only the documents with a vector of the field can match
                 final DocIdSetIterator approximation = vectors.iterator();
-                final SortedNumericDocValues docIds = DocValues.getSortedNumeric(leaf.reader(), LuceneIndexWorker.FIELD_DOC_ID);
-                final BinaryDocValues nodeIds = DocValues.getBinary(leaf.reader(), LuceneUtil.FIELD_NODE_ID_DV);
+                final SortedNumericDocValues docIds = DocValues.getSortedNumeric(leaf.reader(), LuceneFieldNames.FIELD_DOC_ID);
+                final BinaryDocValues nodeIds = DocValues.getBinary(leaf.reader(), LuceneFieldNames.FIELD_NODE_ID_DV);
                 final TwoPhaseIterator inContext = new TwoPhaseIterator(approximation) {
                     @Override
                     public boolean matches() throws IOException {
