@@ -41,6 +41,7 @@ import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 
+import static org.easymock.EasyMock.anyObject;
 import static org.easymock.EasyMock.createMock;
 import static org.easymock.EasyMock.expect;
 import static org.easymock.EasyMock.replay;
@@ -136,7 +137,7 @@ class BrokerPoolServiceTest {
     @Test
     void backgroundJobRefusedABrokerWhileShuttingDownFinishesCleanly() throws Exception {
         final BrokerPool mockBrokerPool = createMock(BrokerPool.class);
-        expect(mockBrokerPool.getBroker()).andThrow(new EXistException("BrokerPool is not operational (state: SHUTTING_DOWN_MULTI_USER_MODE)")).anyTimes();
+        expect(mockBrokerPool.getBrokerForService(anyObject(BrokerPoolService.class))).andThrow(new EXistException("BrokerPool is not operational (state: SHUTTING_DOWN_MULTI_USER_MODE)")).anyTimes();
         expect(mockBrokerPool.isShuttingDown()).andReturn(true).anyTimes();
         replay(mockBrokerPool);
 
@@ -158,7 +159,7 @@ class BrokerPoolServiceTest {
     @Test
     void backgroundJobRefusedABrokerWhileNotShuttingDownFails() throws Exception {
         final BrokerPool mockBrokerPool = createMock(BrokerPool.class);
-        expect(mockBrokerPool.getBroker()).andThrow(new EXistException("no broker")).anyTimes();
+        expect(mockBrokerPool.getBrokerForService(anyObject(BrokerPoolService.class))).andThrow(new EXistException("no broker")).anyTimes();
         expect(mockBrokerPool.isShuttingDown()).andReturn(false).anyTimes();
         replay(mockBrokerPool);
 
@@ -263,7 +264,7 @@ class BrokerPoolServiceTest {
                         throw new Exception("Unable to get BrokerPoolRef");
                     }
 
-                    try (final DBBroker broker = brokerPool.getBroker()) {
+                    try (final DBBroker broker = brokerPool.getBrokerForService(BackgroundJobsBrokerPoolService.this)) {
                         final long timestamp = System.nanoTime();
                         final String id = "job_" + jobId + "_" + broker.getId();
 
