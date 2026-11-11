@@ -595,7 +595,8 @@ public class XHTMLWriter extends IndentingXMLWriter {
 
     /**
      * Returns true if the HTML version is 5.0 or higher.
-     * Checks html-version first, then falls back to version (per W3C spec for html method).
+     * Checks html-version first, then, for the html method only, falls back to version (per W3C spec;
+     * for the xhtml method, version is the XML version).
      */
     protected boolean isHtml5Version() {
         if (outputProperties == null) {
@@ -609,7 +610,7 @@ public class XHTMLWriter extends IndentingXMLWriter {
                 // fall through
             }
         }
-        final String version = outputProperties.getProperty(OutputKeys.VERSION);
+        final String version = isHtmlMethod() ? outputProperties.getProperty(OutputKeys.VERSION) : null;
         if (version != null) {
             try {
                 return Double.parseDouble(version) >= 5.0;

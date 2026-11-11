@@ -995,6 +995,30 @@ function ser:serialize-xhtml-1-head-attribute() {
     => serialize(map { "method": "xhtml", "html-version": 1.0 })
 };
 
+(: for the xhtml method, version is the XML version, and the HTML version stays 5.0, see Serialization 3.1, 6.1.1 :)
+declare
+    %test:assertEquals('<!DOCTYPE html><html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /></head><body><br /></body></html>')
+function ser:serialize-xhtml-version-is-xml-version() {
+    <html><head/><body><br/></body></html>
+    => serialize(
+        <output:serialization-parameters>
+            <output:method value="xhtml"/>
+            <output:version value="1.0"/>
+        </output:serialization-parameters>)
+};
+
+(: for the html method, version is the HTML version if html-version is absent, see Serialization 3.1, 7.4.1 :)
+declare
+    %test:assertEquals('<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"></head><body><br></body></html>')
+function ser:serialize-html-version-is-html-version() {
+    <html><head/><body><br/></body></html>
+    => serialize(
+        <output:serialization-parameters>
+            <output:method value="html"/>
+            <output:version value="4.0"/>
+        </output:serialization-parameters>)
+};
+
 (: test for https://github.com/eXist-db/exist/issues/4736 :)
 declare
     %test:assertEquals('<!DOCTYPE html><html><body><p>hi</p></body></html>')
