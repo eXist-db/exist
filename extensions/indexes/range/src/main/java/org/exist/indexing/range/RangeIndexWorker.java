@@ -565,6 +565,7 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             IntField fDocIdIdx = new IntField(FIELD_DOC_ID, 0, Field.Store.NO);
             for (RangeIndexDoc pending : nodesToWrite) {
                 Document doc = new Document();
+                final Map<String, Analyzer> documentAnalyzers = new HashMap<>();
 
                 // store the node id
                 int nodeIdLen = pending.getNodeId().size();
@@ -599,6 +600,7 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                         Analyzer fieldAnalyzer = pending.getConfig().getAnalyzer(contentField);
                         if (fieldAnalyzer != null) {
                             index.addFieldAnalyzer(contentField, fieldAnalyzer);
+                            documentAnalyzers.put(contentField, fieldAnalyzer);
                         }
                         if (LOG.isDebugEnabled()) {
                             LOG.debug("INDEX field={} content={} analyzer={}",
@@ -616,7 +618,7 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 if (analyzer == null) {
                     analyzer = config.getDefaultAnalyzer();
                 }
-                writer.addDocument(doc);
+                index.addDocument(writer, doc, documentAnalyzers);
             }
         } catch (IOException e) {
             LOG.warn("An exception was caught while indexing document: {}", e.getMessage(), e);
