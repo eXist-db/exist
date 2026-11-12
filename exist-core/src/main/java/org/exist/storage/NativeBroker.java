@@ -1758,7 +1758,10 @@ public class NativeBroker implements DBBroker {
 
         // WRITE LOCK the collection's parent (as we will remove this collection from it)
         final XmldbURI parentCollectionUri = collection.getParentURI() == null ? XmldbURI.ROOT_COLLECTION_URI : collection.getParentURI();
-        try(final ManagedCollectionLock parentCollectionLock = writeLockCollection(parentCollectionUri)) {
+        try(final ManagedCollectionLock parentCollectionLock = writeLockCollection(parentCollectionUri);
+                // WRITE_LOCK every document to be removed: a reader holds only the document's lock once it has found
+                // the document, so without it the document could be removed while it is being read
+                final ManagedLocks<ManagedDocumentLock> documentLocks = new ManagedLocks<>(lockDescendantDocuments(collection, lockManager::acquireDocumentWriteLock))) {
             return _removeCollection(transaction, collection);
         } catch(final LockException e) {
             LOG.error("Unable to lock Collection: {}", collection.getURI(), e);
