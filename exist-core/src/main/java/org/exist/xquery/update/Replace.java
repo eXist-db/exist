@@ -67,7 +67,7 @@ public class Replace extends Modification {
     /* (non-Javadoc)
      * @see org.exist.xquery.AbstractExpression#eval(org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
      */
-    public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
+    protected Sequence evaluate(Sequence contextSequence, Item contextItem) throws XPathException {
         if (context.getProfiler().isEnabled()) {
             context.getProfiler().start(this);
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));

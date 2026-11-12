@@ -120,6 +120,8 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
 
     private final XQuery xqueryService = new XQuery();
 
+    private final DocumentRestructures documentRestructures = new DocumentRestructures();
+
     private AtomicLazyVal<SaxonConfiguration> saxonConfiguration = new AtomicLazyVal<>(() -> SaxonConfiguration.loadConfiguration(this));
 
     //TODO : make it non-static since every database instance may have its own policy.
@@ -1129,6 +1131,15 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
     //TODO : rename as getUpdateLock ?
     public Lock getGlobalUpdateLock() {
         return globalXUpdateLock;
+    }
+
+    /**
+     * Returns when the nodes of each document were last given new ids by a defragmentation.
+     *
+     * @return the record of restructured documents
+     */
+    public DocumentRestructures getDocumentRestructures() {
+        return documentRestructures;
     }
 
     /**

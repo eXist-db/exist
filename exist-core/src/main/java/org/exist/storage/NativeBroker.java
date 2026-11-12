@@ -1911,6 +1911,7 @@ public class NativeBroker implements DBBroker {
             docTrigger.afterDeleteDocument(this, transaction, doc.getURI());
 
             //Make doc's id available again
+            pool.getDocumentRestructures().forget(doc.getDocId());
             collectionsDb.freeResourceId(doc.getDocId());
         }
     }
@@ -2913,6 +2914,7 @@ public class NativeBroker implements DBBroker {
 
                 // TODO(AR) do we need a freeId flag to control this?
                 // recycle the id
+                pool.getDocumentRestructures().forget(oldDoc.getDocId());
                 collectionsDb.freeResourceId(oldDoc.getDocId());
 
                 // The Collection object oldDstDoc is now an empty husk which is
@@ -3140,6 +3142,7 @@ public class NativeBroker implements DBBroker {
             removeResourceMetadata(transaction, document);
 
             if(freeDocId) {
+                pool.getDocumentRestructures().forget(document.getDocId());
                 collectionsDb.freeResourceId(document.getDocId());
                 trigger.afterDeleteDocument(this, transaction, document.getURI());
             }
@@ -3398,6 +3401,9 @@ public class NativeBroker implements DBBroker {
         } catch(final IOException e) {
             LOG.error(e);
         } finally {
+            // the nodes have other ids now, or are in an unknown state if defragmenting failed: whoever selected nodes of this
+            // document before it got the lock must select them again
+            pool.getDocumentRestructures().restructured(doc.getDocId());
             // also when defragmenting failed: do not leave the half-written copy's page as the current page
             closeDocument();
         }
