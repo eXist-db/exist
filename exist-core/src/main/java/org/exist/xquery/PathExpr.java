@@ -292,7 +292,13 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
                         && stepIsContextIndependent
                         && stepIdx > 0
                         && currentContext != null && currentContext.hasMany();
-                if (inMemProcessing || atomicRhsMustIterate ||
+                // A filter expression as E2 whose predicate's positions must count within the sequence of each item
+                // of E1, e.g. $senses/(ancestor::entry)[1]. See #6831.
+                final boolean filterRhsMustIterate = contextFromPreviousStep
+                        && currentContext != null && currentContext.hasMany()
+                        && unwrapSingleStep(expr) instanceof FilteredExpression filtered
+                        && filtered.evalForEachContextItem();
+                if (inMemProcessing || atomicRhsMustIterate || filterRhsMustIterate ||
                         ((Dependency.dependsOn(exprDeps, Dependency.CONTEXT_ITEM) ||
                                 Dependency.dependsOn(exprDeps, Dependency.CONTEXT_POSITION)) &&
                                 //A positional predicate will be evaluated one time
@@ -684,5 +690,12 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
             return steps.getFirst().simplify();
         }
         return this;
+    }
+
+    private static Expression unwrapSingleStep(Expression expr) {
+        while (expr instanceof PathExpr path && !(expr instanceof Predicate) && path.getSubExpressionCount() == 1) {
+            expr = path.getSubExpression(0);
+        }
+        return expr;
     }
 }
