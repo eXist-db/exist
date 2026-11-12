@@ -25,6 +25,8 @@ xquery version "3.1";
  : A filter expression (E)[n] on the right of "/" or "!" counts the positions of its
  : predicate within the sequence E returns for each context item, for stored nodes as
  : for nodes in memory. See https://github.com/eXist-db/exist/issues/6831
+ :
+ : The tests on nested entries are from the test suite of @daliboris in that issue.
  :)
 module namespace fep="http://exist-db.org/xquery/test/filter-expression-persistent";
 
@@ -39,6 +41,17 @@ declare variable $fep:XML := document {
 </root>
 };
 
+(:~ Nested entries, from https://github.com/eXist-db/exist/issues/6831 :)
+declare variable $fep:NESTED :=
+    <root n="root">
+        <entry n="outer" sortKey="o">
+            <sense n="s1"><def n="d1">house</def></sense>
+            <entry n="inner">
+                <sense n="s2"><def n="d2">home</def></sense>
+            </entry>
+        </entry>
+    </root>;
+
 (:~ Name of the collection of this file, unique among the files of the suite. :)
 declare variable $fep:COLLECTION_NAME := "test-filter-expression-persistent";
 
@@ -49,8 +62,10 @@ declare
     %test:setUp
 function fep:setup() {
     let $testCol := xmldb:create-collection("/db", $fep:COLLECTION_NAME)
-    return
-        xmldb:store($fep:COLLECTION, "test.xml", $fep:XML)
+    return (
+        xmldb:store($fep:COLLECTION, "test.xml", $fep:XML),
+        xmldb:store($fep:COLLECTION, "nested.xml", $fep:NESTED)
+    )
 };
 
 declare
@@ -61,6 +76,20 @@ function fep:tearDown() {
 
 declare %private function fep:senses() {
     doc($fep:COLLECTION || "/test.xml")//sense
+};
+
+(:~ The senses of the stored document with nested entries and of the same document in memory. :)
+declare %private function fep:nested-stored() as element(sense)* {
+    doc($fep:COLLECTION || "/nested.xml")//sense
+};
+
+declare %private function fep:nested-memory() as element(sense)* {
+    $fep:NESTED//sense
+};
+
+(:~ @n of each node, joined with "|". :)
+declare %private function fep:n($nodes as node()*) as xs:string {
+    string-join($nodes ! string(@n), "|")
 };
 
 declare
@@ -161,3 +190,38 @@ declare
 function fep:ancestor-first-in-memory() {
     $fep:XML//sense/(ancestor::entry)[1]/@n/string()
 };
+
+(:~ --- nested entries: stored nodes, parenthesized expression relative to the context item --- :)
+
+declare %test:assertEquals("outer|inner") function fep:stored-parent()            { fep:n(fep:nested-stored() ! (parent::*)[1]) };
+declare %test:assertEquals("outer|outer") function fep:stored-ancestor()          { fep:n(fep:nested-stored() ! (ancestor::entry)[1]) };
+declare %test:assertEquals("outer|inner") function fep:stored-ancestor-1()        { fep:n(fep:nested-stored() ! (ancestor::entry[1])[1]) };
+declare %test:assertEquals("outer|outer") function fep:stored-sequence()          { fep:n(fep:nested-stored() ! (ancestor::entry[@sortKey][1], ancestor::entry[1])[1]) };
+declare %test:assertEquals("outer|inner") function fep:stored-ancestor-last()     { fep:n(fep:nested-stored() ! (ancestor::*)[last()]) };
+declare %test:assertEquals("root|root")   function fep:stored-ancestor-or-self()  { fep:n(fep:nested-stored() ! (ancestor-or-self::*)[1]) };
+declare %test:assertEquals("inner")       function fep:stored-following-sibling() { fep:n(fep:nested-stored() ! (following-sibling::*)[1]) };
+declare %test:assertEquals("d1|d2")       function fep:stored-child-2()           { fep:n(fep:nested-stored() ! (def, def)[2]) };
+declare %test:assertEquals("d1|d2")       function fep:stored-child-last()        { fep:n(fep:nested-stored() ! (def, def)[last()]) };
+declare %test:assertEquals("d1|d2")       function fep:stored-order()             { fep:n(fep:nested-stored() ! (def, .)[1]) };
+declare
+    %test:pending("a non-positional predicate on a sequence of stored nodes is evaluated as a node set, losing duplicates and order; to be fixed separately")
+    %test:assertEquals("d1|d1|d2|d2") function fep:stored-duplicates()        { fep:n(fep:nested-stored() ! (def, def)[@n]) };
+declare %test:assertEquals("outer|inner") function fep:stored-path-step()         { fep:n(fep:nested-stored()/(ancestor::entry[1], ancestor::entry[1])[1]) };
+declare %test:assertEquals("outer|inner") function fep:stored-let()               { fep:n(fep:nested-stored() ! (let $s := . return ($s/ancestor::entry[1], $s/ancestor::entry[1])[1])) };
+
+(:~ --- nested entries: the same expressions in memory (control) --- :)
+
+declare %test:assertEquals("outer|inner") function fep:memory-parent()            { fep:n(fep:nested-memory() ! (parent::*)[1]) };
+declare %test:assertEquals("outer|outer") function fep:memory-ancestor()          { fep:n(fep:nested-memory() ! (ancestor::entry)[1]) };
+declare %test:assertEquals("outer|outer") function fep:memory-sequence()          { fep:n(fep:nested-memory() ! (ancestor::entry[@sortKey][1], ancestor::entry[1])[1]) };
+declare %test:assertEquals("d1|d2")       function fep:memory-child-2()           { fep:n(fep:nested-memory() ! (def, def)[2]) };
+declare %test:assertEquals("d1|d2")       function fep:memory-order()             { fep:n(fep:nested-memory() ! (def, .)[1]) };
+
+(:~ --- nested entries: stored nodes, variants that also worked before --- :)
+
+declare %test:assertEquals("outer|inner") function fep:stored-no-parentheses()    { fep:n(fep:nested-stored() ! ancestor::entry[1]) };
+declare %test:assertEquals("outer|outer") function fep:stored-head()              { fep:n(fep:nested-stored() ! head((ancestor::entry[@sortKey][1], ancestor::entry[1]))) };
+declare %test:assertEquals("outer|outer") function fep:stored-subsequence()       { fep:n(fep:nested-stored() ! subsequence((ancestor::entry[@sortKey][1], ancestor::entry[1]), 1, 1)) };
+declare %test:assertEquals("outer|outer") function fep:stored-position()          { fep:n(fep:nested-stored() ! (ancestor::entry)[position() = 1]) };
+declare %test:assertEquals("outer|outer") function fep:stored-variable()          { fep:n(for $s in fep:nested-stored() return ($s/ancestor::entry[@sortKey][1], $s/ancestor::entry[1])[1]) };
+declare %test:assertEquals("d1|d2")       function fep:stored-child-1()           { fep:n(fep:nested-stored() ! (def, def)[1]) };
