@@ -36,6 +36,8 @@ import org.exist.dom.persistent.BinaryDocument;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
+import org.exist.source.UrlConnections;
+import org.exist.source.UrlConnections.Timeouts;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.TransactionException;
@@ -166,7 +168,7 @@ public class EXistURIResolver implements URIResolver {
   private Source urlSource(final String path) throws TransformerException {
     try {
       final URL url = new URL(path);
-      return new StreamSource(url.openStream());
+      return new StreamSource(UrlConnections.openStream(url, Timeouts.from(db.getConfiguration())));
     } catch (final IOException e) {
       throw new TransformerException(e.getMessage(), e);
     }

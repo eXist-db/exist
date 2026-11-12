@@ -862,4 +862,12 @@ class XmldbURITest {
 
         assertFalse(XmldbURI.create("/db/test_db").startsWith(XmldbURI.create("/db/test")));
     }
+
+    @Test
+    void embeddedServerUrl() {
+        assertEquals("xmldb:exist:///db/schema.xsd", XmldbURI.embeddedServerUrl("/db/schema.xsd"));
+        assertEquals("xmldb:exist:///db/schema.xsd", XmldbURI.embeddedServerUrl("xmldb:exist:///db/schema.xsd"));
+        assertEquals("http://example.org/schema.xsd", XmldbURI.embeddedServerUrl("http://example.org/schema.xsd"));
+        assertEquals("schema.xsd", XmldbURI.embeddedServerUrl("schema.xsd"));
+    }
 }

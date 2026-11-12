@@ -59,6 +59,8 @@ import org.exist.source.FileSource;
 import org.exist.source.Source;
 import org.exist.source.SourceFactory;
 import org.exist.source.StringSource;
+import org.exist.source.UrlConnections;
+import org.exist.source.UrlConnections.Timeouts;
 import org.exist.storage.DBBroker;
 import org.exist.storage.XQueryPool;
 import org.exist.storage.lock.Lock.LockMode;
@@ -665,7 +667,7 @@ public class Eval extends BasicFunction {
         final XMLReaderPool parserPool = context.getBroker().getBrokerPool().getParserPool();
         try {
             final URL url = new URL(uri);
-            final InputStreamReader isr = new InputStreamReader(url.openStream(), UTF_8);
+            final InputStreamReader isr = new InputStreamReader(UrlConnections.openStream(url, Timeouts.from(context.getBroker().getConfiguration())), UTF_8);
             final InputSource src = new InputSource(isr);
 
             xr = parserPool.borrowXMLReader();

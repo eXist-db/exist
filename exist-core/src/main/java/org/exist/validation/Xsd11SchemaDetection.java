@@ -44,6 +44,8 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.resolver.ResolverFactory;
+import org.exist.source.UrlConnections;
+import org.exist.source.UrlConnections.Timeouts;
 import org.xml.sax.InputSource;
 
 /**
@@ -197,7 +199,7 @@ public final class Xsd11SchemaDetection {
                 return cached;
             }
 
-            try (final InputStream is = resolvedUri.toURL().openStream()) {
+            try (final InputStream is = UrlConnections.openStream(resolvedUri.toURL(), Timeouts.current())) {
                 final InputSource schemaSource = new InputSource(is);
                 schemaSource.setSystemId(resolvedUri.toString());
                 final RootElementInfo schemaRootElement = peekRootElement(schemaSource);
