@@ -1287,70 +1287,111 @@ public class DOMFile extends BTree implements Lockable {
         final NodeRef nodeRef = new NativeBroker.NodeRef(doc.getDocId(), node.getNodeId());
         // first try to find the node in the index
         final long pointer = findValue(nodeRef);
-        if (pointer == KEY_NOT_FOUND) {
-            // node not found in index: try to find the nearest available
-            // ancestor and traverse it
-            NodeId nodeID = node.getNodeId();
-            long parentPointer = KEY_NOT_FOUND;
-            do {
-                nodeID = nodeID.getParentId();
-                if (nodeID == null) {
-                    SanityCheck.TRACE("Node " + node.getOwnerDocument().getDocId() + ":<null nodeID> not found.");
-                    throw new BTreeException("Node not found.");
-                }
-                if (nodeID == NodeId.DOCUMENT_NODE) {
-                    SanityCheck.TRACE("Node " + node.getOwnerDocument().getDocId() + ":" + nodeID + " not found.");
-                    return KEY_NOT_FOUND;
-                }
-                final NativeBroker.NodeRef parentRef = new NativeBroker.NodeRef(doc.getDocId(), nodeID);
-                try {
-                    parentPointer = findValue(parentRef);
-                } catch (final BTreeException bte) {
-                    LOG.error("report me", bte);
-                }
-            } while (parentPointer == KEY_NOT_FOUND);
-            try {
-
-                final int thisLevel = nodeID.getTreeLevel();
-                Integer childLevel = null; // lazily initialized below
-
-                final NodeProxy parent = new NodeProxy(null, doc, nodeID, parentPointer);
-                final EmbeddedXMLStreamReader reader = (EmbeddedXMLStreamReader)broker.getXMLStreamReader(parent, true);
-
-                while (reader.hasNext()) {
-                    final int status = reader.next();
-
-                    if (status != XMLStreamReader.END_ELEMENT) {
-                        if (childLevel == null) {
-                            childLevel = reader.getNode().getNodeType() == Node.ELEMENT_NODE ? thisLevel + 1 : thisLevel;
-                        }
-
-                        final NodeId otherId = (NodeId) reader.getProperty(ExtendedXMLStreamReader.PROPERTY_NODE_ID);
-                        if (otherId.equals(node.getNodeId())) {
-                            return reader.getCurrentPosition();
-                        }
-                    }
-
-                    if (status == XMLStreamConstants.END_ELEMENT) {
-                        final NodeId otherId = (NodeId) reader.getProperty(ExtendedXMLStreamReader.PROPERTY_NODE_ID);
-                        final int otherLevel = otherId.getTreeLevel();
-                        if (childLevel != null && childLevel != otherLevel && otherLevel == thisLevel) {
-                            // finished `this` element...
-                            break;  // exit-while
-                        }
-                    }
-                }
-
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("Node {} could not be found. Giving up. This is usually not an error.", node.getNodeId());
-                }
-                return KEY_NOT_FOUND;
-            } catch (final XMLStreamException e) {
-                SanityCheck.TRACE("Node " + node.getOwnerDocument().getDocId() + ":" + node.getNodeId() + " not found.");
-                throw new BTreeException("Node " + node.getNodeId() + " not found.");
-            }
-        } else {
+        if (pointer != KEY_NOT_FOUND) {
             return pointer;
+        }
+        // node not found in index: try to find the nearest available
+        // ancestor and traverse it
+        final AncestorEntry ancestor = findNearestAncestorEntry(doc, node);
+        if (ancestor == null) {
+            return KEY_NOT_FOUND;
+        }
+        return findInSubtree(broker, doc, ancestor, node);
+    }
+
+    /**
+     * An ancestor of a node that has an entry in the B-tree.
+     *
+     * @param nodeId the id of the ancestor
+     * @param pointer the address stored in its entry
+     */
+    private record AncestorEntry(NodeId nodeId, long pointer) {
+    }
+
+    /**
+     * Climbs from a node towards the root until it reaches an ancestor that has an entry in the B-tree.
+     *
+     * @param doc the document of the node
+     * @param node the node
+     * @return the nearest ancestor with an entry, or null if the climb reaches the document node
+     * @throws IOException if an I/O error occurs
+     * @throws BTreeException if the node has no parent id
+     */
+    private AncestorEntry findNearestAncestorEntry(final DocumentImpl doc, final NodeProxy node)
+            throws IOException, BTreeException {
+        NodeId nodeID = node.getNodeId();
+        long parentPointer = KEY_NOT_FOUND;
+        do {
+            nodeID = nodeID.getParentId();
+            if (nodeID == null) {
+                SanityCheck.TRACE("Node " + doc.getDocId() + ":<null nodeID> not found.");
+                throw new BTreeException("Node not found.");
+            }
+            if (nodeID == NodeId.DOCUMENT_NODE) {
+                SanityCheck.TRACE("Node " + doc.getDocId() + ":" + nodeID + " not found.");
+                return null;
+            }
+            final NativeBroker.NodeRef parentRef = new NativeBroker.NodeRef(doc.getDocId(), nodeID);
+            try {
+                parentPointer = findValue(parentRef);
+            } catch (final BTreeException bte) {
+                LOG.error("report me", bte);
+            }
+        } while (parentPointer == KEY_NOT_FOUND);
+        return new AncestorEntry(nodeID, parentPointer);
+    }
+
+    /**
+     * Reads the subtree of an ancestor forwards, in document order, until it reaches a node.
+     *
+     * @param broker the database broker
+     * @param doc the document of the node
+     * @param ancestor the ancestor to read from
+     * @param node the node to find
+     * @return the address of the node, or {@link #KEY_NOT_FOUND} if the subtree does not contain it
+     * @throws IOException if an I/O error occurs
+     * @throws BTreeException if the subtree cannot be read
+     */
+    private long findInSubtree(final DBBroker broker, final DocumentImpl doc, final AncestorEntry ancestor, final NodeProxy node)
+            throws IOException, BTreeException {
+        try {
+            final int thisLevel = ancestor.nodeId().getTreeLevel();
+            Integer childLevel = null; // lazily initialized below
+
+            final NodeProxy parent = new NodeProxy(null, doc, ancestor.nodeId(), ancestor.pointer());
+            final EmbeddedXMLStreamReader reader = (EmbeddedXMLStreamReader)broker.getXMLStreamReader(parent, true);
+
+            while (reader.hasNext()) {
+                final int status = reader.next();
+
+                if (status != XMLStreamReader.END_ELEMENT) {
+                    if (childLevel == null) {
+                        childLevel = reader.getNode().getNodeType() == Node.ELEMENT_NODE ? thisLevel + 1 : thisLevel;
+                    }
+
+                    final NodeId otherId = (NodeId) reader.getProperty(ExtendedXMLStreamReader.PROPERTY_NODE_ID);
+                    if (otherId.equals(node.getNodeId())) {
+                        return reader.getCurrentPosition();
+                    }
+                }
+
+                if (status == XMLStreamConstants.END_ELEMENT) {
+                    final NodeId otherId = (NodeId) reader.getProperty(ExtendedXMLStreamReader.PROPERTY_NODE_ID);
+                    final int otherLevel = otherId.getTreeLevel();
+                    if (childLevel != null && childLevel != otherLevel && otherLevel == thisLevel) {
+                        // finished `this` element...
+                        break;  // exit-while
+                    }
+                }
+            }
+
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Node {} could not be found. Giving up. This is usually not an error.", node.getNodeId());
+            }
+            return KEY_NOT_FOUND;
+        } catch (final XMLStreamException e) {
+            SanityCheck.TRACE("Node " + node.getOwnerDocument().getDocId() + ":" + node.getNodeId() + " not found.");
+            throw new BTreeException("Node " + node.getNodeId() + " not found.");
         }
     }
 
