@@ -98,11 +98,55 @@ public class FilteredExpression extends AbstractExpression {
             contextSequence = contextItem.toSequence();
         }
 
-        final Sequence result = filter(contextSequence, expression.eval(contextSequence, contextItem));
+        // A filter expression's predicate applies to the sequence that the expression returns, so its positions
+        // don't depend on the context nodes. If the expression is evaluated for many context nodes at once, its
+        // positions must count within each context node's sequence: when its results are all descendants-or-self of
+        // the context nodes, e.g. $nodes/(child)[1], the predicate does that for all of them at once; otherwise
+        // PathExpr evaluates it for each context item, see evalForEachContextItem()
+        final Sequence outerSequence = contextItem == null && contextSequence != null && contextSequence.hasMany()
+                && isDownwardSteps(expression) ? contextSequence : null;
+        final Sequence result = filter(outerSequence, expression.eval(contextSequence, contextItem));
         if (context.getProfiler().isEnabled()) {
             context.getProfiler().end(this, "", result);
         }
         return result;
+    }
+
+    /**
+     * Whether, as E2 of a path E1/E2, this expression must be evaluated for each item of E1, so that the positions
+     * of its predicate count within each item's sequence: the predicate may be positional (that is final only at
+     * evaluation time, e.g. for [$n]), and the expression's results are not all descendants-or-self of the context
+     * node, e.g. (ancestor::entry)[1] or (def, def)[2].
+     *
+     * @return true if the expression must be evaluated for each context item
+     */
+    boolean evalForEachContextItem() {
+        return !abbreviated
+                && predicates.getFirst().getExecutionMode() != Predicate.ExecutionMode.NODE
+                && !isDownwardSteps(expression);
+    }
+
+    /**
+     * Whether the expression is a location step or path of location steps whose results are descendants-or-self of
+     * the context node.
+     */
+    private static boolean isDownwardSteps(final Expression expr) {
+        if (expr instanceof LocationStep step) {
+            return switch (step.getAxis()) {
+                case Constants.CHILD_AXIS, Constants.DESCENDANT_AXIS, Constants.DESCENDANT_SELF_AXIS,
+                     Constants.ATTRIBUTE_AXIS, Constants.DESCENDANT_ATTRIBUTE_AXIS, Constants.SELF_AXIS -> true;
+                default -> false;
+            };
+        }
+        if (expr instanceof PathExpr path && !(expr instanceof Predicate) && path.getSubExpressionCount() > 0) {
+            for (int i = 0; i < path.getSubExpressionCount(); i++) {
+                if (!isDownwardSteps(path.getSubExpression(i))) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        return false;
     }
 
     /**
