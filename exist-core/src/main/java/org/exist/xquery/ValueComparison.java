@@ -25,6 +25,9 @@ import com.evolvedbinary.j8fu.tuple.Tuple2;
 import com.ibm.icu.text.Collator;
 import org.exist.dom.persistent.ContextItem;
 import org.exist.dom.persistent.ExtArrayNodeSet;
+import java.util.HashSet;
+import java.util.Set;
+import org.exist.dom.persistent.NewArrayNodeSet;
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.persistent.NodeSet;
 import org.exist.xquery.Constants.Comparison;
@@ -34,6 +37,7 @@ import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.Type;
 
 import javax.annotation.Nullable;
@@ -66,6 +70,62 @@ public class ValueComparison extends GeneralComparison {
 	public ValueComparison(XQueryContext context, Expression left, Expression right, Comparison relation) {
 		super(context, left, right, relation);
 	}
+
+    @Override
+    public Sequence eval(final Sequence contextSequence, final Item contextItem) throws XPathException {
+        final Sequence result = super.eval(contextSequence, contextItem);
+        if (inPredicate && result instanceof final NodeSet selected) {
+            checkCardinalityOfSelected(selected);
+        }
+        return result;
+    }
+
+    /**
+     * In a predicate over stored nodes, the comparison is decided for the left operand's nodes one by one, and those
+     * that match are mapped back to their context nodes: nothing checks how many items the operand has for a context
+     * node. XQuery 3.1 §2.3.4 requires that check for a context node the comparison selects, whose operand was
+     * evaluated, and allows skipping the others; so only the selected context nodes are checked.
+     *
+     * <p>Not covered yet (#7002): where a range index answers the comparison, it is replaced by a range lookup or, with
+     * an index configured with fields, by a field lookup, and this method is not reached; where the legacy index
+     * pre-selects it, the operand's step holds only the matching nodes, so a context node's other items are not
+     * seen.</p>
+     *
+     * @param selected the left operand's nodes that matched, carrying their context nodes
+     * @throws XPathException XPTY0004 if a selected context node has more than one item in the left operand
+     */
+    private void checkCardinalityOfSelected(final NodeSet selected) throws XPathException {
+        // Keyed by document and node id, not looked up in a node set: a node set sorts before it answers a lookup, so a
+        // lookup after each addition sorts again and again, and takes quadratic time in the number of nodes.
+        final Set<String> contextKeys = new HashSet<>();
+        final NodeSet contextNodes = new NewArrayNodeSet();
+        for (final NodeProxy node : selected) {
+            for (ContextItem item = node.getContext(); item != null; item = item.getNextDirect()) {
+                if (item.getContextId() == contextId && contextKeys.add(key(item.getNode()))) {
+                    contextNodes.add(item.getNode());
+                }
+            }
+        }
+        if (contextNodes.isEmpty()) {
+            return;
+        }
+        // one evaluation over all selected context nodes, as nodeSetCompare does over the whole context
+        final Set<String> seen = new HashSet<>();
+        for (final SequenceIterator i = getLeft().eval(contextNodes, null).iterate(); i.hasNext(); ) {
+            if (i.nextItem() instanceof final NodeProxy operandNode) {
+                for (ContextItem item = operandNode.getContext(); item != null; item = item.getNextDirect()) {
+                    if (item.getContextId() == contextId && !seen.add(key(item.getNode()))) {
+                        throw new XPathException(this, ErrorCodes.XPTY0004,
+                                "Type error: sequence with more than one item is not allowed here");
+                    }
+                }
+            }
+        }
+    }
+
+    private static String key(final NodeProxy node) {
+        return node.getOwnerDocument().getDocId() + "/" + node.getNodeId();
+    }
 
 	protected Sequence genericCompare(Sequence contextSequence, Item contextItem) throws XPathException {
         if (context.getProfiler().isEnabled())
