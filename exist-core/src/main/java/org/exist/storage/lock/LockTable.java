@@ -78,6 +78,11 @@ public class LockTable {
     private static final String THIS_CLASS_NAME = LockTable.class.getName();
 
     /**
+     * The group id of lock events whose group is not reported, see {@link #newGroupId()}.
+     */
+    public static final long NO_GROUP = -1;
+
+    /**
      * Set to false to disable all events
      */
     private final boolean disableEvents;
@@ -114,11 +119,6 @@ public class LockTable {
             registerListener(new LockEventLogListener(LOG, Level.TRACE));
         }
     }
-
-    /**
-     * The group id of lock events whose group is not reported, see {@link #newGroupId()}.
-     */
-    public static final long NO_GROUP = -1;
 
     /**
      * Gets an id for the events of a group of locks, such as the locks on a path, which listeners can use to tell
@@ -668,7 +668,7 @@ public class LockTable {
             return;
         }
 
-        // NOTE: the clock is read only when there is a listener to pass the time to; on macOS, System.nanoTime() doesn't scale across threads
+        // NOTE: the clock is read only when a listener is registered, see newGroupId()
         final long timestamp = System.nanoTime();
 
         final long stamp = listenersLock.readLock();

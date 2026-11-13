@@ -110,8 +110,10 @@ public class WeakLazyStripes<K, S> {
     private final boolean amortizeCleanup;
 
     /**
-     * Guard so that only a single thread drains
-     * references at once.
+     * Guard so that only a single thread runs the drain
+     * loop at once. A thread that polled a cleared reference
+     * removes that one itself first, outside this guard,
+     * see {@link #removeIfCleared(Reference)}.
      */
     private final AtomicBoolean draining = new AtomicBoolean();
 
