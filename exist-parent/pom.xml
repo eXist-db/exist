@@ -142,7 +142,7 @@
         <jaxb.api.version>4.0.5</jaxb.api.version>
         <jaxb.impl.version>4.0.2</jaxb.impl.version>
         <eclipse.angus-activation.version>2.0.3</eclipse.angus-activation.version>
-        <jetty.version>12.1.14</jetty.version>
+        <jetty.version>12.1.15</jetty.version>
         <log4j.version>2.26.1</log4j.version>
         <lucene.version>10.6.0</lucene.version>
         <lz4-java.version>1.14.0</lz4-java.version>
