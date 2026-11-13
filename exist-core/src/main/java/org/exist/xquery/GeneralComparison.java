@@ -35,6 +35,7 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.ElementValue;
 import org.exist.storage.IndexSpec;
 import org.exist.storage.Indexable;
+import org.exist.util.Collations;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.Constants.Comparison;
 import org.exist.xquery.Constants.StringTruncationOperator;
@@ -78,6 +79,8 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
 
     /** Extra argument (to standard functions starts-with/contains etc.) to indicate the collation to be used for string comparisons. */
     protected Object       collationArg          = null;
+    /** False if the collation argument was set by the implementation rather than named in the query. */
+    private boolean        collationNamed        = true;
 
     /** Set to true if this expression is called within the where clause of a FLWOR expression. */
     protected boolean      inWhereClause         = false;
@@ -246,10 +249,73 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
 
     @Override
     public Sequence canOptimizeSequence(final Sequence contextSequence) {
-        if (contextQName != null && Optimize.getQNameIndexType(context, contextSequence, contextQName) != Type.ITEM) {
+        if (contextQName != null && Optimize.getQNameIndexType(context, contextSequence, contextQName) != Type.ITEM
+                && !collationPreventsIndex(contextSequence)) {
             return contextSequence;
         }
         return Sequence.EMPTY_SEQUENCE;
+    }
+
+    /**
+     * Compares in a predicate, using the legacy range index where it can answer in the comparison's collation.
+     *
+     * @param contextSequence the context set
+     * @return the context nodes for which the comparison holds
+     * @throws XPathException if the comparison fails
+     */
+    private Sequence compareInPredicate(final Sequence contextSequence) throws XPathException {
+        if (collationPreventsIndex(contextSequence)) {
+            return compareLeftNodes(contextSequence);
+        }
+        return quickNodeSetCompare(contextSequence);
+    }
+
+    /**
+     * Compares the left operand's nodes with the right operand, returning the context nodes for which the comparison
+     * holds. The left operand returns nodes, but not necessarily stored ones: a path from a variable bound to an
+     * in-memory document returns a plain sequence, which is compared as written.
+     *
+     * @param contextSequence the context set
+     * @return the context nodes for which the comparison holds, or the comparison's value for in-memory nodes
+     * @throws XPathException if the comparison fails
+     */
+    private Sequence compareLeftNodes(final Sequence contextSequence) throws XPathException {
+        final Sequence nodes = getLeft().eval(contextSequence, null);
+        if (!nodes.isPersistentSet()) {
+            return genericCompare(contextSequence, null);
+        }
+        return nodeSetCompare(nodes.toNodeSet(), contextSequence);
+    }
+
+    /**
+     * Whether a collation the query names keeps the legacy range index from answering this comparison. The index
+     * finds keys by codepoint, so only a comparison with truncation ({@code starts-with}, {@code contains},
+     * {@code ends-with}), which it matches with the collator, can use it under another collation.
+     *
+     * @param contextSequence the context, to evaluate a collation argument against
+     * @return true if the comparison has to be evaluated without the index
+     */
+    private boolean collationPreventsIndex(final Sequence contextSequence) {
+        if (truncation != StringTruncationOperator.NONE || !hasExplicitCollation()) {
+            return false;
+        }
+        final boolean prevents;
+        try {
+            prevents = getCollator(contextSequence) != null;
+        } catch (final XPathException e) {
+            // the comparison reports the error when it is evaluated; the index is no reason to say so here
+            return true;
+        }
+        if (prevents) {
+            final String message = "Range index not used: the query names a collation the index does not compare in";
+            if (LOG.isTraceEnabled()) {
+                LOG.trace("{}: {}", message, this);
+            }
+            if (context.getProfiler().isEnabled()) {
+                context.getProfiler().message(this, Profiler.OPTIMIZATIONS, "OPTIMIZATION", message);
+            }
+        }
+        return prevents;
     }
 
     public boolean optimizeOnSelf()
@@ -374,7 +440,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
 
                 NodeSet  temp;
                 final NodeSet  contextSet = useContext ? contextSequence.toNodeSet() : null;
-                final Collator collator   = ( ( collationArg != null ) ? getCollator( contextSequence ) : null );
+                final Collator collator   = appliesCollation() ? getCollator( contextSequence ) : null;
 
                 if( truncation == StringTruncationOperator.NONE ) {
                     temp         = context.getBroker().getValueIndex().find(context.getWatchDog(), relation, contextSequence.getDocumentSet(), contextSet, NodeSet.DESCENDANT, contextQName, indexable);
@@ -465,7 +531,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
                         }
 
                         if( ( !Dependency.dependsOn( rightOpDeps, Dependency.CONTEXT_ITEM ) ) ) {
-                            result = quickNodeSetCompare( contextSequence );
+                            result = compareInPredicate( contextSequence );
                         } else {
                             final NodeSet nodes = ( NodeSet )getLeft().eval(contextSequence, null);
                             result = nodeSetCompare( nodes, contextSequence );
@@ -828,7 +894,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
                         LOG.trace("Checking if range index can be used for key: {}", key.getStringValue());
                     }
 
-                    final Collator collator = ( ( collationArg != null ) ? getCollator( contextSequence ) : null );
+                    final Collator collator = appliesCollation() ? getCollator( contextSequence ) : null;
 
                     if( Type.subTypeOf( key.getType(), indexType ) ) {
 
@@ -1257,7 +1323,38 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
     }
 
 
-    protected Collator getCollator( Sequence contextSequence ) throws XPathException
+    /**
+     * Whether the query names a collation for this comparison: a collation argument the query gives (not one the
+     * implementation sets, see {@link #setImplicitCollation(Object)}), or a default collation other than the codepoint
+     * collation. An index may answer the comparison only with that collation.
+     *
+     * @return true if the comparison has an explicit collation
+     */
+    public boolean hasExplicitCollation() {
+        if (collationArg != null) {
+            return collationNamed;
+        }
+        return !Collations.UNICODE_CODEPOINT_COLLATION_URI.equals(context.getDefaultCollation());
+    }
+
+    /**
+     * Whether the comparison compares with a collation other than codepoint: its collation argument, named or set by
+     * the implementation, or the query's default collation.
+     *
+     * @return true if a collator is to be passed to the legacy range index
+     */
+    private boolean appliesCollation() {
+        return collationArg != null || !Collations.UNICODE_CODEPOINT_COLLATION_URI.equals(context.getDefaultCollation());
+    }
+
+    /**
+     * The collation the comparison uses: its collation argument, otherwise the query's default collation.
+     *
+     * @param contextSequence the context, to evaluate a collation argument against
+     * @return the collator, or null for the codepoint collation
+     * @throws XPathException if the collation argument cannot be evaluated or names an unknown collation
+     */
+    public Collator getCollator( Sequence contextSequence ) throws XPathException
     {
         if( collationArg == null ) {
             return( context.getDefaultCollator() );
@@ -1280,6 +1377,19 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
     public void setCollation( Object collationArg )
     {
         this.collationArg = collationArg;
+        this.collationNamed = true;
+    }
+
+    /**
+     * Sets a collation the comparison has by definition rather than because the query names it, as for
+     * {@code fn:equals} with two arguments. It is used for the comparison, but an index answers with its own
+     * configuration, as for a comparison without a collation (see {@link #hasExplicitCollation()}).
+     *
+     * @param collationArg the collation URI
+     */
+    public void setImplicitCollation(final Object collationArg) {
+        this.collationArg = collationArg;
+        this.collationNamed = false;
     }
 
 

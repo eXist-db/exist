@@ -526,7 +526,8 @@ public class Lookup extends Function implements Optimizable, IndexUseReporter {
             }
         }
 
-        canOptimize = optimizables != null && optimizables.getItemCount() == contextSequence.getItemCount();
+        canOptimize = optimizables != null && optimizables.getItemCount() == contextSequence.getItemCount()
+                && collationsAgree(contextSequence, configs.values());
         usesCollation = usesCollationCount == contextSequence.getItemCount();
 
         if (!canOptimize && fallback instanceof final Optimizable optimizableFallback) {
@@ -534,6 +535,31 @@ public class Lookup extends Function implements Optimizable, IndexUseReporter {
         }
 
         return optimizables != null ? optimizables : Sequence.EMPTY_SEQUENCE;
+    }
+
+    /**
+     * Whether every index found can answer in the collation the query names for the comparison this lookup replaced.
+     * Only a named collation counts (see {@link GeneralComparison#hasExplicitCollation()}): without one, the index
+     * compares with its own configuration, by design.
+     *
+     * @param contextSequence the context, to evaluate a collation argument against
+     * @param configs the index configurations found for the context's collections
+     * @return true if the index may answer the comparison
+     */
+    private boolean collationsAgree(final Sequence contextSequence,
+            final Iterable<Optional<RangeIndexConfigElement>> configs) {
+        final GeneralComparison comparison = fallback == null ? null : IndexCollation.namingCollation(fallback);
+        if (comparison == null) {
+            return true;
+        }
+        for (final Optional<RangeIndexConfigElement> config : configs) {
+            if (config.isPresent() && !IndexCollation.answers(comparison, contextSequence, config.get().getCollator(),
+                    config.get().isCaseSensitive(null), getOperator())) {
+                IndexCollation.reportDeclined(this, "New range index");
+                return false;
+            }
+        }
+        return true;
     }
 
     /** Pre-selecting finds hits below the step's input, which the nodes of these axes are not. */
