@@ -193,6 +193,9 @@ public abstract class AbstractFieldConfig {
     protected CompiledXQuery compile(final DBBroker broker, final String code) {
         final XQuery xquery = broker.getBrokerPool().getXQueryService();
         final XQueryContext context = new XQueryContext(broker.getBrokerPool());
+        // The expression runs while its document is being indexed, before the other indexes hold it: the optimizer
+        // would rewrite a predicate on an attribute with a range index into a lookup that finds nothing.
+        context.setOptimizationsEnabled(false);
         try {
             return xquery.compile(context, code);
         } catch (XPathException | PermissionDeniedException e) {
