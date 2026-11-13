@@ -102,6 +102,25 @@ class MatchChainTest {
     }
 
     @Test
+    void anEqualMatchWithOffsetsTheChainHasReturnsTheChain() {
+        final Match chain = Match.add(Match.add(Match.add(null, match("1.1", "a", 0)), match("1.2", "b", 5, 8)),
+                match("1.3", "c", 9));
+        // the same match again, one of its offsets, a copy of the match in the chain: nothing to merge
+        assertSame(chain, Match.add(chain, match("1.2", "b", 5, 8)));
+        assertSame(chain, Match.add(chain, match("1.2", "b", 8)));
+        assertSame(chain, Match.add(chain, chain.getNextMatch()));
+        assertEquals("1.3/9 1.2/5,8 1.1/0", chain(chain));
+    }
+
+    @Test
+    void anEqualMatchWithAnOffsetTheChainLacksIsStillMerged() {
+        final Match chain = Match.add(Match.add(null, match("1.1", "a", 0)), match("1.2", "b", 5));
+        final Match merged = Match.add(chain, match("1.2", "b", 5, 7));
+        assertEquals("1.2/5,7 1.1/0", chain(merged));
+        assertEquals("1.2/5 1.1/0", chain(chain));
+    }
+
+    @Test
     void aCopysOffsetsAreItsOwn() {
         final Match original = new TestMatch(new DLN("1.1"), "a", 4);
         original.addOffset(0, 1);
