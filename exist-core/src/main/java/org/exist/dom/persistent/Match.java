@@ -130,11 +130,12 @@ public abstract class Match implements Comparable<Match> {
     /**
      * A chain of matches with {@code match} added; neither {@code chain} nor {@code match} changes, so chains can be
      * shared between nodes. A match equal to one in the chain has its offsets merged into a copy of that one, which
-     * takes its place; otherwise a copy of {@code match} goes in front and the chain is shared.
+     * takes its place, unless the chain holds those offsets already: then the chain is the answer. Otherwise a copy
+     * of {@code match} goes in front and the chain is shared.
      *
      * @param chain the chain, or null for none
      * @param match the match to add, of which only the match itself is taken, not its chain
-     * @return the new chain
+     * @return the new chain, which is {@code chain} itself if adding the match changes nothing
      */
     public static Match add(@Nullable final Match chain, final Match match) {
         int position = 0;
@@ -149,6 +150,11 @@ public abstract class Match implements Comparable<Match> {
             final Match head = match.newCopy();
             head.nextMatch = chain;
             return head;
+        }
+        if (equal.hasAllOffsetsOf(match)) {
+            // merging would add nothing: a predicate adds the matches of each hit to a context node that has them
+            // already, so copying the matches in front of the equal one would be wasted
+            return chain;
         }
         final Match merged = equal.newCopy();
         merged.mergeOffsets(match);
@@ -390,6 +396,21 @@ public abstract class Match implements Comparable<Match> {
         final Match result = createInstance(context, nodeId, matchTerm);
         result.addOffsets(nonOverlappingMatchOffsets);
         return result;
+    }
+
+    /**
+     * Whether a match starts at the position of each offset of another match: {@link #mergeOffsets(Match)} adds nothing then.
+     *
+     * @param other the other match
+     * @return true if every offset of the other match is there
+     */
+    private boolean hasAllOffsetsOf(final Match other) {
+        for (int i = 0; i < other.currentOffset; i++) {
+            if (!hasMatchAt(other.offsets[i])) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
