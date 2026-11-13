@@ -167,6 +167,7 @@ public class HTML5Writer extends XHTML5Writer {
             // honor the meta-in-head dedup that XHTMLWriter sets up at startElement
             // time. Capture the buffered-meta flag before closeStartTag flips state.
             final boolean wasBufferedMeta = isBufferedMeta(qname.getLocalPart());
+            afterEndElement();
             closeStartTag(true);
             endIndent(qname.getNamespaceURI(), qname.getLocalPart());
             if (wasBufferedMeta) {
@@ -181,6 +182,7 @@ public class HTML5Writer extends XHTML5Writer {
             super.endElement(namespaceURI, localName, qname);
         } else {
             final boolean wasBufferedMeta = isBufferedMeta(localName);
+            afterEndElement();
             closeStartTag(true);
             endIndent(namespaceURI, localName);
             if (wasBufferedMeta) {
@@ -293,7 +295,7 @@ public class HTML5Writer extends XHTML5Writer {
     }
 
     @Override
-    protected void closeStartTag(boolean isEmpty) throws TransformerException {
+    protected void writeStartTagEnd(final boolean isEmpty) throws TransformerException {
         try {
             if (tagIsOpen) {
                 final Writer w = getWriter();
