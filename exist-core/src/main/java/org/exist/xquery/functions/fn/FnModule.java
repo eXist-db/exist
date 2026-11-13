@@ -23,9 +23,14 @@ package org.exist.xquery.functions.fn;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.regex.Pattern;
 
+import com.evolvedbinary.j8fu.tuple.Tuple2;
 import org.exist.dom.QName;
+import org.exist.util.PatternFactory;
 import org.exist.xquery.*;
+import org.exist.xquery.functions.AccessUtil;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
 
@@ -281,7 +286,12 @@ public class FnModule extends AbstractInternalModule {
     public final static ErrorCodes.ErrorCode SEPM0019 = new ErrorCodes.ErrorCode("SEPM0019", "It is an error if an instance of the data model " +
             "used to specify the settings of serialization parameters specifies the value of the same parameter more than once.");
 
-    public FnModule(Map<String, List<?>> parameters) {
+    private static final Pattern PTN_ENVIRONMENT_VARIABLE_ACCESS = PatternFactory.getInstance().getPattern("environmentVariableAccess\\.([^=\\00]+)\\.requires((?:Group)|(?:User))");
+
+    private Map<String, Set<String>> environmentVariableAccessGroups = null;
+    private Map<String, Set<String>> environmentVariableAccessUsers = null;
+
+    public FnModule(final Map<String, List<?>> parameters) {
         super(functions, parameters);
     }
 
@@ -303,6 +313,39 @@ public class FnModule extends AbstractInternalModule {
     @Override
     public String getReleaseVersion() {
         return RELEASED_IN_VERSION;
+    }
+
+    /**
+     * Lazily parses the environment variable access rules from the module parameters, on
+     * first use, caching both the group and user rules together so the two getters below
+     * cannot drift out of sync with one another.
+     */
+    private void ensureEnvironmentVariableAccessRulesParsed() {
+        if (environmentVariableAccessGroups == null) {
+            final Tuple2<Map<String, Set<String>>, Map<String, Set<String>>> accessRules = AccessUtil.parseAccessParameters(PTN_ENVIRONMENT_VARIABLE_ACCESS, getParameters());
+            this.environmentVariableAccessGroups = accessRules._1;
+            this.environmentVariableAccessUsers = accessRules._2;
+        }
+    }
+
+    /**
+     * Get the environment variable names and groups that are allowed to access them.
+     *
+     * @return a map where the key is the environment variable name, and the value is a set of group names.
+     */
+    Map<String, Set<String>> getEnvironmentVariableAccessGroups() {
+        ensureEnvironmentVariableAccessRulesParsed();
+        return environmentVariableAccessGroups;
+    }
+
+    /**
+     * Get the environment variable names and users that are allowed to access them.
+     *
+     * @return a map where the key is the environment variable name, and the value is a set of usernames.
+     */
+    Map<String, Set<String>> getEnvironmentVariableAccessUsers() {
+        ensureEnvironmentVariableAccessRulesParsed();
+        return environmentVariableAccessUsers;
     }
 
     static FunctionSignature functionSignature(final String name, final String description,

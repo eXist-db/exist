@@ -179,7 +179,11 @@ public class LauncherWrapper {
         getLauncherOpts(args, launcherProperties);
 
         boolean foundExistHomeSysProp = false;
-        final Properties sysProps = System.getProperties();
+        // Properties#clone() is synchronized on the live, JVM-wide System.getProperties()
+        // instance, so this takes a safe, consistent snapshot even if another thread calls
+        // System.setProperty()/clearProperty() concurrently, rather than iterating the live
+        // Hashtable directly and risking a ConcurrentModificationException.
+        final Properties sysProps = (Properties) System.getProperties().clone();
         for (final Map.Entry<Object, Object> entry : sysProps.entrySet()) {
             final String key = entry.getKey().toString();
             if (key.startsWith("exist.") || key.startsWith("log4j.") || key.startsWith("jetty.") || key.startsWith("app.")) {
