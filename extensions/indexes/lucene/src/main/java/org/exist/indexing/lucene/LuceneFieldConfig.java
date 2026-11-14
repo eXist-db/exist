@@ -30,9 +30,7 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
 import org.exist.util.Configuration;
 import org.exist.util.DatabaseConfigurationException;
-import org.exist.xquery.CompiledXQuery;
 import org.exist.xquery.XPathException;
-import org.exist.xquery.XQuery;
 import org.exist.xquery.value.*;
 import org.w3c.dom.Element;
 
@@ -76,7 +74,7 @@ public class LuceneFieldConfig extends AbstractFieldConfig {
     protected boolean store = true;
     protected Analyzer analyzer= null;
     protected Optional<String> condition = Optional.empty();
-    protected CompiledXQuery compiledCondition = null;
+    private IndexingQueries conditionQueries = null;
 
     LuceneFieldConfig(LuceneConfig config, Element configElement, Map<String, String> namespaces, AnalyzerConfig analyzers) throws DatabaseConfigurationException {
         super(config, configElement, namespaces);
@@ -109,6 +107,7 @@ public class LuceneFieldConfig extends AbstractFieldConfig {
         final String cond = configElement.getAttribute(ATTR_IF);
         if (!cond.isEmpty()) {
             this.condition = Optional.of(cond);
+            this.conditionQueries = new IndexingQueries(cond);
         }
 
         this.binary = Configuration.parseBooleanAttribute(configElement, ATTR_BINARY, false);
@@ -197,26 +196,12 @@ public class LuceneFieldConfig extends AbstractFieldConfig {
     }
 
     private boolean checkCondition(DBBroker broker, NodeProxy contextNode) throws PermissionDeniedException, XPathException {
-        if (condition.isEmpty()) {
+        if (conditionQueries == null) {
             return true;
         }
-
-        if (compiledCondition == null && isValid) {
-            compiledCondition = compile(broker, condition.get());
-        }
-        if (!isValid) {
-            return false;
-        }
-
-        final XQuery xquery = broker.getBrokerPool().getXQueryService();
-        try {
-            Sequence result = xquery.execute(broker, compiledCondition, contextNode);
-            return result != null && result.effectiveBooleanValue();
-        } catch (PermissionDeniedException | XPathException e) {
-            throw e;
-        } finally {
-            try { compiledCondition.reset(); } finally { compiledCondition.getContext().reset(); }
-        }
+        final Boolean result = conditionQueries.evaluate(broker, contextNode,
+                sequence -> sequence != null && sequence.effectiveBooleanValue());
+        return result != null && result;
     }
 
     @Override
