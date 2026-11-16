@@ -23,6 +23,7 @@ package org.exist.util.serializer;
 
 import java.io.IOException;
 import java.io.Writer;
+import javax.annotation.Nullable;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.TransformerException;
 
@@ -349,13 +350,22 @@ public class XHTMLWriter extends IndentingXMLWriter {
      * Called after an element has started: a head gets the content-type meta when its start tag is
      * closed.
      */
-    private void afterStartElement(final String localName) {
+    private void afterStartElement(@Nullable final String namespaceURI, final String localName) {
         if (headDepth > 0) {
             headDepth++;
-        } else if ("head".equalsIgnoreCase(localName)) {
+        } else if (isHtmlHead(namespaceURI, localName)) {
             headDepth = 1;
             contentTypeMetaPending = isIncludeContentType();
         }
+    }
+
+    /**
+     * Only an HTML head gets the content-type meta (Serialization 3.1, 6 and 7.1): one in no namespace or
+     * in the XHTML namespace. A head in another namespace, such as a TEI heading, is left alone.
+     */
+    private static boolean isHtmlHead(@Nullable final String namespaceURI, final String localName) {
+        return "head".equalsIgnoreCase(localName)
+                && (namespaceURI == null || namespaceURI.isEmpty() || Namespaces.XHTML_NS.equals(namespaceURI));
     }
 
     /**
@@ -426,7 +436,7 @@ public class XHTMLWriter extends IndentingXMLWriter {
         beforeStartElement(xhtmlQName.getLocalPart());
         super.startElement(xhtmlQName);
         currentTag = xhtmlQName.getStringValue();
-        afterStartElement(xhtmlQName.getLocalPart());
+        afterStartElement(xhtmlQName.getNamespaceURI(), xhtmlQName.getLocalPart());
     }
 
     @Override
@@ -471,7 +481,7 @@ public class XHTMLWriter extends IndentingXMLWriter {
         beforeStartElement(localName);
         super.startElement(namespaceURI, localName, xhtmlQName);
         currentTag = xhtmlQName;
-        afterStartElement(localName);
+        afterStartElement(namespaceURI, localName);
     }
 
     @Override

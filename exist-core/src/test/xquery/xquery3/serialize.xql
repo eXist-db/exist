@@ -971,6 +971,35 @@ function ser:serialize-html-5-head-attribute-no-content-type() {
     => serialize(map:merge(($ser:opt-map-html5, map { "include-content-type": false() })))
 };
 
+(: only a head in no namespace or the XHTML namespace is an HTML head, see Serialization 3.1, 6 and 7.1 :)
+declare
+    %test:assertEquals('<TEI xmlns="http://www.tei-c.org/ns/1.0"><text><body><div><head>One</head></div><div><head>Two</head></div></body></text></TEI>')
+function ser:serialize-html-5-tei-head-no-meta() {
+    <TEI xmlns="http://www.tei-c.org/ns/1.0"><text><body><div><head>One</head></div><div><head>Two</head></div></body></text></TEI>
+    => serialize($ser:opt-map-html5)
+};
+
+declare
+    %test:assertEquals('<TEI xmlns="http://www.tei-c.org/ns/1.0"><text><body><div><head>One</head></div></body></text></TEI>')
+function ser:serialize-xhtml-5-tei-head-no-meta() {
+    <TEI xmlns="http://www.tei-c.org/ns/1.0"><text><body><div><head>One</head></div></body></text></TEI>
+    => serialize(map { "method": "xhtml" })
+};
+
+declare
+    %test:assertEquals('<!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml"><head><meta charset="UTF-8" /></head><body></body></html>')
+function ser:serialize-xhtml-5-xhtml-namespace-head() {
+    <html xmlns="http://www.w3.org/1999/xhtml"><head/><body/></html>
+    => serialize(map { "method": "xhtml" })
+};
+
+declare
+    %test:assertEquals('<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body><svg xmlns="http://www.w3.org/2000/svg"><head/></svg></body></html>')
+function ser:serialize-html-5-foreign-head-no-meta() {
+    <html><head/><body><svg xmlns="http://www.w3.org/2000/svg"><head/></svg></body></html>
+    => serialize($ser:opt-map-html5)
+};
+
 (: test for https://github.com/eXist-db/exist/issues/6587 :)
 declare
     %test:assertEquals('<html><head n="1"><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>t</title></head><body></body></html>')
