@@ -26,6 +26,8 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.Optional;
+import java.util.StringJoiner;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.annotation.Nullable;
 import javax.xml.parsers.ParserConfigurationException;
@@ -1648,6 +1650,36 @@ try {
             final String response = readResponse(connect.getInputStream());
             assertTrue(response.contains("text/html"), "Expected text/html in: " + response);
             assertTrue(response.contains("application/json"), "Expected application/json in: " + response);
+        } finally {
+            connect.disconnect();
+        }
+    }
+
+    /**
+     * The start and max attributes of a POSTed query document select the page of results.
+     * Regression test for https://github.com/eXist-db/exist/issues/6560 where both were ignored.
+     */
+    @Test
+    void postQueryHonorsStartAndMax() throws IOException {
+        final String query = """
+                <query xmlns="http://exist.sourceforge.net/NS/exist" start="3" max="5">
+                    <text>1 to 10</text>
+                </query>""";
+        final HttpURLConnection connect = preparePost(query, getCollectionUri());
+        try {
+            connect.connect();
+            final int r = connect.getResponseCode();
+            assertEquals(HttpStatus.OK_200, r, "Server returned response code " + r);
+            final String response = readResponse(connect.getInputStream());
+            assertTrue(response.contains("exist:hits=\"10\""), "Expected 10 hits in: " + response);
+            assertTrue(response.contains("exist:start=\"3\""), "Expected start 3 in: " + response);
+            assertTrue(response.contains("exist:count=\"5\""), "Expected count 5 in: " + response);
+            final Matcher m = Pattern.compile("<exist:value[^>]*>(\\d+)</exist:value>").matcher(response);
+            final StringJoiner values = new StringJoiner(" ");
+            while (m.find()) {
+                values.add(m.group(1));
+            }
+            assertEquals("3 4 5 6 7", values.toString(), "Unexpected page in: " + response);
         } finally {
             connect.disconnect();
         }

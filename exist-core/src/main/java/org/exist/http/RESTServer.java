@@ -1217,7 +1217,7 @@ public class RESTServer {
     private int parseIntAttribute(final ElementImpl root, final RESTServerParameter parameter,
             final int defaultValue) {
         final String option = root.getAttribute(parameter.xmlKey());
-        if (option.isEmpty()) {
+        if (!option.isEmpty()) {
             try {
                 return Integer.parseInt(option);
             } catch (final NumberFormatException e) {
