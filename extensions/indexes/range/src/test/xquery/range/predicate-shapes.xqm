@@ -40,6 +40,7 @@ declare variable $rps:XCONF :=
         <index>
             <range>
                 <create qname="item" type="xs:string"/>
+                <create qname="@n" type="xs:string"/>
                 <create qname="t" type="xs:string"/>
                 <create qname="sec" type="xs:string"/>
                 <create qname="other"><field name="rps-field" match="t" type="xs:string"/></create>
@@ -213,4 +214,38 @@ declare
     %test:assertXPath("exists($result//stats:index[@type eq 'new-range']) and empty($result//stats:index[@optimization-level eq 'OPTIMIZED'])")
 function rps:field-function-in-a-predicate-reports-basic() {
     collection($rps:COLLECTION)//other[range:field-eq("rps-field", "hit")]
+};
+
+(: the range index has no equivalent of the s, m and x flags, nor of i together with another flag: the lookup steps aside and
+   fn:matches is evaluated as written. It must not ask the old-style index, which a collection with only a range index does
+   not have: that answered nothing :)
+declare
+    %test:assertEquals("1")
+function rps:matches-with-the-s-flag-on-an-attribute() {
+    collection($rps:COLLECTION)//item[matches(@n, "^1$", "s")]/@n/string()
+};
+
+declare
+    %test:assertEquals("1")
+function rps:matches-with-the-m-flag-on-an-attribute() {
+    collection($rps:COLLECTION)//item[matches(@n, "^1$", "m")]/@n/string()
+};
+
+declare
+    %test:assertEquals("1")
+function rps:matches-with-the-x-flag-on-an-attribute() {
+    collection($rps:COLLECTION)//item[matches(@n, "^1$", "x")]/@n/string()
+};
+
+declare
+    %test:assertEquals("1")
+function rps:matches-with-the-i-flag-and-another-on-an-attribute() {
+    collection($rps:COLLECTION)//item[matches(@n, "^1$", "is")]/@n/string()
+};
+
+declare
+    %test:stats
+    %test:assertXPath("empty($result//stats:index[@type eq 'range'][@optimization-level eq 'OPTIMIZED'])")
+function rps:matches-with-the-s-flag-does-not-ask-the-old-style-index() {
+    collection($rps:COLLECTION)//item[matches(@n, "^1$", "s")]
 };
