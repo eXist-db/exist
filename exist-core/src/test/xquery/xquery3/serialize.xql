@@ -1045,7 +1045,8 @@ function ser:serialize-html-5-head-indent() {
     => serialize(map:merge(($ser:opt-map-html5, map { "indent": true() })))
 };
 
-(: only a head in no namespace or the XHTML namespace is an HTML head, see Serialization 3.1, 6 and 7.1 :)
+(: only a head in no namespace or the XHTML namespace is an HTML head, see Serialization 3.1, 6 and 7.1,
+   and only the head of a page gets the meta: the first head child of an html element, or a head on its own :)
 declare
     %test:assertEquals('<TEI xmlns="http://www.tei-c.org/ns/1.0"><text><body><div><head>One</head></div><div><head>Two</head></div></body></text></TEI>')
 function ser:serialize-html-5-tei-head-no-meta() {
@@ -1072,6 +1073,65 @@ declare
 function ser:serialize-html-5-foreign-head-no-meta() {
     <html><head/><body><svg xmlns="http://www.w3.org/2000/svg"><head/></svg></body></html>
     => serialize($ser:opt-map-html5)
+};
+
+declare
+    %test:assertEquals('<doc><section><head>A</head></section></doc>')
+function ser:serialize-html-5-section-head-no-meta() {
+    <doc><section><head>A</head></section></doc>
+    => serialize($ser:opt-map-html5)
+};
+
+(: only the first two levels are checked: an html that is not the outermost element is not a page :)
+declare
+    %test:assertEquals('<div><html><head></head></html></div>')
+function ser:serialize-html-5-nested-html-no-meta() {
+    <div><html><head/></html></div>
+    => serialize($ser:opt-map-html5)
+};
+
+(: a head on its own is the head of an HTML fragment :)
+declare
+    %test:assertEquals('<head><meta charset="UTF-8"><title>t</title></head>')
+function ser:serialize-html-5-head-fragment() {
+    <head><title>t</title></head>
+    => serialize($ser:opt-map-html5)
+};
+
+declare
+    %test:assertEquals('<head><meta charset="UTF-8" /><title>t</title></head>')
+function ser:serialize-xhtml-5-head-fragment() {
+    <head><title>t</title></head>
+    => serialize(map { "method": "xhtml" })
+};
+
+declare
+    %test:assertEquals('<head><meta charset="UTF-8"></head> <head><meta charset="UTF-8"></head>')
+function ser:serialize-html-5-head-fragments() {
+    (<head/>, <head/>)
+    => serialize($ser:opt-map-html5)
+};
+
+declare
+    %test:assertEquals('<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body><div><head>A</head></div></body></html>')
+function ser:serialize-html-5-head-in-body-no-meta() {
+    <html><head/><body><div><head>A</head></div></body></html>
+    => serialize($ser:opt-map-html5)
+};
+
+declare
+    %test:assertEquals('<!DOCTYPE html><html><head><meta charset="UTF-8"></head><head n="2"><meta charset="utf-8"></head><body></body></html>')
+function ser:serialize-html-5-second-head-no-meta() {
+    (: a second head is invalid HTML, it is written as it is :)
+    <html><head/><head n="2"><meta charset="utf-8"/></head><body/></html>
+    => serialize($ser:opt-map-html5)
+};
+
+declare
+    %test:assertEquals('<!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml"><head><meta charset="UTF-8" /></head><body><div><head>A</head></div></body></html>')
+function ser:serialize-xhtml-5-head-in-body-no-meta() {
+    <html xmlns="http://www.w3.org/1999/xhtml"><head/><body><div><head>A</head></div></body></html>
+    => serialize(map { "method": "xhtml" })
 };
 
 (: test for https://github.com/eXist-db/exist/issues/6587 :)

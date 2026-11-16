@@ -177,6 +177,13 @@ public class XHTMLWriter extends IndentingXMLWriter {
     // The level below the open `<head>`: 0 outside of a head, 1 for the head itself, 2 for its children.
     private int headDepth = 0;
 
+    // Only the head of a page gets the content-type meta: a `<head>` that is the outermost element, or
+    // the first `<head>` child of an outermost `<html>`. So only the first two levels of elements are
+    // checked, see {@link #afterStartElement(String, String)}.
+    private int elementDepth = 0;
+    private boolean outermostIsHtml = false;
+    private boolean htmlHasHead = false;
+
     // The content-type meta of a `<head>` is written when its start tag is closed, not when the tag
     // is opened: the attributes and namespaces of the head arrive after startElement, and closing the
     // tag early would write them as text.
@@ -318,6 +325,9 @@ public class XHTMLWriter extends IndentingXMLWriter {
     protected void resetObjectState() {
         super.resetObjectState();
         headDepth = 0;
+        elementDepth = 0;
+        outermostIsHtml = false;
+        htmlHasHead = false;
         contentTypeMetaPending = false;
         metaSuspendedWriter = null;
         metaScratch = null;
@@ -351,21 +361,29 @@ public class XHTMLWriter extends IndentingXMLWriter {
      * closed.
      */
     private void afterStartElement(@Nullable final String namespaceURI, final String localName) {
+        elementDepth++;
         if (headDepth > 0) {
             headDepth++;
-        } else if (isHtmlHead(namespaceURI, localName)) {
-            headDepth = 1;
-            contentTypeMetaPending = isIncludeContentType();
+            return;
+        }
+        // the head of a page and its html are on the first two levels, in no namespace or the XHTML
+        // namespace (Serialization 3.1, 6 and 7.1); no other element needs to be checked
+        if (elementDepth > 2 || !isHtmlNamespace(namespaceURI)) {
+            return;
+        }
+        if ("head".equalsIgnoreCase(localName)) {
+            if (elementDepth == 1 || (outermostIsHtml && !htmlHasHead)) {
+                htmlHasHead = true;
+                headDepth = 1;
+                contentTypeMetaPending = isIncludeContentType();
+            }
+        } else if (elementDepth == 1 && "html".equalsIgnoreCase(localName)) {
+            outermostIsHtml = true;
         }
     }
 
-    /**
-     * Only an HTML head gets the content-type meta (Serialization 3.1, 6 and 7.1): one in no namespace or
-     * in the XHTML namespace. A head in another namespace, such as a TEI heading, is left alone.
-     */
-    private static boolean isHtmlHead(@Nullable final String namespaceURI, final String localName) {
-        return "head".equalsIgnoreCase(localName)
-                && (namespaceURI == null || namespaceURI.isEmpty() || Namespaces.XHTML_NS.equals(namespaceURI));
+    private static boolean isHtmlNamespace(@Nullable final String namespaceURI) {
+        return namespaceURI == null || namespaceURI.isEmpty() || Namespaces.XHTML_NS.equals(namespaceURI);
     }
 
     /**
@@ -376,6 +394,11 @@ public class XHTMLWriter extends IndentingXMLWriter {
         if (headDepth > 0) {
             headDepth--;
         }
+        if (elementDepth == 1) {
+            outermostIsHtml = false;
+            htmlHasHead = false;
+        }
+        elementDepth--;
     }
 
     /** True when the writer is currently diverting bytes for a candidate-duplicate meta. */
