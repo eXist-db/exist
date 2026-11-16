@@ -769,11 +769,11 @@ function vs:embedding-http-no-key-text-still-searchable() {
 
 (:~
  : embedding=local with real model: text embedded at index time, vector search finds hits.
- : Run via VectorSearchEmbeddingTest (Java) with assumeTrue when model exists.
+ : Covered by VectorSearchEmbeddingIT (vector-it), which runs with -Ponnx-model.
  : XQSuite: pending so it does not fail when model is absent.
  :)
 declare
-    %test:pending("Run via VectorSearchEmbeddingTest when model at target/onnx-models/all-MiniLM-L6-v2")
+    %test:pending("Needs the ONNX model; covered by VectorSearchEmbeddingIT#embeddingLocalIndexedAndQueried in vector-it")
     %test:assertEquals(2)
 function vs:embedding-local-indexed-and-queried() {
     let $query-vec := vector:embed("Hello world", "all-MiniLM-L6-v2", "target/onnx-models/all-MiniLM-L6-v2")
@@ -794,7 +794,7 @@ function vs:inline-elements-fulltext-finds-cute() {
  : Inline elements + vector (expression="."): XPath string value, no element names in vectors.
  :)
 declare
-    %test:pending("Run via VectorSearchEmbeddingTest when model at target/onnx-models/all-MiniLM-L6-v2")
+    %test:pending("Needs the ONNX model; covered by VectorSearchEmbeddingIT#inlineElementsDoNotPolluteVectors in vector-it")
     %test:assertEquals(1)
 function vs:inline-elements-vector-no-element-name-pollution() {
     let $query-vec := vector:embed("cute cat", "all-MiniLM-L6-v2", "target/onnx-models/all-MiniLM-L6-v2")
@@ -805,7 +805,7 @@ function vs:inline-elements-vector-no-element-name-pollution() {
  : Inline elements + vector (no expression): DefaultTextExtractor path; inline applies; no element names.
  :)
 declare
-    %test:pending("Run via VectorSearchEmbeddingTest when model at target/onnx-models/all-MiniLM-L6-v2")
+    %test:pending("Needs the ONNX model; covered by VectorSearchEmbeddingIT#inlineElementsWithoutExpressionDoNotPolluteVectors in vector-it")
     %test:assertEquals(1)
 function vs:inline-elements-vector-no-expression() {
     let $query-vec := vector:embed("cute cat", "all-MiniLM-L6-v2", "target/onnx-models/all-MiniLM-L6-v2")
