@@ -1,0 +1,30 @@
+exist-core/src/main/java/org/exist/storage/dom/DOMFile.java
+  s_7706e27dff665e::t_7a488586e1c3fe 2190-2192,3636-3637
+  s_7706e27dff665e::t_6ef68631bbde96 3358
+  s_7706e27dff665e::t_a5ad819ac3b721 538,542-543,3091-3092,3106-3107
+  s_7706e27dff665e::t_71e7da7cf06c91 974,1008
+  s_7706e27dff665e::t_8f8673d316bae4 1742,3054,3065,3383
+  s_7706e27dff665e::t_22b14b15109ee4 2061-2062,2065,2067,2080,2098-2120,2169-2170,2173-2174,2176-2179,2181,2186-2187,2197-2268
+  s_7706e27dff665e::t_a97ca5ac5c91a4 1107,1111,1114-1115,1124-1239
+  s_7706e27dff665e::t_75dbb7c9a7ddf1 2144-2167,2171,2194
+exist-core/src/test/java/org/exist/storage/dom/StoredNodeStringValueTest.java
+  s_7706e27dff665e::t_9be727f620d238 1-213
+exist-core/src/test/java/org/exist/storage/dom/DebugPageContentsTest.java
+  s_7706e27dff665e::t_0ae65c2f08821a 1-165
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "48455f85a2346878a9e30c33c89df270aa72a900",
+  "prompts": {},
+  "sessions": {
+    "s_7706e27dff665e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c70efcb1-bba9-4559-8700-cc8bc501bf09",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
