@@ -1,0 +1,18 @@
+exist-core/src/test/java/org/exist/storage/dom/AnchorsConcurrencyScenarios.java
+  h_ff0005bef58c9d 192,228,272
+exist-core/src/test/java/org/exist/storage/dom/AnchorsConcurrencyStressTest.java
+  h_ff0005bef58c9d 60,65,70
+exist-core/src/test/java/org/exist/storage/dom/AnchorsConcurrencyTest.java
+  h_ff0005bef58c9d 69,74,79
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "913168136deb354da6c7d400604e8a66fa798305",
+  "prompts": {},
+  "humans": {
+    "h_ff0005bef58c9d": {
+      "author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
