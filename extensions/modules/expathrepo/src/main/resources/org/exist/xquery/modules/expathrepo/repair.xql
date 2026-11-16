@@ -69,7 +69,13 @@ declare %public function repair:repair($collection as xs:anyURI) {
 };
 
 declare %private function repair:repair-callback($collection as xs:anyURI, $includeAll as xs:boolean) {
-    let $expathXML := doc($collection || "/expath-pkg.xml")//expath:package
+    (: most collections scanned, the repository root among them, hold no package descriptor :)
+    let $descriptor := $collection || "/expath-pkg.xml"
+    let $expathXML :=
+        if (doc-available($descriptor)) then
+            doc($descriptor)//expath:package
+        else
+            ()
     return
         if (exists($expathXML)) then
             try {
