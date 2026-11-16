@@ -26,16 +26,12 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.test.ExistEmbeddedServer;
-import org.exist.util.ConfigurationHelper;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.value.Sequence;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -47,12 +43,11 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 /**
  * Integration test with ONNX model: full Lucene vector indexing + query using vector:embed.
  * <p>
- * Skips when the model is not available. Run with:
+ * Skipped without the model, unless the onnx-model profile is active, where a missing model fails (see {@link RequiresOnnxModel}). Run with:
  * <pre>
  *   mvn verify -pl extensions/indexes/vector-it -Ponnx-model
  * </pre>
@@ -61,13 +56,14 @@ import static org.junit.jupiter.api.Assumptions.assumeTrue;
  *   mvn verify -pl extensions/indexes/vector-it -am -Ponnx-model -DskipUnitTests=true
  * </pre>
  */
+@RequiresOnnxModel
 public class VectorSearchEmbeddingIT {
 
     @RegisterExtension
     public static ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     private static final String MODEL = "all-MiniLM-L6-v2";
-    private static final String MODEL_PATH = "target/onnx-models/all-MiniLM-L6-v2";
+    private static final String MODEL_PATH = OnnxModelCondition.MODEL_PATH;
 
     private static final String COLLECTION = "/db/lucene-test-vector-embedding-it";
     private static final String COLLECTION_NAME = "lucene-test-vector-embedding-it";
@@ -125,11 +121,6 @@ public class VectorSearchEmbeddingIT {
         <articles>
             <article><p> this is a <bold>cute</bold> cat</p></article>
         </articles>""";
-
-    @BeforeEach
-    void checkModel() {
-        assumeTrue(hasEmbeddingModel(), "ONNX model not found — run with -Ponnx-model");
-    }
 
     @Test
     void embeddingLocalIndexedAndQueried() throws XPathException, PermissionDeniedException, EXistException {
@@ -388,14 +379,6 @@ public class VectorSearchEmbeddingIT {
         try (final DBBroker broker = brokerPool.get(Optional.of(brokerPool.getSecurityManager().getSystemSubject()))) {
             return xquery.execute(broker, query, null);
         }
-    }
-
-    private boolean hasEmbeddingModel() {
-        final Path base = ConfigurationHelper.getExistHome()
-            .orElse(Path.of(System.getProperty("user.dir", ".")));
-        final Path modelDir = base.resolve("target/onnx-models/all-MiniLM-L6-v2");
-        return Files.isRegularFile(modelDir.resolve("model.onnx"))
-            && Files.isRegularFile(modelDir.resolve("tokenizer.json"));
     }
 }
 

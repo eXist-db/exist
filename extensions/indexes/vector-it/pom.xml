@@ -45,6 +45,11 @@
         <tag>HEAD</tag>
     </scm>
 
+    <properties>
+        <!-- set to true by the onnx-model profile: a missing model then fails the model tests instead of skipping them -->
+        <exist.vector.model.required>false</exist.vector.model.required>
+    </properties>
+
     <dependencies>
 
         <dependency>
@@ -165,6 +170,7 @@
                     <argLine>--add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.lang.ref=ALL-UNNAMED --add-opens=java.base/java.lang.reflect=ALL-UNNAMED --add-modules jdk.incubator.vector --enable-native-access=ALL-UNNAMED -Dfile.encoding=${project.build.sourceEncoding} ${test.locale.args}</argLine>
                     <systemPropertyVariables>
                         <exist.home>${project.basedir}</exist.home>
+                        <exist.vector.model.required>${exist.vector.model.required}</exist.vector.model.required>
                     </systemPropertyVariables>
                     <includes>
                         <include>**/*IT.java</include>
@@ -208,5 +214,13 @@
         </plugins>
     </build>
 
+    <profiles>
+        <profile>
+            <id>onnx-model</id>
+            <properties>
+                <exist.vector.model.required>true</exist.vector.model.required>
+            </properties>
+        </profile>
+    </profiles>
 
 </project>
