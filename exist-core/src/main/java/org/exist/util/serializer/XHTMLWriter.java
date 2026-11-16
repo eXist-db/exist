@@ -885,6 +885,10 @@ public class XHTMLWriter extends IndentingXMLWriter {
      */
     private static String withoutCharset(final String mediaType) {
         final String[] parts = mediaType.split(";");
+        if (parts.length == 0) {
+            // only semicolons, there is no charset to drop
+            return mediaType;
+        }
         final StringBuilder result = new StringBuilder(parts[0].trim());
         for (int i = 1; i < parts.length; i++) {
             final String parameter = parts[i].trim();

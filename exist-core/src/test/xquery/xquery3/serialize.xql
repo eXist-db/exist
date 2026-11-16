@@ -1080,6 +1080,14 @@ function ser:serialize-html-version-decimal-with-whitespace() {
         </output:serialization-parameters>)
 };
 
+(: a media-type of only semicolons has no charset to drop :)
+declare
+    %test:assertEquals('<html><head><meta http-equiv="Content-Type" content=";; charset=UTF-8"></head></html>')
+function ser:serialize-html-4-media-type-only-semicolons() {
+    <html><head/></html>
+    => serialize(map { "method": "html", "html-version": 4.01, "media-type": ";" })
+};
+
 (: the media-type parameter must not contain a charset (Serialization 3.1, 3); one given anyway is not written twice :)
 declare
     %test:assertEquals('<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"></head></html>')
