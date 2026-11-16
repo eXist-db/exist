@@ -1,0 +1,19 @@
+exist-core/src/test/java/org/exist/xquery/update/ModificationRetrySideEffectsTest.java
+  s_7706e27dff665e::t_bab82babb18b01 44-46,131,133,140-141,157,165-192
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "9e8dac009907d877e776e050884f1990f0f2ad44",
+  "prompts": {},
+  "sessions": {
+    "s_7706e27dff665e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c70efcb1-bba9-4559-8700-cc8bc501bf09",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
