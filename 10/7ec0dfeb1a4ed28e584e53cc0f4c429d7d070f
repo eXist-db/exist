@@ -1,0 +1,39 @@
+exist-core/src/main/java/org/exist/management/impl/JMXAgent.java
+  s_7706e27dff665e::t_7d6206d9306d3b 95-96
+exist-core/src/main/java/org/exist/management/impl/NodeLookups.java
+  s_7706e27dff665e::t_e8d7cf7d50f24f 1-115
+exist-core/src/main/java/org/exist/management/impl/NodeLookupsMXBean.java
+  s_7706e27dff665e::t_e2a2e90352ec0e 1-83
+exist-core/src/main/java/org/exist/storage/NativeBroker.java
+  s_7706e27dff665e::t_8062881ca53241 231-251,273-274
+exist-core/src/main/java/org/exist/storage/dom/DocumentLookups.java
+  s_7706e27dff665e::t_2d4cd230bddc17 1-28,31-33,35
+exist-core/src/main/java/org/exist/storage/dom/LookupStatistics.java
+  s_7706e27dff665e::t_c32f3f43338c2b 25,27-30,32-33,39-41,43-53,63-64
+exist-core/src/test/java/org/exist/management/NodeLookupsTest.java
+  s_7706e27dff665e::t_75b3513e7afca0 1-23,25-33,35-42,44-116,146
+exist-core/src/test/java/org/exist/storage/dom/LookupStatisticsTest.java
+  s_7706e27dff665e::t_35d78db147278e 1-175,178-199
+exist-core/src/main/java/org/exist/storage/dom/DOMFile.java
+  s_7706e27dff665e::t_cb670a42a43b37 32,34,202-214,216-217,222-230,1332,1339-1340,1346,1367,1369,1373-1379,1381-1382,1416,1424,1440,1445,1448,1456,1460,1474-1476,1492-1540,1542-1552,1554-1562
+exist-core/src/main/java/org/exist/storage/dom/LookupBuckets.java
+  s_7706e27dff665e::t_40e2c0ba598c42 1-80
+exist-core-jmh/src/main/java/org/exist/storage/dom/NodeLookupBenchmark.java
+  s_7706e27dff665e::t_c0a4e9fd3129b7 1-213
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "107ec0dfeb1a4ed28e584e53cc0f4c429d7d070f",
+  "prompts": {},
+  "sessions": {
+    "s_7706e27dff665e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c70efcb1-bba9-4559-8700-cc8bc501bf09",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
