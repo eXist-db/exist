@@ -1,0 +1,50 @@
+exist-core/src/main/java/org/exist/storage/DocumentRestructures.java
+  s_dbe48f241c601f::t_e5903230f9ea72 1-85
+exist-core/src/test/java/org/exist/xquery/update/ModificationTargetsDefragmentedTest.java
+  s_dbe48f241c601f::t_cb17c57bdd5958 1-185
+exist-core/src/main/java/org/exist/storage/NativeBroker.java
+  s_dbe48f241c601f::t_1e9f9996ecb494 1932,2935,3163
+  s_dbe48f241c601f::t_f0b14eadd0efa3 3422-3424
+exist-core/src/test/java/org/exist/storage/DocumentRestructuresTest.java
+  s_dbe48f241c601f::t_5e79579658e521 1-56
+exist-core/src/main/java/org/exist/xquery/update/Modification.java
+  s_dbe48f241c601f::t_2099c1204364a7 46-47,51,81-83,95-97,100-103,113,160,161,163-169,171-173,175-184,253-257,259-269
+  s_7706e27dff665e::t_a49307d3586c3f 98-99,104-112,114-159,162,170,174,241,258
+exist-core/src/main/java/org/exist/storage/BrokerPool.java
+  s_dbe48f241c601f::t_d5d407fe012517 1136-1144
+  s_dbe48f241c601f::t_b76a479f76c2c9 123-124
+exist-core/src/main/java/org/exist/xquery/update/Delete.java
+  s_7706e27dff665e::t_d0b60da81cdd26 64,115
+exist-core/src/main/java/org/exist/xquery/update/Insert.java
+  s_7706e27dff665e::t_f634253f011a3b 73,89,134
+exist-core/src/main/java/org/exist/xquery/update/Rename.java
+  s_7706e27dff665e::t_40744ac0d02777 58,74,125
+exist-core/src/main/java/org/exist/xquery/update/Replace.java
+  s_7706e27dff665e::t_ea9efa5daedef2 70,122,131
+exist-core/src/main/java/org/exist/xquery/update/Update.java
+  s_7706e27dff665e::t_92554e542e0b65 74,90,132
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "2860ae74b508ad1a1eaab6cc0a2ea193e096eaa4",
+  "prompts": {},
+  "sessions": {
+    "s_7706e27dff665e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c70efcb1-bba9-4559-8700-cc8bc501bf09",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    },
+    "s_dbe48f241c601f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2b0cd8e7-27ee-4754-abbb-745510d5fd50",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
