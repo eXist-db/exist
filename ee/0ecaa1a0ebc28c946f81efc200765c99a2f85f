@@ -1,0 +1,21 @@
+exist-core/src/main/java/org/exist/storage/dom/DOMFile.java
+  s_dbe48f241c601f::t_7672be7ae14587 193-195,1312-1323,1460,1465,1467,1499-1500,1509,1523-1531
+exist-core/src/test/java/org/exist/storage/dom/DomLookupTest.java
+  s_dbe48f241c601f::t_c9aadc0b4b2669 244-250
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "ee0ecaa1a0ebc28c946f81efc200765c99a2f85f",
+  "prompts": {},
+  "sessions": {
+    "s_dbe48f241c601f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2b0cd8e7-27ee-4754-abbb-745510d5fd50",
+        "model": "unknown"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
