@@ -971,6 +971,80 @@ function ser:serialize-html-5-head-attribute-no-content-type() {
     => serialize(map:merge(($ser:opt-map-html5, map { "include-content-type": false() })))
 };
 
+(: the meta is written when the start tag of the head is closed, so it comes before any first child :)
+declare
+    %test:assertEquals('<!DOCTYPE html><html><head><meta charset="UTF-8"><!-- c --><title>t</title></head><body></body></html>')
+function ser:serialize-html-5-head-comment-first() {
+    <html><head><!-- c --><title>t</title></head><body/></html>
+    => serialize($ser:opt-map-html5)
+};
+
+declare
+    %test:assertEquals('<!DOCTYPE html><html><head><meta charset="UTF-8"><!--?pi x?--><title>t</title></head><body></body></html>')
+function ser:serialize-html-5-head-processing-instruction-first() {
+    (: HTML5 has no processing instructions, they are written as comments :)
+    <html><head><?pi x?><title>t</title></head><body/></html>
+    => serialize($ser:opt-map-html5)
+};
+
+declare
+    %test:assertEquals('<!DOCTYPE html><html><head><meta charset="UTF-8">t</head><body></body></html>')
+function ser:serialize-html-5-head-text-first() {
+    <html><head>t</head><body/></html>
+    => serialize($ser:opt-map-html5)
+};
+
+declare
+    %test:assertEquals('<!DOCTYPE html><html><head xmlns:x="urn:x"><meta charset="UTF-8"><title>t</title></head><body></body></html>')
+function ser:serialize-html-5-head-namespace-declaration() {
+    <html><head xmlns:x="urn:x"><title>t</title></head><body/></html>
+    => serialize($ser:opt-map-html5)
+};
+
+declare
+    %test:assertEquals('<!DOCTYPE html><html><head xmlns:x="urn:x" x:a="1"><meta charset="UTF-8"><title>t</title></head><body></body></html>')
+function ser:serialize-html-5-head-prefixed-attribute() {
+    <html><head xmlns:x="urn:x" x:a="1"><title>t</title></head><body/></html>
+    => serialize($ser:opt-map-html5)
+};
+
+(: a void element before a duplicate charset meta: the meta is still a child of the head and dropped :)
+declare
+    %test:assertEquals('<!DOCTYPE html><html><head><meta charset="UTF-8"><link rel="icon" href="i.png"><title>t</title></head><body></body></html>')
+function ser:serialize-html-5-head-charset-meta-after-void() {
+    <html><head><link rel="icon" href="i.png"/><meta charset="utf-8"/><title>t</title></head><body/></html>
+    => serialize($ser:opt-map-html5)
+};
+
+declare
+    %test:assertEquals('<!DOCTYPE html><html><head><meta charset="UTF-8" /><link rel="icon" href="i.png" /><title>t</title></head><body></body></html>')
+function ser:serialize-xhtml-5-head-charset-meta-after-void() {
+    <html><head><link rel="icon" href="i.png"/><meta charset="utf-8"/><title>t</title></head><body/></html>
+    => serialize(map { "method": "xhtml" })
+};
+
+declare
+    %test:assertEquals('<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><link rel="icon" href="i.png"><title>t</title></head><body></body></html>')
+function ser:serialize-html-4-head-charset-meta-after-void() {
+    <html><head><link rel="icon" href="i.png"/><meta charset="utf-8"/><title>t</title></head><body/></html>
+    => serialize(map { "method": "html", "html-version": 4.01 })
+};
+
+(: the generated meta is written right after the start tag of the head, it is not indented :)
+declare
+    %test:assertEquals('<!DOCTYPE html>&#10;<html>&#10;    <head><meta charset="UTF-8"></head>&#10;    <body></body>&#10;</html>')
+function ser:serialize-html-5-empty-head-indent() {
+    <html><head/><body/></html>
+    => serialize(map:merge(($ser:opt-map-html5, map { "indent": true() })))
+};
+
+declare
+    %test:assertEquals('<!DOCTYPE html>&#10;<html>&#10;    <head><meta charset="UTF-8">&#10;        <title>t</title>&#10;    </head>&#10;    <body></body>&#10;</html>')
+function ser:serialize-html-5-head-indent() {
+    <html><head><title>t</title></head><body/></html>
+    => serialize(map:merge(($ser:opt-map-html5, map { "indent": true() })))
+};
+
 (: only a head in no namespace or the XHTML namespace is an HTML head, see Serialization 3.1, 6 and 7.1 :)
 declare
     %test:assertEquals('<TEI xmlns="http://www.tei-c.org/ns/1.0"><text><body><div><head>One</head></div><div><head>Two</head></div></body></text></TEI>')
