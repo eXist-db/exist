@@ -1,0 +1,25 @@
+extensions/indexes/range/src/main/java/org/exist/xquery/modules/range/RangeQueryRewriter.java
+  s_7706e27dff665e::t_75499c66472718 90
+exist-core/src/main/java/org/exist/xquery/functions/fn/FunMatches.java
+  s_7706e27dff665e::t_b7b96a0a8883b3 126,179,261-264,274,384-407
+extensions/indexes/range/src/test/xquery/range/predicate-shapes.xqm
+  s_7706e27dff665e::t_3efccda5c03f29 43,51-61,69-73,89-91,271-324
+extensions/indexes/range/src/test/xquery/unoptimized-known-failures.lst
+  s_7706e27dff665e::t_97ad82162b2dd5 75
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "67132dbea399e067bd5b3d98a82045eb2a009bb7",
+  "prompts": {},
+  "sessions": {
+    "s_7706e27dff665e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c70efcb1-bba9-4559-8700-cc8bc501bf09",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
