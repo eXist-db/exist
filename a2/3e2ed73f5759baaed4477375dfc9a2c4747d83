@@ -1,0 +1,19 @@
+exist-core-jmh/src/main/java/org/exist/storage/dom/NodeLookupBenchmark.java
+  s_7706e27dff665e::t_c0a4e9fd3129b7 1-213
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "a23e2ed73f5759baaed4477375dfc9a2c4747d83",
+  "prompts": {},
+  "sessions": {
+    "s_7706e27dff665e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c70efcb1-bba9-4559-8700-cc8bc501bf09",
+        "model": "unknown"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
