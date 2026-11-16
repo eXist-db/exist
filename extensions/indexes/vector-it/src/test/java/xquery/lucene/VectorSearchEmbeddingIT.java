@@ -92,6 +92,20 @@ public class VectorSearchEmbeddingIT {
         + " embedding=\"local\" model=\"" + MODEL + "\" model-path=\"" + MODEL_PATH + "\"/>"
         + "</text></lucene></index></collection>";
 
+    private static final String INLINE_NO_EXPRESSION_XCONF = """
+        <collection xmlns="http://exist-db.org/collection-config/1.0">
+            <index xmlns:xs="http://www.w3.org/2001/XMLSchema">
+                <lucene>
+                    <text qname="article">
+                        <inline qname="bold"/>
+                        <field name="title" expression="p"/>
+                        <vector-field name="embedding" dimension="384" similarity="cosine"
+                            embedding="local" model="%s" model-path="%s"/>
+                    </text>
+                </lucene>
+            </index>
+        </collection>""".formatted(MODEL, MODEL_PATH);
+
     private static final String DATA =
         "<articles><article><title>Hello world</title></article>"
         + "<article><title>Machine learning</title></article>"
@@ -265,10 +279,19 @@ public class VectorSearchEmbeddingIT {
 
     @Test
     void inlineElementsDoNotPolluteVectors() throws XPathException, PermissionDeniedException, EXistException {
-        final String inlineCol = "/db/lucene-test-vector-inline-it";
-        final String inlineColName = "lucene-test-vector-inline-it";
-        final String inlineConfCol = "/db/system/config/db/" + inlineColName;
-        setupCollection(inlineCol, inlineColName, inlineConfCol, INLINE_XCONF, INLINE_DATA);
+        assertInlineVectorHit("lucene-test-vector-inline-it", INLINE_XCONF);
+    }
+
+    @Test
+    void inlineElementsWithoutExpressionDoNotPolluteVectors() throws XPathException, PermissionDeniedException, EXistException {
+        assertInlineVectorHit("lucene-test-vector-inline-no-expr-it", INLINE_NO_EXPRESSION_XCONF);
+    }
+
+    private void assertInlineVectorHit(final String colName, final String xconf)
+            throws XPathException, PermissionDeniedException, EXistException {
+        final String inlineCol = "/db/" + colName;
+        final String inlineConfCol = "/db/system/config/db/" + colName;
+        setupCollection(inlineCol, colName, inlineConfCol, xconf, INLINE_DATA);
         try {
             assertCount(queryVectorCount(inlineCol, "cute cat", 1), 1);
         } finally {
