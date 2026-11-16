@@ -1,0 +1,21 @@
+extensions/indexes/range/src/main/java/org/exist/xquery/modules/range/Lookup.java
+  s_7706e27dff665e::t_a0179f2d079524 532-544
+extensions/indexes/range/src/test/xquery/range/predicate-shapes.xqm
+  s_7706e27dff665e::t_f846d3bad0a039 43,218-251
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "15c8955c29958d53b89b51033f838d3f02a5062e",
+  "prompts": {},
+  "sessions": {
+    "s_7706e27dff665e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c70efcb1-bba9-4559-8700-cc8bc501bf09",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
