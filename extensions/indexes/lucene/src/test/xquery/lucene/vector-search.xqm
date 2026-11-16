@@ -188,7 +188,7 @@ declare variable $vs:XCONF_EMBEDDING_LOCAL :=
             <lucene>
                 <text qname="article">
                     <field name="title" expression="title"/>
-                    <vector-field name="embedding" expression="title" dimension="384" similarity="cosine"
+                    <vector-field name="embedding-minilm" expression="title" dimension="384" similarity="cosine"
                         embedding="local" model="all-MiniLM-L6-v2" model-path="target/onnx-models/all-MiniLM-L6-v2"/>
                 </text>
             </lucene>
@@ -202,7 +202,7 @@ declare variable $vs:XCONF_EMBEDDING_LOCAL_NO_MODEL :=
             <lucene>
                 <text qname="article">
                     <field name="title" expression="title"/>
-                    <vector-field name="embedding" expression="title" dimension="384" similarity="cosine"
+                    <vector-field name="embedding-minilm" expression="title" dimension="384" similarity="cosine"
                         embedding="local" model="all-MiniLM-L6-v2" model-path="target/onnx-models/nonexistent-model-12345"/>
                 </text>
             </lucene>
@@ -216,7 +216,7 @@ declare variable $vs:XCONF_EMBEDDING_HTTP_NO_KEY :=
             <lucene>
                 <text qname="article">
                     <field name="title" expression="title"/>
-                    <vector-field name="embedding" expression="title" dimension="1536" similarity="cosine"
+                    <vector-field name="embedding-http" expression="title" dimension="1536" similarity="cosine"
                         embedding="http" model="text-embedding-3-small" model-path="https://api.openai.com/v1"/>
                 </text>
             </lucene>
@@ -249,7 +249,7 @@ declare variable $vs:XCONF_INLINE_VECTOR :=
                 <text qname="article">
                     <inline qname="bold"/>
                     <field name="title" expression="p"/>
-                    <vector-field name="embedding" expression="." dimension="384" similarity="cosine"
+                    <vector-field name="embedding-minilm" expression="." dimension="384" similarity="cosine"
                         embedding="local" model="all-MiniLM-L6-v2" model-path="target/onnx-models/all-MiniLM-L6-v2"/>
                 </text>
             </lucene>
@@ -267,7 +267,7 @@ declare variable $vs:XCONF_INLINE_NO_EXPRESSION :=
                 <text qname="article">
                     <inline qname="bold"/>
                     <field name="title" expression="p"/>
-                    <vector-field name="embedding" dimension="384" similarity="cosine"
+                    <vector-field name="embedding-minilm" dimension="384" similarity="cosine"
                         embedding="local" model="all-MiniLM-L6-v2" model-path="target/onnx-models/all-MiniLM-L6-v2"/>
                 </text>
             </lucene>
