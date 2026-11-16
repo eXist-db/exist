@@ -1,0 +1,19 @@
+exist-core/src/test/java/org/exist/storage/dom/DomLookupTest.java
+  s_7706e27dff665e::t_75ea97724db8c5 157,206,211,216,222,229,234,241,248
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "12a27a591ef19774a0bba6738018bbc20f755c92",
+  "prompts": {},
+  "sessions": {
+    "s_7706e27dff665e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c70efcb1-bba9-4559-8700-cc8bc501bf09",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
