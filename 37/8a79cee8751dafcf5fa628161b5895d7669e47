@@ -1,0 +1,41 @@
+exist-core/src/main/java/org/exist/xquery/update/Insert.java
+  s_dbe48f241c601f::t_53750cc15a24c8 73
+exist-core/src/main/java/org/exist/xquery/update/Replace.java
+  s_dbe48f241c601f::t_5d22824b8fa48e 70
+exist-core/src/main/java/org/exist/storage/DocumentRestructures.java
+  s_dbe48f241c601f::t_e5903230f9ea72 1-85
+exist-core/src/main/java/org/exist/xquery/update/Update.java
+  s_dbe48f241c601f::t_10d65321dfd702 74
+exist-core/src/main/java/org/exist/xquery/update/Rename.java
+  s_dbe48f241c601f::t_a176641b1ebfff 58
+exist-core/src/test/java/org/exist/xquery/update/ModificationTargetsDefragmentedTest.java
+  s_dbe48f241c601f::t_cb17c57bdd5958 1-185
+exist-core/src/main/java/org/exist/storage/NativeBroker.java
+  s_dbe48f241c601f::t_1e9f9996ecb494 1932,2935,3163
+  s_dbe48f241c601f::t_f0b14eadd0efa3 3422-3424
+exist-core/src/main/java/org/exist/xquery/update/Delete.java
+  s_dbe48f241c601f::t_c102de14de1dd0 64
+exist-core/src/test/java/org/exist/storage/DocumentRestructuresTest.java
+  s_dbe48f241c601f::t_5e79579658e521 1-56
+exist-core/src/main/java/org/exist/xquery/update/Modification.java
+  s_dbe48f241c601f::t_2099c1204364a7 46-47,51,81-86,98-148,217-233
+exist-core/src/main/java/org/exist/storage/BrokerPool.java
+  s_dbe48f241c601f::t_d5d407fe012517 1136-1144
+  s_dbe48f241c601f::t_b76a479f76c2c9 123-124
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "378a79cee8751dafcf5fa628161b5895d7669e47",
+  "prompts": {},
+  "sessions": {
+    "s_dbe48f241c601f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2b0cd8e7-27ee-4754-abbb-745510d5fd50",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
