@@ -67,18 +67,26 @@ public class QueryVector extends AbstractVectorQueryFunction {
     final static FunctionSignature[] signatures = {
             functionSignature("query-vector",
                     "KNN vector search. Returns the k nodes nearest to the query vector. "
-                            + "Vector field is resolved from index config.",
+                            + "The vector field is resolved from the index configuration: of the vector fields of the "
+                            + "elements searched, the one with as many dimensions as the query vector. The same field "
+                            + "name may be configured with different dimensions in different collections; only "
+                            + "collections whose field has the dimension of the query vector are searched. "
+                            + "Raises EXXQDYFT0006 if the fields have other dimensions only, and EXXQDYFT0007 if "
+                            + "more than one field has the dimension of the query vector: use ft:query-field-vector "
+                            + "to name the field.",
                     returnsOptMany(Type.NODE, RETURN_DESC),
                     FS_PARAM_NODES,
                     FS_PARAM_VECTOR),
             functionSignature("query-vector",
-                    "KNN vector search with explicit k.",
+                    "KNN vector search with explicit k. The vector field is chosen by the dimension of the "
+                            + "query vector, see ft:query-vector#1.",
                     returnsOptMany(Type.NODE, RETURN_DESC),
                     FS_PARAM_NODES,
                     FS_PARAM_VECTOR,
                     FS_PARAM_K),
             functionSignature("query-vector",
-                    "KNN vector search with k and options (filter-query, filter, facets).",
+                    "KNN vector search with k and options (filter-query, filter, facets). The vector field is "
+                            + "chosen by the dimension of the query vector, see ft:query-vector#1.",
                     returnsOptMany(Type.NODE, RETURN_DESC),
                     FS_PARAM_NODES,
                     FS_PARAM_VECTOR,

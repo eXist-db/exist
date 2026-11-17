@@ -81,6 +81,8 @@ public class LuceneVectorFieldConfig extends AbstractFieldConfig {
 
     /** Vector field name from config. */
     protected final String fieldName;
+    /** The Lucene field the vectors are in, see {@link LuceneFieldNames#vectorField}. */
+    private final String luceneField;
     /** Vector dimension (1–1024). */
     protected final int dimension;
     /** Similarity function for KNN (cosine, euclidean, dot_product). */
@@ -120,6 +122,7 @@ public class LuceneVectorFieldConfig extends AbstractFieldConfig {
         LuceneFieldNames.checkConfiguredName(fieldName, "a vector-field");
 
         dimension = parseDimension(configElement);
+        luceneField = LuceneFieldNames.vectorField(fieldName, dimension);
         similarity = parseSimilarity(configElement.getAttribute(ATTR_SIMILARITY));
         useBase64 = parseEncoding(configElement);
 
@@ -221,6 +224,15 @@ public class LuceneVectorFieldConfig extends AbstractFieldConfig {
     }
 
     /**
+     * Returns the Lucene field the vectors are in, by name and dimension.
+     *
+     * @return the field name, see {@link LuceneFieldNames#vectorField}
+     */
+    public String getLuceneField() {
+        return luceneField;
+    }
+
+    /**
      * Returns the similarity function for KNN.
      *
      * @return cosine, euclidean, or dot_product
@@ -263,7 +275,7 @@ public class LuceneVectorFieldConfig extends AbstractFieldConfig {
         }
         final float[] combined = vectors.size() == 1 ? vectors.getFirst() : meanPool(vectors);
         if (combined != null) {
-            luceneDoc.add(new KnnFloatVectorField(fieldName, combined, similarity));
+            luceneDoc.add(new KnnFloatVectorField(luceneField, combined, similarity));
         }
     }
 
@@ -288,7 +300,7 @@ public class LuceneVectorFieldConfig extends AbstractFieldConfig {
         }
         final float[] combined = vectors.size() == 1 ? vectors.getFirst() : meanPool(vectors);
         if (combined != null) {
-            luceneDoc.add(new KnnFloatVectorField(fieldName, combined, similarity));
+            luceneDoc.add(new KnnFloatVectorField(luceneField, combined, similarity));
             storeVectorIfLocal(combined);
         }
     }
@@ -304,7 +316,7 @@ public class LuceneVectorFieldConfig extends AbstractFieldConfig {
             if (provider != null) {
                 final float[] vec = provider.embed(content);
                 if (vec != null) {
-                    luceneDoc.add(new KnnFloatVectorField(fieldName, vec, similarity));
+                    luceneDoc.add(new KnnFloatVectorField(luceneField, vec, similarity));
                     storeVectorIfLocal(vec);
                 }
             }
@@ -312,7 +324,7 @@ public class LuceneVectorFieldConfig extends AbstractFieldConfig {
         }
         final float[] vec = parseVector(content);
         if (vec != null) {
-            luceneDoc.add(new KnnFloatVectorField(fieldName, vec, similarity));
+            luceneDoc.add(new KnnFloatVectorField(luceneField, vec, similarity));
         }
     }
 
@@ -384,10 +396,10 @@ public class LuceneVectorFieldConfig extends AbstractFieldConfig {
             if (embeddingLocal && VECTOR_STORE_DB.equals(luceneConfig.getVectorStore())) {
                 STORE_CONTEXT.set(new StoreContext(broker, document, nodeId));
             }
-            final int vectorsBefore = luceneDoc.getFields(fieldName).length;
+            final int vectorsBefore = luceneDoc.getFields(luceneField).length;
             try {
                 doBuild(broker, contextNode, luceneDoc, text);
-                if (embeddingLocal && luceneDoc.getFields(fieldName).length > vectorsBefore) {
+                if (embeddingLocal && luceneDoc.getFields(luceneField).length > vectorsBefore) {
                     countRecomputed(broker);
                 }
             } finally {
@@ -433,7 +445,7 @@ public class LuceneVectorFieldConfig extends AbstractFieldConfig {
         }
         final float[] vec = bytesToFloats(stored);
         if (vec != null && allFinite(vec)) {
-            luceneDoc.add(new KnnFloatVectorField(fieldName, vec, similarity));
+            luceneDoc.add(new KnnFloatVectorField(luceneField, vec, similarity));
             return true;
         }
         return false;

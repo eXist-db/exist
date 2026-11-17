@@ -34,6 +34,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -87,10 +88,42 @@ class LuceneFieldNamesTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"exist:docId", "qn:a00010000", "a:b", "1a", "my field", "", "$facets"})
+    @ValueSource(strings = {"exist:docId", "qn:a00010000", "vec:embedding:384", "a:b", "1a", "my field", "", "$facets"})
     void namesThatAreNotNCNamesAreRejected(final String name) {
         assertFalse(LuceneFieldNames.isConfiguredName(name), name);
         assertThrows(DatabaseConfigurationException.class, () -> LuceneFieldNames.checkConfiguredName(name, "a field"));
+    }
+
+    @Test
+    void aVectorFieldIsKeptByNameAndDimension() {
+        assertEquals("vec:title-embedding:384", LuceneFieldNames.vectorField("title-embedding", 384));
+        assertEquals("vec:embedding:4", LuceneFieldNames.vectorField("embedding", 4));
+    }
+
+    @Test
+    void aVectorFieldNameAndDimensionAreReadBack() {
+        final String field = LuceneFieldNames.vectorField("title-embedding", 384);
+        assertEquals("title-embedding", LuceneFieldNames.vectorFieldName(field));
+        assertEquals(384, LuceneFieldNames.vectorFieldDimension(field));
+    }
+
+    @Test
+    void aNameAtTwoDimensionsIsTwoFields() {
+        assertNotEquals(LuceneFieldNames.vectorField("embedding", 4), LuceneFieldNames.vectorField("embedding", 3));
+    }
+
+    @Test
+    void aVectorFieldIsNeitherAConfiguredNameNorAnElement() {
+        final String field = LuceneFieldNames.vectorField("embedding", 384);
+        assertTrue(LuceneFieldNames.isVectorField(field), field);
+        assertFalse(LuceneFieldNames.isConfiguredName(field), field);
+        assertNull(LuceneFieldNames.decodeQName(field, symbols()), field);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"embedding", "vec", "vector", "title-embedding", "exist:docId", "qn:a00010000"})
+    void otherNamesAreNotVectorFields(final String name) {
+        assertFalse(LuceneFieldNames.isVectorField(name), name);
     }
 
     @Test

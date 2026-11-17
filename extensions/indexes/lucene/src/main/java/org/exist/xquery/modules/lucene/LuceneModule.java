@@ -54,6 +54,10 @@ public class LuceneModule extends AbstractInternalModule {
     public final static ErrorCode EXXQDYFT0004 = new LuceneErrorCode("EXXQDYFT0004", "Wrong configuration passed to ft:query");
     public final static ErrorCode EXXQDYFT0005 = new LuceneErrorCode("EXXQDYFT0005",
             "A facet dimension is configured differently in the collections queried together.");
+    public final static ErrorCode EXXQDYFT0006 = new LuceneErrorCode("EXXQDYFT0006",
+            "The query vector has a number of dimensions the vector field is not configured with.");
+    public final static ErrorCode EXXQDYFT0007 = new LuceneErrorCode("EXXQDYFT0007",
+            "The query vector matches more than one vector field: use ft:query-field-vector to name the field.");
     
     public static final FunctionDef[] functions = {
         new FunctionDef(Query.signatures[0], Query.class),

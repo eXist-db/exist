@@ -87,6 +87,9 @@ class IndexFormatRebuildTest {
     /** An entry under a name this version neither writes nor removes. */
     private static final String STALE_FIELD = "staleProbe";
 
+    /** The format before a vector field's vectors were kept by name and dimension, as in the betas of 7.0. */
+    private static final String FORMAT_WITH_VECTORS_BY_NAME = "2";
+
     @RegisterExtension
     final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
@@ -127,6 +130,27 @@ class IndexFormatRebuildTest {
             }
         }
         assertFalse(Files.exists(dataDir.resolve(BrokerPoolConstants.INDEX_REBUILD_ATTEMPTS_FILE)), "the finished rebuild is still counted");
+        assertMatches();
+    }
+
+    /** A vector field's vectors are in another field since format 3, so an index of format 2 must be rebuilt. */
+    @Test
+    void indexesInTheFormatOfTheBetasAreRebuiltAtStartup() throws Exception {
+        final Path dataDir = existEmbeddedServer.getTemporaryStorage().orElseThrow();
+        existEmbeddedServer.stopDb(false);
+        for (final String index : new String[] {"range", "lucene"}) {
+            addEntry(dataDir.resolve(index), FORMAT_WITH_VECTORS_BY_NAME);
+        }
+
+        existEmbeddedServer.startDb();
+
+        for (final String index : new String[] {"range", "lucene"}) {
+            try (final Directory directory = FSDirectory.open(dataDir.resolve(index))) {
+                assertNull(fieldInfo(directory), index + " index still has the entries of format 2");
+                assertEquals(LuceneIndex.FORMAT, SegmentInfos.readLatestCommit(directory).getUserData().get(LuceneIndex.FORMAT_KEY),
+                        index + " index does not record its format");
+            }
+        }
         assertMatches();
     }
 
@@ -266,6 +290,18 @@ class IndexFormatRebuildTest {
             document.add(new StringField(STALE_FIELD, "x", Field.Store.NO));
             writer.addDocument(document);
             writer.setLiveCommitData(commitData.entrySet());
+            writer.commit();
+        }
+    }
+
+    /** Adds an entry under a name this version neither writes nor removes to an index of the given format. */
+    private static void addEntry(final Path indexDir, final String format) throws Exception {
+        try (final Directory directory = FSDirectory.open(indexDir);
+                final IndexWriter writer = new IndexWriter(directory, new IndexWriterConfig().setOpenMode(IndexWriterConfig.OpenMode.APPEND))) {
+            final Document document = new Document();
+            document.add(new StringField(STALE_FIELD, "x", Field.Store.NO));
+            writer.addDocument(document);
+            writer.setLiveCommitData(Map.of(LuceneIndex.FORMAT_KEY, format).entrySet());
             writer.commit();
         }
     }
