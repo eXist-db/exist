@@ -1,0 +1,22 @@
+extensions/indexes/lucene/src/test/xquery/lucene/ft-query-forms.xqm
+  s_cda7b57354762d::t_719eb078311a82 211,221
+extensions/indexes/lucene/src/test/xquery/lucene/vector-embed.xqm
+  s_cda7b57354762d::t_6cf691151d426e 64,90,93
+  s_cda7b57354762d::t_0a381f208394cc 61
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "15ab8eccc1149339f5507e95af6c1aa4200c7dde",
+  "prompts": {},
+  "sessions": {
+    "s_cda7b57354762d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "9b56b1e3-1c21-445f-b4ef-9451f54523c2",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
