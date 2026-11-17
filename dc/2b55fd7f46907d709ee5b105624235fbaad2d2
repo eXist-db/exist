@@ -1,0 +1,39 @@
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/LuceneFieldNames.java
+  s_19aec81a054b3b::t_ad783c837c11b3 60-61,99-141
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/LuceneIndex.java
+  s_19aec81a054b3b::t_0a15fe41fdd9b9 84-85,87
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/LuceneIndexWorker.java
+  s_19aec81a054b3b::t_b0aa4cb6a4ad89 82,1039-1042,1044-1048,1052-1053,1056-1057,1097-1117,1119,1136,1138-1139,1143-1144,1155,1159-1160,1162-1163,1166-1167,1173-1202,1204-1238,1240-1242,1273
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/LuceneVectorFieldConfig.java
+  s_19aec81a054b3b::t_f76b526ca6cde7 84-85,125,226-234,278,303,319,327,402,405,451
+extensions/indexes/lucene/src/main/java/org/exist/xquery/modules/lucene/LuceneModule.java
+  s_19aec81a054b3b::t_fa007774ca9f50 57-60
+extensions/indexes/lucene/src/test/java/org/exist/indexing/lucene/LuceneFieldNamesTest.java
+  s_19aec81a054b3b::t_5ecc4e9e1d01f3 37,91,97-128
+extensions/indexes/lucene/src/test/java/xquery/lucene/VectorSearchTests.java
+  s_19aec81a054b3b::t_cc7eb4ff129d22 38-40
+extensions/indexes/lucene/src/test/xquery/lucene/vector-spaces.xqm
+  s_19aec81a054b3b::t_0fa9a2c634b366 1-153
+extensions/indexes/range/src/test/java/org/exist/indexing/range/IndexFormatRebuildTest.java
+  s_19aec81a054b3b::t_d62dd56a706d8b 133-156,297-308
+extensions/indexes/lucene/src/test/xquery/lucene/query-vector-mixed-configs.xqm
+  s_19aec81a054b3b::t_24709b60d3422d 113,115,120-126
+extensions/indexes/lucene/src/test/xquery/lucene/vector-field-pairs.xqm
+  s_19aec81a054b3b::t_f9bdeb665389f5 1-118
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "dc2b55fd7f46907d709ee5b105624235fbaad2d2",
+  "prompts": {},
+  "sessions": {
+    "s_19aec81a054b3b": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "142f6088-4463-4f99-95e9-91a245386216",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
