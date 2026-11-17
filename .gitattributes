@@ -3,6 +3,9 @@
 # Windows batch scripts: keep CRLF on checkout so they run on Windows
 *.bat text eol=crlf
 *.cmd text eol=crlf
+# Dependabot regenerates the Maven wrapper with CRLF; store this file as-is so
+# git never disagrees with the committed bytes
+mvnw.cmd -text
 
 # Binary files: do not normalize or diff
 *.jar binary
