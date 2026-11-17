@@ -1,0 +1,19 @@
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/VectorExactSearch.java
+  s_19aec81a054b3b::t_8282f6b438f9e7 100
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "d10a77fdd1b44ec73f9433d8f0a3c34dbbc4462f",
+  "prompts": {},
+  "sessions": {
+    "s_19aec81a054b3b": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "142f6088-4463-4f99-95e9-91a245386216",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
