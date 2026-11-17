@@ -131,8 +131,8 @@ public class CountClause extends AbstractFLWORClause {
             // set the binding for the count
             countVar.setValue(new IntegerValue(count));
 
-            // eval the return expression on the window binding
-            resultSequence.addAll(returnExpr.eval(null, null));
+            // eval the return expression; a count clause doesn't change the focus
+            resultSequence.addAll(returnExpr.eval(contextSequence, contextItem));
 
             // free resources
             countVar.destroy(context, resultSequence);
