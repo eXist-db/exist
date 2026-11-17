@@ -1,0 +1,21 @@
+exist-core/src/main/java/org/exist/xquery/ModuleContext.java
+  s_19aec81a054b3b::t_3e4dad1782cb16 77-80
+extensions/indexes/range/src/test/xquery/range/field-range-predicate.xqm
+  s_19aec81a054b3b::t_9711aa11f69766 65-76,135-137,212-214
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "d5b46256c74a90d476833dd6c18c91a7e1e5d784",
+  "prompts": {},
+  "sessions": {
+    "s_19aec81a054b3b": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "142f6088-4463-4f99-95e9-91a245386216",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
