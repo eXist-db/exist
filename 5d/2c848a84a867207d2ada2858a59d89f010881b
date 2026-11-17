@@ -1,0 +1,31 @@
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/LuceneIndexWorker.java
+  s_19aec81a054b3b::t_a0893d3684f46f 885,939,1133,1220,1373-1375,1377-1378,1382-1391,1393,1399-1400,1403-1404,1996-1997,2192-2194
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/LuceneMatch.java
+  s_19aec81a054b3b::t_42a7391fcb7c04 45,61,86-91
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/VectorExactSearch.java
+  s_19aec81a054b3b::t_593058f6e9b6c7 82-83,183,186,284-285,293,295,310-313,316
+extensions/indexes/lucene/src/main/java/org/exist/xquery/modules/lucene/AbstractVectorQueryFunction.java
+  s_19aec81a054b3b::t_646ecb926b3f49 116
+extensions/indexes/lucene/src/main/java/org/exist/xquery/modules/lucene/QueryFieldVector.java
+  s_19aec81a054b3b::t_7b51244f7e6f65 134
+extensions/indexes/lucene/src/main/java/org/exist/xquery/modules/lucene/QueryOptions.java
+  s_19aec81a054b3b::t_0d65c6aacc2829 298-299
+extensions/indexes/lucene/src/main/java/org/exist/xquery/modules/lucene/Score.java
+  s_19aec81a054b3b::t_b880eca07cfa9e 90
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "5d2c848a84a867207d2ada2858a59d89f010881b",
+  "prompts": {},
+  "sessions": {
+    "s_19aec81a054b3b": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "142f6088-4463-4f99-95e9-91a245386216",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
