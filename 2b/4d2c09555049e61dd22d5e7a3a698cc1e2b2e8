@@ -1,0 +1,21 @@
+extensions/indexes/vector-it/src/test/java/xquery/lucene/VectorModelDimensionIT.java
+  s_19aec81a054b3b::t_7377b132327931 1-59
+extensions/vector/src/main/java/org/exist/vector/OnnxVectorProvider.java
+  s_19aec81a054b3b::t_09878b100ec3ae 26,31,285-292,313-329
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "2b4d2c09555049e61dd22d5e7a3a698cc1e2b2e8",
+  "prompts": {},
+  "sessions": {
+    "s_19aec81a054b3b": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "142f6088-4463-4f99-95e9-91a245386216",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
