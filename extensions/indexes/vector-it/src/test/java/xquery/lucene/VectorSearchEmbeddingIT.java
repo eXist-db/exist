@@ -26,16 +26,12 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.test.ExistEmbeddedServer;
-import org.exist.util.ConfigurationHelper;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.value.Sequence;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -47,12 +43,11 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 /**
  * Integration test with ONNX model: full Lucene vector indexing + query using vector:embed.
  * <p>
- * Skips when the model is not available. Run with:
+ * Skipped without the model, unless the onnx-model profile is active, where a missing model fails (see {@link RequiresOnnxModel}). Run with:
  * <pre>
  *   mvn verify -pl extensions/indexes/vector-it -Ponnx-model
  * </pre>
@@ -61,49 +56,71 @@ import static org.junit.jupiter.api.Assumptions.assumeTrue;
  *   mvn verify -pl extensions/indexes/vector-it -am -Ponnx-model -DskipUnitTests=true
  * </pre>
  */
+@RequiresOnnxModel
 public class VectorSearchEmbeddingIT {
 
     @RegisterExtension
     public static ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     private static final String MODEL = "all-MiniLM-L6-v2";
-    private static final String MODEL_PATH = "target/onnx-models/all-MiniLM-L6-v2";
+    private static final String MODEL_PATH = OnnxModelCondition.MODEL_PATH;
 
     private static final String COLLECTION = "/db/lucene-test-vector-embedding-it";
     private static final String COLLECTION_NAME = "lucene-test-vector-embedding-it";
     private static final String CONFIG_COLLECTION = "/db/system/config/db/" + COLLECTION_NAME;
 
-    private static final String XCONF =
-        "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">"
-        + "<index xmlns:xs=\"http://www.w3.org/2001/XMLSchema\">"
-        + "<lucene><text qname=\"article\">"
-        + "<field name=\"title\" expression=\"title\"/>"
-        + "<vector-field name=\"embedding\" expression=\"title\" dimension=\"384\" similarity=\"cosine\""
-        + " embedding=\"local\" model=\"" + MODEL + "\" model-path=\"" + MODEL_PATH + "\"/>"
-        + "</text></lucene></index></collection>";
+    private static final String XCONF = """
+        <collection xmlns="http://exist-db.org/collection-config/1.0">
+            <index xmlns:xs="http://www.w3.org/2001/XMLSchema">
+                <lucene>
+                    <text qname="article">
+                        <field name="title" expression="title"/>
+                        <vector-field name="embedding" expression="title" dimension="384" similarity="cosine"
+                            embedding="local" model="%s" model-path="%s"/>
+                    </text>
+                </lucene>
+            </index>
+        </collection>""".formatted(MODEL, MODEL_PATH);
 
-    private static final String INLINE_XCONF =
-        "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">"
-        + "<index xmlns:xs=\"http://www.w3.org/2001/XMLSchema\">"
-        + "<lucene><text qname=\"article\">"
-        + "<inline qname=\"bold\"/>"
-        + "<field name=\"title\" expression=\"p\"/>"
-        + "<vector-field name=\"embedding\" expression=\".\" dimension=\"384\" similarity=\"cosine\""
-        + " embedding=\"local\" model=\"" + MODEL + "\" model-path=\"" + MODEL_PATH + "\"/>"
-        + "</text></lucene></index></collection>";
+    private static final String INLINE_XCONF = """
+        <collection xmlns="http://exist-db.org/collection-config/1.0">
+            <index xmlns:xs="http://www.w3.org/2001/XMLSchema">
+                <lucene>
+                    <text qname="article">
+                        <inline qname="bold"/>
+                        <field name="title" expression="p"/>
+                        <vector-field name="embedding" expression="." dimension="384" similarity="cosine"
+                            embedding="local" model="%s" model-path="%s"/>
+                    </text>
+                </lucene>
+            </index>
+        </collection>""".formatted(MODEL, MODEL_PATH);
 
-    private static final String DATA =
-        "<articles><article><title>Hello world</title></article>"
-        + "<article><title>Machine learning</title></article>"
-        + "<article><title>Quantum physics</title></article></articles>";
+    private static final String INLINE_NO_EXPRESSION_XCONF = """
+        <collection xmlns="http://exist-db.org/collection-config/1.0">
+            <index xmlns:xs="http://www.w3.org/2001/XMLSchema">
+                <lucene>
+                    <text qname="article">
+                        <inline qname="bold"/>
+                        <field name="title" expression="p"/>
+                        <vector-field name="embedding" dimension="384" similarity="cosine"
+                            embedding="local" model="%s" model-path="%s"/>
+                    </text>
+                </lucene>
+            </index>
+        </collection>""".formatted(MODEL, MODEL_PATH);
 
-    private static final String INLINE_DATA =
-        "<articles><article><p> this is a <bold>cute</bold> cat</p></article></articles>";
+    private static final String DATA = """
+        <articles>
+            <article><title>Hello world</title></article>
+            <article><title>Machine learning</title></article>
+            <article><title>Quantum physics</title></article>
+        </articles>""";
 
-    @BeforeEach
-    void checkModel() {
-        assumeTrue(hasEmbeddingModel(), "ONNX model not found — run with -Ponnx-model");
-    }
+    private static final String INLINE_DATA = """
+        <articles>
+            <article><p> this is a <bold>cute</bold> cat</p></article>
+        </articles>""";
 
     @Test
     void embeddingLocalIndexedAndQueried() throws XPathException, PermissionDeniedException, EXistException {
@@ -113,10 +130,10 @@ public class VectorSearchEmbeddingIT {
 
     @Test
     void embedReturnsDimension384() throws XPathException, PermissionDeniedException, EXistException {
-        final Sequence result = executeQuery(
-            "xquery version \"3.1\";\n"
-            + "import module namespace vector=\"http://exist-db.org/xquery/vector\";\n"
-            + "count(vector:embed(\"Hello world\", \"" + MODEL + "\", \"" + MODEL_PATH + "\")?*)");
+        final Sequence result = executeQuery("""
+            xquery version "3.1";
+            import module namespace vector="http://exist-db.org/xquery/vector";
+            count(vector:embed("Hello world", "%s", "%s")?*)""".formatted(MODEL, MODEL_PATH));
         assertEquals(384, result.itemAt(0).toJavaObject(Integer.class).intValue());
     }
 
@@ -148,11 +165,11 @@ public class VectorSearchEmbeddingIT {
         };
         onnxLogger.addHandler(handler);
         try {
-            executeQuery(
-                "xquery version \"3.1\";\n"
-                + "import module namespace vector=\"http://exist-db.org/xquery/vector\";\n"
-                + "(vector:embed(\"Hello world\", \"" + MODEL + "\", \"" + MODEL_PATH + "\"),"
-                + " vector:embed-batch((\"Machine learning\", \"Quantum physics\"), \"" + MODEL + "\", \"" + MODEL_PATH + "\"))");
+            executeQuery("""
+                xquery version "3.1";
+                import module namespace vector="http://exist-db.org/xquery/vector";
+                (vector:embed("Hello world", "%1$s", "%2$s"),
+                 vector:embed-batch(("Machine learning", "Quantum physics"), "%1$s", "%2$s"))""".formatted(MODEL, MODEL_PATH));
         } finally {
             onnxLogger.removeHandler(handler);
         }
@@ -161,11 +178,11 @@ public class VectorSearchEmbeddingIT {
 
     @Test
     void embedBatchReturnsTwoArrays() throws XPathException, PermissionDeniedException, EXistException {
-        final Sequence result = executeQuery(
-            "xquery version \"3.1\";\n"
-            + "import module namespace vector=\"http://exist-db.org/xquery/vector\";\n"
-            + "let $b := vector:embed-batch((\"Hello world\", \"Machine learning\"), \"" + MODEL + "\", \"" + MODEL_PATH + "\")\n"
-            + "return (count($b?*), count($b(1)?*), count($b(2)?*))");
+        final Sequence result = executeQuery("""
+            xquery version "3.1";
+            import module namespace vector="http://exist-db.org/xquery/vector";
+            let $b := vector:embed-batch(("Hello world", "Machine learning"), "%s", "%s")
+            return (count($b?*), count($b(1)?*), count($b(2)?*))""".formatted(MODEL, MODEL_PATH));
         assertEquals(3, result.getItemCount());
         assertEquals(2, result.itemAt(0).toJavaObject(Integer.class).intValue());
         assertEquals(384, result.itemAt(1).toJavaObject(Integer.class).intValue());
@@ -175,8 +192,7 @@ public class VectorSearchEmbeddingIT {
     @Test
     void diagnosticsReportsModel() throws XPathException, PermissionDeniedException, EXistException {
         setupDefaultCollection();
-        final Sequence result = executeQuery(
-            """
+        final Sequence result = executeQuery("""
             xquery version "3.1";
             import module namespace vector="http://exist-db.org/xquery/vector";
             count(vector:diagnostics())""");
@@ -199,13 +215,13 @@ public class VectorSearchEmbeddingIT {
     @Test
     void closerTextRanksHigher() throws XPathException, PermissionDeniedException, EXistException {
         setupDefaultCollection();
-        final Sequence result = executeQuery(
-            "xquery version \"3.1\";\n"
-            + "import module namespace ft=\"http://exist-db.org/xquery/lucene\";\n"
-            + "import module namespace vector=\"http://exist-db.org/xquery/vector\";\n"
-            + "let $v := " + embedExpr("Hello world") + "\n"
-            + "let $hits := collection(\"" + COLLECTION + "\")//article[ft:query-vector(., $v, 3)]\n"
-            + "return ($hits[1]/title/string(), ft:score($hits[1]) >= ft:score($hits[2]))");
+        final Sequence result = executeQuery("""
+            xquery version "3.1";
+            import module namespace ft="http://exist-db.org/xquery/lucene";
+            import module namespace vector="http://exist-db.org/xquery/vector";
+            let $v := %s
+            let $hits := collection("%s")//article[ft:query-vector(., $v, 3)]
+            return ($hits[1]/title/string(), ft:score($hits[1]) >= ft:score($hits[2]))""".formatted(embedExpr("Hello world"), COLLECTION));
         assertEquals("Hello world", result.itemAt(0).getStringValue());
         assertEquals("true", result.itemAt(1).getStringValue());
     }
@@ -213,10 +229,10 @@ public class VectorSearchEmbeddingIT {
     @Test
     void embedEmptyTextErrors() throws EXistException, PermissionDeniedException {
         try {
-            executeQuery(
-                "xquery version \"3.1\";\n"
-                + "import module namespace vector=\"http://exist-db.org/xquery/vector\";\n"
-                + "vector:embed(\"\", \"" + MODEL + "\", \"" + MODEL_PATH + "\")");
+            executeQuery("""
+                xquery version "3.1";
+                import module namespace vector="http://exist-db.org/xquery/vector";
+                vector:embed("", "%s", "%s")""".formatted(MODEL, MODEL_PATH));
             fail("Expected XPathException for empty text");
         } catch (XPathException e) {
             assertEquals("vector:EXVECTOR0002", e.getErrorCode().getErrorQName().getStringValue());
@@ -226,10 +242,10 @@ public class VectorSearchEmbeddingIT {
     @Test
     void embedBlankTextErrors() throws EXistException, PermissionDeniedException {
         try {
-            executeQuery(
-                "xquery version \"3.1\";\n"
-                + "import module namespace vector=\"http://exist-db.org/xquery/vector\";\n"
-                + "vector:embed(\"   \", \"" + MODEL + "\", \"" + MODEL_PATH + "\")");
+            executeQuery("""
+                xquery version "3.1";
+                import module namespace vector="http://exist-db.org/xquery/vector";
+                vector:embed("   ", "%s", "%s")""".formatted(MODEL, MODEL_PATH));
             fail("Expected XPathException for blank text");
         } catch (XPathException e) {
             assertEquals("vector:EXVECTOR0002", e.getErrorCode().getErrorQName().getStringValue());
@@ -238,20 +254,20 @@ public class VectorSearchEmbeddingIT {
 
     @Test
     void embedBatchEmptySequenceReturnsEmptyArray() throws XPathException, PermissionDeniedException, EXistException {
-        final Sequence result = executeQuery(
-            "xquery version \"3.1\";\n"
-            + "import module namespace vector=\"http://exist-db.org/xquery/vector\";\n"
-            + "count(vector:embed-batch((), \"" + MODEL + "\", \"" + MODEL_PATH + "\")?*)");
+        final Sequence result = executeQuery("""
+            xquery version "3.1";
+            import module namespace vector="http://exist-db.org/xquery/vector";
+            count(vector:embed-batch((), "%s", "%s")?*)""".formatted(MODEL, MODEL_PATH));
         assertEquals(0, result.itemAt(0).toJavaObject(Integer.class).intValue());
     }
 
     @Test
     void embedBatchSingleTextReturnsOneArray() throws XPathException, PermissionDeniedException, EXistException {
-        final Sequence result = executeQuery(
-            "xquery version \"3.1\";\n"
-            + "import module namespace vector=\"http://exist-db.org/xquery/vector\";\n"
-            + "let $b := vector:embed-batch(\"Hello\", \"" + MODEL + "\", \"" + MODEL_PATH + "\")\n"
-            + "return (count($b?*), count($b(1)?*))");
+        final Sequence result = executeQuery("""
+            xquery version "3.1";
+            import module namespace vector="http://exist-db.org/xquery/vector";
+            let $b := vector:embed-batch("Hello", "%s", "%s")
+            return (count($b?*), count($b(1)?*))""".formatted(MODEL, MODEL_PATH));
         assertEquals(2, result.getItemCount());
         assertEquals(1, result.itemAt(0).toJavaObject(Integer.class).intValue());
         assertEquals(384, result.itemAt(1).toJavaObject(Integer.class).intValue());
@@ -265,10 +281,19 @@ public class VectorSearchEmbeddingIT {
 
     @Test
     void inlineElementsDoNotPolluteVectors() throws XPathException, PermissionDeniedException, EXistException {
-        final String inlineCol = "/db/lucene-test-vector-inline-it";
-        final String inlineColName = "lucene-test-vector-inline-it";
-        final String inlineConfCol = "/db/system/config/db/" + inlineColName;
-        setupCollection(inlineCol, inlineColName, inlineConfCol, INLINE_XCONF, INLINE_DATA);
+        assertInlineVectorHit("lucene-test-vector-inline-it", INLINE_XCONF);
+    }
+
+    @Test
+    void inlineElementsWithoutExpressionDoNotPolluteVectors() throws XPathException, PermissionDeniedException, EXistException {
+        assertInlineVectorHit("lucene-test-vector-inline-no-expr-it", INLINE_NO_EXPRESSION_XCONF);
+    }
+
+    private void assertInlineVectorHit(final String colName, final String xconf)
+            throws XPathException, PermissionDeniedException, EXistException {
+        final String inlineCol = "/db/" + colName;
+        final String inlineConfCol = "/db/system/config/db/" + colName;
+        setupCollection(inlineCol, colName, inlineConfCol, xconf, INLINE_DATA);
         try {
             assertCount(queryVectorCount(inlineCol, "cute cat", 1), 1);
         } finally {
@@ -286,10 +311,11 @@ public class VectorSearchEmbeddingIT {
             return;
         }
         try {
-            executeQuery("xquery version \"3.1\";\n"
-                + "import module namespace xmldb=\"http://exist-db.org/xquery/xmldb\";\n"
-                + "try { xmldb:remove(\"" + col + "\") } catch * { () },\n"
-                + "try { xmldb:remove(\"" + confCol + "\") } catch * { () }");
+            executeQuery("""
+                xquery version "3.1";
+                import module namespace xmldb="http://exist-db.org/xquery/xmldb";
+                try { xmldb:remove("%s") } catch * { () },
+                try { xmldb:remove("%s") } catch * { () }""".formatted(col, confCol));
         } catch (final Exception e) {
             // ignore
         }
@@ -299,16 +325,16 @@ public class VectorSearchEmbeddingIT {
             final String xconf, final String data) throws EXistException, PermissionDeniedException, XPathException {
         final String dataEsc = data.replace("'", "''");
         final String xconfEsc = xconf.replace("'", "''");
-        executeQuery(
-            "xquery version \"3.1\";\n"
-            + "import module namespace xmldb=\"http://exist-db.org/xquery/xmldb\";\n"
-            + "xmldb:create-collection(\"/db/system\", \"config\"),\n"
-            + "xmldb:create-collection(\"/db/system/config\", \"db\"),\n"
-            + "xmldb:create-collection(\"/db/system/config/db\", \"" + colName + "\"),\n"
-            + "xmldb:create-collection(\"/db\", \"" + colName + "\"),\n"
-            + "xmldb:store(\"" + col + "\", \"test.xml\", parse-xml('" + dataEsc + "')),\n"
-            + "xmldb:store(\"" + confCol + "\", \"collection.xconf\", parse-xml('" + xconfEsc + "')),\n"
-            + "xmldb:reindex(\"" + col + "\")");
+        executeQuery("""
+            xquery version "3.1";
+            import module namespace xmldb="http://exist-db.org/xquery/xmldb";
+            xmldb:create-collection("/db/system", "config"),
+            xmldb:create-collection("/db/system/config", "db"),
+            xmldb:create-collection("/db/system/config/db", "%1$s"),
+            xmldb:create-collection("/db", "%1$s"),
+            xmldb:store("%2$s", "test.xml", parse-xml('%3$s')),
+            xmldb:store("%4$s", "collection.xconf", parse-xml('%5$s')),
+            xmldb:reindex("%2$s")""".formatted(colName, col, dataEsc, confCol, xconfEsc));
     }
 
     private void setupDefaultCollection() throws EXistException, PermissionDeniedException, XPathException {
@@ -320,19 +346,21 @@ public class VectorSearchEmbeddingIT {
     }
 
     private String queryVectorCount(final String collection, final String text, final int k) {
-        return "xquery version \"3.1\";\n"
-            + "import module namespace ft=\"http://exist-db.org/xquery/lucene\";\n"
-            + "import module namespace vector=\"http://exist-db.org/xquery/vector\";\n"
-            + "let $v := " + embedExpr(text) + "\n"
-            + "return count(collection(\"" + collection + "\")//article[ft:query-vector(., $v, " + k + ")])";
+        return """
+            xquery version "3.1";
+            import module namespace ft="http://exist-db.org/xquery/lucene";
+            import module namespace vector="http://exist-db.org/xquery/vector";
+            let $v := %s
+            return count(collection("%s")//article[ft:query-vector(., $v, %d)])""".formatted(embedExpr(text), collection, k);
     }
 
     private String queryFieldVectorCount(final String collection, final String text, final int k) {
-        return "xquery version \"3.1\";\n"
-            + "import module namespace ft=\"http://exist-db.org/xquery/lucene\";\n"
-            + "import module namespace vector=\"http://exist-db.org/xquery/vector\";\n"
-            + "let $v := " + embedExpr(text) + "\n"
-            + "return count(collection(\"" + collection + "\")//article[ft:query-field-vector(\"embedding\", $v, " + k + ")])";
+        return """
+            xquery version "3.1";
+            import module namespace ft="http://exist-db.org/xquery/lucene";
+            import module namespace vector="http://exist-db.org/xquery/vector";
+            let $v := %s
+            return count(collection("%s")//article[ft:query-field-vector("embedding", $v, %d)])""".formatted(embedExpr(text), collection, k);
     }
 
     private void assertCount(final String query, final int expected) throws EXistException, PermissionDeniedException, XPathException {
@@ -351,14 +379,6 @@ public class VectorSearchEmbeddingIT {
         try (final DBBroker broker = brokerPool.get(Optional.of(brokerPool.getSecurityManager().getSystemSubject()))) {
             return xquery.execute(broker, query, null);
         }
-    }
-
-    private boolean hasEmbeddingModel() {
-        final Path base = ConfigurationHelper.getExistHome()
-            .orElse(Path.of(System.getProperty("user.dir", ".")));
-        final Path modelDir = base.resolve("target/onnx-models/all-MiniLM-L6-v2");
-        return Files.isRegularFile(modelDir.resolve("model.onnx"))
-            && Files.isRegularFile(modelDir.resolve("tokenizer.json"));
     }
 }
 

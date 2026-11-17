@@ -10,6 +10,8 @@ mvn verify -pl extensions/indexes/vector-it -am -Ponnx-model -DskipUnitTests=tru
 
 The `-Ponnx-model` profile downloads the all-MiniLM-L6-v2 model from HuggingFace on first run.
 
+Tests that need the model carry `@RequiresOnnxModel`. Without the profile and without a model they are skipped; with the profile a model that cannot be found fails them, so they cannot go green by skipping.
+
 ## Windows CI: ONNX Runtime native load
 
 ONNX Runtime >= 1.21.0 requires VC++ runtime >= 14.40. The JDK distribution used in CI must ship a compatible version.

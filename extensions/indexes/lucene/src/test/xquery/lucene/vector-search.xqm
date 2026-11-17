@@ -188,7 +188,7 @@ declare variable $vs:XCONF_EMBEDDING_LOCAL :=
             <lucene>
                 <text qname="article">
                     <field name="title" expression="title"/>
-                    <vector-field name="embedding" expression="title" dimension="384" similarity="cosine"
+                    <vector-field name="embedding-minilm" expression="title" dimension="384" similarity="cosine"
                         embedding="local" model="all-MiniLM-L6-v2" model-path="target/onnx-models/all-MiniLM-L6-v2"/>
                 </text>
             </lucene>
@@ -202,7 +202,7 @@ declare variable $vs:XCONF_EMBEDDING_LOCAL_NO_MODEL :=
             <lucene>
                 <text qname="article">
                     <field name="title" expression="title"/>
-                    <vector-field name="embedding" expression="title" dimension="384" similarity="cosine"
+                    <vector-field name="embedding-minilm" expression="title" dimension="384" similarity="cosine"
                         embedding="local" model="all-MiniLM-L6-v2" model-path="target/onnx-models/nonexistent-model-12345"/>
                 </text>
             </lucene>
@@ -216,7 +216,7 @@ declare variable $vs:XCONF_EMBEDDING_HTTP_NO_KEY :=
             <lucene>
                 <text qname="article">
                     <field name="title" expression="title"/>
-                    <vector-field name="embedding" expression="title" dimension="1536" similarity="cosine"
+                    <vector-field name="embedding-http" expression="title" dimension="1536" similarity="cosine"
                         embedding="http" model="text-embedding-3-small" model-path="https://api.openai.com/v1"/>
                 </text>
             </lucene>
@@ -249,7 +249,7 @@ declare variable $vs:XCONF_INLINE_VECTOR :=
                 <text qname="article">
                     <inline qname="bold"/>
                     <field name="title" expression="p"/>
-                    <vector-field name="embedding" expression="." dimension="384" similarity="cosine"
+                    <vector-field name="embedding-minilm" expression="." dimension="384" similarity="cosine"
                         embedding="local" model="all-MiniLM-L6-v2" model-path="target/onnx-models/all-MiniLM-L6-v2"/>
                 </text>
             </lucene>
@@ -267,7 +267,7 @@ declare variable $vs:XCONF_INLINE_NO_EXPRESSION :=
                 <text qname="article">
                     <inline qname="bold"/>
                     <field name="title" expression="p"/>
-                    <vector-field name="embedding" dimension="384" similarity="cosine"
+                    <vector-field name="embedding-minilm" dimension="384" similarity="cosine"
                         embedding="local" model="all-MiniLM-L6-v2" model-path="target/onnx-models/all-MiniLM-L6-v2"/>
                 </text>
             </lucene>
@@ -769,11 +769,11 @@ function vs:embedding-http-no-key-text-still-searchable() {
 
 (:~
  : embedding=local with real model: text embedded at index time, vector search finds hits.
- : Run via VectorSearchEmbeddingTest (Java) with assumeTrue when model exists.
+ : Covered by VectorSearchEmbeddingIT (vector-it), which runs with -Ponnx-model.
  : XQSuite: pending so it does not fail when model is absent.
  :)
 declare
-    %test:pending("Run via VectorSearchEmbeddingTest when model at target/onnx-models/all-MiniLM-L6-v2")
+    %test:pending("Needs the ONNX model; covered by VectorSearchEmbeddingIT#embeddingLocalIndexedAndQueried in vector-it")
     %test:assertEquals(2)
 function vs:embedding-local-indexed-and-queried() {
     let $query-vec := vector:embed("Hello world", "all-MiniLM-L6-v2", "target/onnx-models/all-MiniLM-L6-v2")
@@ -794,7 +794,7 @@ function vs:inline-elements-fulltext-finds-cute() {
  : Inline elements + vector (expression="."): XPath string value, no element names in vectors.
  :)
 declare
-    %test:pending("Run via VectorSearchEmbeddingTest when model at target/onnx-models/all-MiniLM-L6-v2")
+    %test:pending("Needs the ONNX model; covered by VectorSearchEmbeddingIT#inlineElementsDoNotPolluteVectors in vector-it")
     %test:assertEquals(1)
 function vs:inline-elements-vector-no-element-name-pollution() {
     let $query-vec := vector:embed("cute cat", "all-MiniLM-L6-v2", "target/onnx-models/all-MiniLM-L6-v2")
@@ -805,7 +805,7 @@ function vs:inline-elements-vector-no-element-name-pollution() {
  : Inline elements + vector (no expression): DefaultTextExtractor path; inline applies; no element names.
  :)
 declare
-    %test:pending("Run via VectorSearchEmbeddingTest when model at target/onnx-models/all-MiniLM-L6-v2")
+    %test:pending("Needs the ONNX model; covered by VectorSearchEmbeddingIT#inlineElementsWithoutExpressionDoNotPolluteVectors in vector-it")
     %test:assertEquals(1)
 function vs:inline-elements-vector-no-expression() {
     let $query-vec := vector:embed("cute cat", "all-MiniLM-L6-v2", "target/onnx-models/all-MiniLM-L6-v2")

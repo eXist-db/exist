@@ -42,7 +42,6 @@ import org.exist.storage.BrokerPoolConstants;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.Txn;
 import org.exist.test.ExistEmbeddedServer;
-import org.exist.util.ConfigurationHelper;
 import org.exist.util.MimeType;
 import org.exist.util.StringInputSource;
 import org.exist.xmldb.XmldbURI;
@@ -62,7 +61,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 /**
  * A rebuild at startup of a full-text index in another format embeds the vectors of a field with embedding="local"
@@ -78,7 +76,7 @@ import static org.junit.jupiter.api.Assumptions.assumeTrue;
 public class VectorRebuildIT {
 
     private static final String MODEL = "all-MiniLM-L6-v2";
-    private static final String MODEL_PATH = "target/onnx-models/all-MiniLM-L6-v2";
+    private static final String MODEL_PATH = OnnxModelCondition.MODEL_PATH;
     private static final String COLLECTION = "/db/vector-rebuild-it";
 
     /** The loggers of the full-text index and of the broker pool, which runs the rebuild. */
@@ -126,8 +124,8 @@ public class VectorRebuildIT {
     }
 
     @Test
+    @RequiresOnnxModel
     void aRebuildEmbedsTheVectorsAgainAndLogsThem() throws Exception {
-        assumeTrue(hasModel(), "ONNX model not found — run with -Ponnx-model");
         storeDocuments(MODEL_PATH);
         assertEquals(3, countVectorMatches());
 
@@ -234,12 +232,5 @@ public class VectorRebuildIT {
             final Sequence result = xquery.execute(broker, query, null);
             return result.itemAt(0).toJavaObject(Long.class);
         }
-    }
-
-    private static boolean hasModel() {
-        final Path modelDir = ConfigurationHelper.getExistHome()
-                .orElse(Path.of(System.getProperty("user.dir", ".")))
-                .resolve(MODEL_PATH);
-        return Files.isRegularFile(modelDir.resolve("model.onnx")) && Files.isRegularFile(modelDir.resolve("tokenizer.json"));
     }
 }
