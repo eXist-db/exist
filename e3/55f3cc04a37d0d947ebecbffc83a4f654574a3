@@ -1,0 +1,19 @@
+extensions/indexes/lucene/src/test/xquery/lucene/vector-search.xqm
+  s_7706e27dff665e::t_02ad0d5f22dd74 772,776,797,808
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "e355f3cc04a37d0d947ebecbffc83a4f654574a3",
+  "prompts": {},
+  "sessions": {
+    "s_7706e27dff665e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c70efcb1-bba9-4559-8700-cc8bc501bf09",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}

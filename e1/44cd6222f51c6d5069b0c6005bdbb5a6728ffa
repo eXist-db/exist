@@ -1,0 +1,29 @@
+extensions/indexes/vector-it/README.md
+  s_7706e27dff665e::t_db3e181bbb9164 13-14
+extensions/indexes/vector-it/pom.xml
+  s_7706e27dff665e::t_e083b6d23ceef6 48-52,173,217-224
+extensions/indexes/vector-it/src/test/java/xquery/lucene/OnnxModelCondition.java
+  s_7706e27dff665e::t_ceb8659c14c996 1-57
+extensions/indexes/vector-it/src/test/java/xquery/lucene/RequiresOnnxModel.java
+  s_7706e27dff665e::t_731143abb37649 1-42
+extensions/indexes/vector-it/src/test/java/xquery/lucene/VectorRebuildIT.java
+  s_7706e27dff665e::t_872d43d5f009be 79,127
+extensions/indexes/vector-it/src/test/java/xquery/lucene/VectorSearchEmbeddingIT.java
+  s_7706e27dff665e::t_662ad5a759a56b 50,59,66
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "e144cd6222f51c6d5069b0c6005bdbb5a6728ffa",
+  "prompts": {},
+  "sessions": {
+    "s_7706e27dff665e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c70efcb1-bba9-4559-8700-cc8bc501bf09",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
