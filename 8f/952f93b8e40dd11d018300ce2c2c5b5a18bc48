@@ -1,0 +1,25 @@
+exist-core/src/main/java/org/exist/indexing/ReindexScope.java
+  s_19aec81a054b3b::t_543f90fc948154 40-42,47-48
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/LuceneIndexWorker.java
+  s_19aec81a054b3b::t_a56c7027413507 383-386,467-468,589-592,2433-2435,2468
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/LuceneVectorFieldConfig.java
+  s_19aec81a054b3b::t_7dd83b2e78f059 379-381,384
+extensions/indexes/lucene/src/test/java/xquery/lucene/ReindexScopeVectorTest.java
+  s_19aec81a054b3b::t_1f1bc99220f68c 1-161
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "8f952f93b8e40dd11d018300ce2c2c5b5a18bc48",
+  "prompts": {},
+  "sessions": {
+    "s_19aec81a054b3b": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "142f6088-4463-4f99-95e9-91a245386216",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
