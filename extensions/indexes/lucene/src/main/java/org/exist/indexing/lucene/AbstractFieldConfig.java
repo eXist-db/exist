@@ -46,8 +46,10 @@ import javax.annotation.Nullable;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Deque;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentLinkedDeque;
 
 /**
  * Abstract configuration corresponding to either a field or facet element nested inside
@@ -63,13 +65,14 @@ public abstract class AbstractFieldConfig {
     protected static final Logger LOG = LogManager.getLogger(AbstractFieldConfig.class);
 
     protected final Optional<String> expression;
-    protected boolean isValid = true;
-    private CompiledXQuery compiled = null;
+    protected volatile boolean isValid = true;
+    private final IndexingQueries expressionQueries;
 
     public AbstractFieldConfig(final LuceneConfig config, final Element configElement, final Map<String, String> namespaces) {
         final String xpath = configElement.getAttribute(XPATH_ATTR);
         if (xpath.isEmpty()) {
             expression = Optional.empty();
+            expressionQueries = null;
             return;
         }
 
@@ -92,6 +95,7 @@ public abstract class AbstractFieldConfig {
         sb.append(xpath);
 
         expression = Optional.of(sb.toString());
+        expressionQueries = new IndexingQueries(expression.get());
     }
 
     @Nullable
@@ -115,9 +119,68 @@ public abstract class AbstractFieldConfig {
     }
 
     /**
+     * The compiled queries of one expression of this configuration, for indexing.
+     * <p>
+     * A configuration is shared by every broker that indexes a document under it (see
+     * {@link LuceneConfig#LuceneConfig(LuceneConfig)}), and so is this. A compiled query, and its
+     * {@link XQueryContext}, keeps the state of the evaluation it is running in: local variables, the function call
+     * stack, in-scope namespaces. So each evaluation takes a compiled query that no other evaluation uses, and gives
+     * it back afterwards. There are as many as there were evaluations at the same time, at most one per broker.
+     * <p>
+     * Unlike {@link #evaluate(DBBroker, String, NodeProxy, ResultHandler)} this does not use the XQuery pool: the
+     * pool checks on every borrow whether the imported modules have changed, which reads the database while the
+     * document being indexed is locked.
+     */
+    protected final class IndexingQueries {
+        private final String code;
+        private final Deque<CompiledXQuery> idle = new ConcurrentLinkedDeque<>();
+
+        IndexingQueries(final String code) {
+            this.code = code;
+        }
+
+        /**
+         * Evaluates the expression against a node.
+         *
+         * @param broker the broker to evaluate with, as its user
+         * @param contextNode the node to evaluate it against
+         * @param handler what to do with the result
+         * @param <T> the type of what the handler returns
+         * @return what the handler returns, or null if the expression does not compile
+         * @throws XPathException if the expression cannot be evaluated
+         * @throws PermissionDeniedException if the user may not evaluate it
+         */
+        @Nullable
+        <T> T evaluate(final DBBroker broker, final NodeProxy contextNode, final ResultHandler<T> handler)
+                throws XPathException, PermissionDeniedException {
+            if (!isValid) {
+                return null;
+            }
+            CompiledXQuery compiled = idle.pollFirst();
+            if (compiled == null) {
+                compiled = compile(broker, code);
+                if (compiled == null) {
+                    return null;
+                }
+            }
+            final XQuery xquery = broker.getBrokerPool().getXQueryService();
+            try {
+                return handler.handle(xquery.execute(broker, compiled, contextNode));
+            } finally {
+                try {
+                    compiled.reset();
+                } finally {
+                    compiled.getContext().reset();
+                }
+                // not reached if a reset failed: that compiled query is dropped
+                idle.offerFirst(compiled);
+            }
+        }
+    }
+
+    /**
      * Evaluates an expression of this configuration against a node, outside indexing, with a compiled query of its
-     * own borrowed from the XQuery pool: the compiled query used for indexing is shared by everything this
-     * configuration indexes, and may be in use.
+     * own borrowed from the XQuery pool.
      *
      * @param broker the broker to evaluate with, as its user
      * @param code the expression
@@ -164,32 +227,23 @@ public abstract class AbstractFieldConfig {
             return;
         }
 
-        compile(broker);
-
-        if (!isValid) {
-            return;
-        }
-
-        final XQuery xquery = broker.getBrokerPool().getXQueryService();
-        try {
-            Sequence result = xquery.execute(broker, compiled, contextNode);
-
+        expressionQueries.evaluate(broker, contextNode, result -> {
             if (!result.isEmpty()) {
                 processResult(result, luceneDoc);
             }
-        } catch (PermissionDeniedException | XPathException e) {
-            throw e;
-        } finally {
-            try { compiled.reset(); } finally { compiled.getContext().reset(); }
-        }
+            return null;
+        });
     }
 
-    private void compile(final DBBroker broker) {
-        if (compiled == null && isValid) {
-            expression.ifPresent((code) -> compiled = compile(broker, code));
-        }
-    }
-
+    /**
+     * Compiles an expression of this configuration, with a context of its own.
+     *
+     * @param broker the broker to compile with
+     * @param code the expression
+     * @return the compiled query, or null if the expression does not compile, in which case this configuration is
+     *     no longer valid
+     */
+    @Nullable
     protected CompiledXQuery compile(final DBBroker broker, final String code) {
         final XQuery xquery = broker.getBrokerPool().getXQueryService();
         final XQueryContext context = new XQueryContext(broker.getBrokerPool());
