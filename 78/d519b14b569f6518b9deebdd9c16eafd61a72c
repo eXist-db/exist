@@ -1,0 +1,43 @@
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/LuceneIndexWorker.java
+  s_19aec81a054b3b::t_ba39d008d7e71a 861-913,1117-1124,1185-1187,1197-1203,1206-1210,1380-1410
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/LuceneMatch.java
+  s_19aec81a054b3b::t_c5c32d96c41242 82-86
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/VectorExactSearch.java
+  s_19aec81a054b3b::t_e86bd6e8a43807 1-231
+extensions/indexes/lucene/src/main/java/org/exist/xquery/modules/lucene/AbstractVectorQueryFunction.java
+  s_19aec81a054b3b::t_f7254df1cbce5a 25-26,28,65-67,106,110-118,158-164,169-179,185
+extensions/indexes/lucene/src/main/java/org/exist/xquery/modules/lucene/QueryFieldVector.java
+  s_19aec81a054b3b::t_ec6ddccb8512fa 134-135,169-170
+extensions/indexes/lucene/src/main/java/org/exist/xquery/modules/lucene/QueryVector.java
+  s_19aec81a054b3b::t_f1edc821fdf4b5 199-200
+extensions/indexes/lucene/src/main/java/org/exist/xquery/modules/lucene/Score.java
+  s_19aec81a054b3b::t_e1caee21524ab7 46-47,80-84,88-97,101
+extensions/indexes/lucene/src/test/xquery/lucene/query-vector-candidates.xqm
+  s_19aec81a054b3b::t_fbd693449b4ca0 145-146,148,154,240-242,244,247-248,252,255-256,268,271-272
+extensions/indexes/lucene/src/test/xquery/lucene/query-vector-ownership.xqm
+  s_19aec81a054b3b::t_7e4b9d34b95552 1-142
+extensions/indexes/lucene/src/test/xquery/lucene/vector-search.xqm
+  s_19aec81a054b3b::t_d3ab6f4c3dd34e 1157-1158,1161,1166,1169
+extensions/indexes/lucene/src/test/java/xquery/lucene/VectorSearchTests.java
+  s_19aec81a054b3b::t_415d92e04f87a8 40-41
+extensions/indexes/lucene/src/test/xquery/lucene/query-vector-step.xqm
+  s_19aec81a054b3b::t_4abe4c2193348a 218-219,221,227,232-233,235,237
+extensions/indexes/lucene/src/test/xquery/unoptimized-known-failures.lst
+  s_19aec81a054b3b::t_f803e444ef01fd 10
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "78d519b14b569f6518b9deebdd9c16eafd61a72c",
+  "prompts": {},
+  "sessions": {
+    "s_19aec81a054b3b": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "142f6088-4463-4f99-95e9-91a245386216",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
