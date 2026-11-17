@@ -68,6 +68,12 @@ class ReindexScopeVectorTest {
         <vector-field name="g" dimension="3" similarity="cosine" encoding="text" expression="@v"/>\
         </text></lucene></index></collection>""";
 
+    /** A field whose given vectors are kept in vector.dbx too, so that a stored vector can be told from the document's. */
+    private static final String GIVEN_STORED_XCONF = """
+        <collection xmlns="http://exist-db.org/collection-config/1.0"><index><lucene vector-store="db"><text qname="p">\
+        <vector-field name="g" dimension="3" similarity="cosine" encoding="text" expression="@v"/>\
+        </text></lucene></index></collection>""";
+
     @Test
     void embeddedVectorsSurviveEveryScope() throws Exception {
         assumeTrue(hasEmbeddingModel(), "ONNX model not found in " + MODEL + ": skipping");
@@ -119,6 +125,65 @@ class ReindexScopeVectorTest {
             let $hit := collection('/db/scope-restored')//p[ft:query-field-vector('v', [1%s], 1)]
             return format-number(ft:score($hit), '0.######')""".formatted(", 0".repeat(383)));
         assertEquals("1", score, "the node's vector is the stored one");
+    }
+
+    /**
+     * Removing a node by an update removes the node's stored vector: only a "fulltext" reindex keeps them, and an update
+     * rewrites the index of the nodes it removes through the same code.
+     */
+    @Test
+    void anUpdateRemovesTheStoredVectorOfTheNodesItRemoves() throws Exception {
+        store("scope-updated", GIVEN_STORED_XCONF, "<d><p v='0 1 0'>alpha</p></d>");
+        final NodeProxy node = firstParagraph("scope-updated");
+        final String uri = node.getOwnerDocument().getURI().toString();
+        plant(uri, node, 1);
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
+        assertEquals(12, pool.getVectorStore().get(uri, node.getNodeId()).length, "planted");
+        execute("update delete collection('/db/scope-updated')//p");
+        assertEquals(null, pool.getVectorStore().get(uri, node.getNodeId()), "removed with the node");
+    }
+
+    /**
+     * A "vector" reindex computes the vectors again: a vector stored for the node, which the document does not give, is
+     * not the node's vector after it, and an "all" reindex is no different. A "fulltext" reindex restores it.
+     */
+    @Test
+    void onlyAFulltextReindexKeepsTheStoredVector() throws Exception {
+        store("scope-recomputed", GIVEN_STORED_XCONF, "<d><p v='0 1 0'>alpha</p></d>");
+        final NodeProxy node = firstParagraph("scope-recomputed");
+        final String uri = node.getOwnerDocument().getURI().toString();
+        final String score = """
+            let $hit := collection('/db/scope-recomputed')//p[ft:query-field-vector('g', [1, 0, 0], 1)]
+            return format-number(ft:score($hit), '0.######')""";
+        assertEquals("0.5", execute(score), "the document's vector, orthogonal to the query");
+        for (final String scope : new String[] {"vector", "all"}) {
+            plant(uri, node, 1);
+            execute("xmldb:reindex('/db/scope-recomputed', '" + scope + "')");
+            assertEquals("0.5", execute(score), "after a \"" + scope + "\" reindex, the document's vector");
+        }
+        plant(uri, node, 1);
+        execute("xmldb:reindex('/db/scope-recomputed', 'fulltext')");
+        final byte[] kept = existEmbeddedServer.getBrokerPool().getVectorStore().get(uri, node.getNodeId());
+        assertEquals(12, kept == null ? -1 : kept.length, "the stored vector is kept by a \"fulltext\" reindex");
+        assertEquals("1", execute(score), "after a \"fulltext\" reindex, the stored vector");
+    }
+
+    private static NodeProxy firstParagraph(final String collection) throws Exception {
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
+        try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
+            return (NodeProxy) pool.getXQueryService().execute(broker, "collection('/db/" + collection + "')//p", null).itemAt(0);
+        }
+    }
+
+    /** Stores the vector (x, 0, 0) for a node, as if it had been embedded earlier. */
+    private static void plant(final String uri, final NodeProxy node, final float x) throws Exception {
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
+        final ByteBuffer vector = ByteBuffer.allocate(3 * Float.BYTES).order(ByteOrder.LITTLE_ENDIAN);
+        vector.putFloat(0, x);
+        try (final Txn txn = pool.getTransactionManager().beginTransaction()) {
+            pool.getVectorStore().put(txn, uri, node.getNodeId(), vector.array());
+            pool.getTransactionManager().commit(txn);
+        }
     }
 
     private static void store(final String collection, final String xconf, final String document) throws Exception {

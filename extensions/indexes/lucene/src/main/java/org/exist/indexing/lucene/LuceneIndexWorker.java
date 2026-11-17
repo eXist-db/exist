@@ -380,8 +380,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     }
 
     protected void removeDocument(int docId) {
-        if (!broker.getIndexController().isReindexing()) {
-            // a reindex rewrites the same nodes, whose stored vectors a "fulltext" reindex restores
+        if (!keepsStoredVectors()) {
             removeVectorStoreForDocument(currentDoc.getURI().toString());
         }
     	IndexWriter writer = null;
@@ -401,6 +400,15 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             index.releaseWriter(writer);
             mode = ReindexMode.STORE;
         }
+    }
+
+    /**
+     * Whether the vectors in vector.dbx stay while the index of a node or document is removed: they do in a
+     * "fulltext" reindex, which restores them. Any other removal, an update of the nodes, or a reindex that computes
+     * the vectors again ("all" and "vector"), removes them. The scope is set while a document is reindexed.
+     */
+    private boolean keepsStoredVectors() {
+        return broker.getIndexController().getReindexScope() == ReindexScope.FULLTEXT;
     }
 
     private void removeVectorStoreForDocument(String docPath) {
@@ -464,7 +472,9 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             LOG.debug("Removing collection {}", collection.getURI());
         final VectorStore vectorStore = broker.getBrokerPool().getVectorStore();
         final Txn txn = broker.getCurrentTransaction();
-        // a reindex rewrites the same documents' nodes, whose stored vectors a "fulltext" reindex restores
+        // the drop of a collection's index comes before its documents are reindexed, so before the reindex's scope is
+        // known: a reindex keeps the vectors here, and removes those that are not restored per document, see
+        // keepsStoredVectors
         if (vectorStore != null && txn != null && !reindex) {
             try {
                 for (Iterator<DocumentImpl> i = collection.iterator(broker); i.hasNext(); ) {
@@ -586,8 +596,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     protected void removeNodes() {
     	if (nodesToRemove == null)
             return;
-        if (!broker.getIndexController().isReindexing()) {
-            // a reindex rewrites the same nodes, whose stored vectors a "fulltext" reindex restores
+        if (!keepsStoredVectors()) {
             removeVectorStoreForNodes(currentDoc.getURI().toString(), nodesToRemove);
         }
         IndexWriter writer = null;
