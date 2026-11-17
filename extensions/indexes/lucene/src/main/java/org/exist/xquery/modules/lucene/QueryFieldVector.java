@@ -131,7 +131,8 @@ public class QueryFieldVector extends AbstractVectorQueryFunction {
         try {
             final Expression fieldArg = getArgument(0);
             if (index != null && fieldArg.getDependencies() == Dependency.NO_DEPENDENCY
-                    && index.isVectorFieldOnlyOn(contextSequence.getDocumentSet(), fieldArg.eval(contextSequence, null).getStringValue(), stepName)) {
+                    && index.isVectorFieldOnlyOn(contextSequence.getDocumentSet(), fieldArg.eval(contextSequence, null).getStringValue(), stepName)
+                    && index.everyNodeOwnsItsEntry(contextSequence.getDocumentSet(), stepName, fieldArg.eval(contextSequence, null).getStringValue())) {
                 return optimizable;
             }
         } catch (final XPathException e) {
@@ -165,6 +166,8 @@ public class QueryFieldVector extends AbstractVectorQueryFunction {
         final NodeSet contextSet = useContext ? nodes : null;
         final Sequence result = runSearch(true, contextSequence.getDocumentSet(), contextSet, nodes, field, vector, k, options);
         preselectResult = result.toNodeSet();
+        // with the context's nodes known, the search ranks them; else it found the step's entries, which are the nodes
+        preselectedExactly = useContext;
         return preselectResult;
     }
 

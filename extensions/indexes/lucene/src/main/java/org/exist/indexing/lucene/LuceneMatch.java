@@ -79,6 +79,11 @@ public class LuceneMatch extends Match {
         return LuceneIndex.ID;
     }
 
+    /** Whether the match is of a vector query: its score is a similarity, not a text relevance. */
+    public boolean isVector() {
+        return query instanceof org.apache.lucene.search.KnnFloatVectorQuery;
+    }
+
     public Query getQuery() {
         return query;
     }

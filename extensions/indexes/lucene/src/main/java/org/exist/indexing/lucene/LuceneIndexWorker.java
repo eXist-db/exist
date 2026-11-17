@@ -868,6 +868,59 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     }
 
     /**
+     * Puts the k best candidates of an exact search into the result, each with the entry that gives it its score as its
+     * match, and counts those entries in the facets.
+     *
+     * @param query stands for the search in the matches
+     */
+    private void returnBest(final int contextId, final List<VectorExactSearch.Owner> best, final Query query,
+            final SearcherTaxonomyManager.SearcherAndTaxonomy searcher, final LuceneConfigs.FacetDimensions dimensions,
+            final NodeSet candidates, final NodeSet resultSet) throws IOException {
+        final LuceneFacets facets = new LuceneFacets();
+        final FacetsCollector facetsCollector = new FacetsCollector();
+        for (final VectorExactSearch.Owner owner : best) {
+            final VectorExactSearch.Entry entry = owner.entry();
+            final LuceneMatch match = new LuceneMatch(contextId, entry.luceneDoc(), entry.node(), query, facets);
+            match.setScore(entry.score());
+            // the candidate is the caller's: the hit is a copy of it, with the match, whose context in the predicate
+            // is the candidate, so that the predicate keeps it
+            final NodeProxy candidate = owner.node();
+            final NodeProxy hit = contextId == Expression.NO_CONTEXT_ID ? candidate : candidate.withContextNode(contextId, candidate);
+            resultSet.add(hit.withMatch(match), candidates.getSizeHint(candidate.getOwnerDocument()));
+        }
+        // the entries that gave the scores, one leaf at a time in index order, as a search would collect them
+        final int[] docs = best.stream().mapToInt(owner -> owner.entry().luceneDoc()).sorted().toArray();
+        final List<LeafReaderContext> leaves = searcher.searcher().getIndexReader().leaves();
+        final FixedScore score = new FixedScore();
+        LeafCollector leafCollector = null;
+        LeafReaderContext leaf = null;
+        for (final int doc : docs) {
+            if (leaf == null || doc >= leaf.docBase + leaf.reader().maxDoc()) {
+                if (leafCollector != null) {
+                    leafCollector.finish();
+                }
+                leaf = leaves.get(ReaderUtil.subIndex(doc, leaves));
+                try {
+                    leafCollector = facetsCollector.getLeafCollector(leaf);
+                    leafCollector.setScorer(score);
+                } catch (final AssertionError e) {
+                    // a segment without facet data may make FacetsCollector throw here, as in the hit collector
+                    leafCollector = null;
+                }
+            }
+            if (leafCollector != null) {
+                leafCollector.collect(doc - leaf.docBase);
+            }
+        }
+        if (leafCollector != null) {
+            leafCollector.finish();
+        }
+        if (searcher.taxonomyReader() != null) {
+            facets.compute(searcher.taxonomyReader(), dimensions, facetsCollector);
+        }
+    }
+
+    /**
      * Runs a vector query for its candidates, and processes the best k of them as {@link #searchAndProcess} does.
      */
     private void searchVectorAndProcess(final int contextId, @Nullable final QName qname, final DocumentSet docs,
@@ -1070,6 +1123,14 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             final KnnFloatVectorQuery baseQuery = filterQuery != null
                     ? new KnnFloatVectorQuery(luceneField, vector, candidates, filterQuery)
                     : new KnnFloatVectorQuery(luceneField, vector, candidates);
+            if (contextSet != null) {
+                // the candidates are known: rank them, by what they own
+                final List<VectorExactSearch.Owner> best = new VectorExactSearch(index.getBrokerPool().getNodeFactory(),
+                        searcher.searcher(), vector, k, List.of(new VectorExactSearch.Probe(luceneField, filterQuery)))
+                        .select(docs, contextSet);
+                returnBest(contextId, best, baseQuery, searcher, configs.facetDimensions(), contextSet, resultSet);
+                return resultSet;
+            }
             searchVectorAndProcess(contextId, null, docs, contextSet, resultSet,
                     searcher, baseQuery, configs.facetDimensions(), k);
             return resultSet;
@@ -1130,6 +1191,9 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                                 + namesOf(others.keySet()) + " with " + dimensionsOf(others.keySet()) + " dimensions");
             }
             logSkippedSpaces(others, spaces, vector.length);
+            // with known candidates, one ranking over all of them, whatever the names of the elements that hold the entries
+            final List<VectorExactSearch.Probe> probes = new ArrayList<>();
+            KnnFloatVectorQuery lastQuery = null;
             for (final QName qname : definedIndexes) {
                 for (final Map.Entry<String, List<LuceneConfigs.Group>> vectorField : searched.get(qname).entrySet()) {
                     final String field = vectorField.getKey();
@@ -1139,9 +1203,19 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                             field, docs, within);
                     final int candidates = vectorCandidates(k, options);
                     final KnnFloatVectorQuery vectorQuery = new KnnFloatVectorQuery(field, vector, candidates, filterQuery);
-                    searchVectorAndProcess(contextId, qname, docs, contextSet, resultSet,
-                            searcher, vectorQuery, configs.facetDimensions(), k);
+                    if (contextSet != null) {
+                        probes.add(new VectorExactSearch.Probe(field, filterQuery));
+                        lastQuery = vectorQuery;
+                    } else {
+                        searchVectorAndProcess(contextId, qname, docs, contextSet, resultSet,
+                                searcher, vectorQuery, configs.facetDimensions(), k);
+                    }
                 }
+            }
+            if (contextSet != null && lastQuery != null) {
+                final List<VectorExactSearch.Owner> best = new VectorExactSearch(index.getBrokerPool().getNodeFactory(),
+                        searcher.searcher(), vector, k, probes).select(docs, contextSet);
+                returnBest(contextId, best, lastQuery, searcher, configs.facetDimensions(), contextSet, resultSet);
             }
             return resultSet;
         });
@@ -1306,6 +1380,37 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                         return false;
                     }
                     found = true;
+                }
+            }
+        }
+        return found;
+    }
+
+    /**
+     * Whether every element of the given name that has text has an entry of its own in the vector field, so that the
+     * entries of the name are the nodes a step on that name selects, and no such node owns entries below it: no
+     * configuration computes the field with an expression, which may leave an element without an entry.
+     *
+     * @param fieldName the vector field, or null for every vector field configured on the name
+     */
+    public boolean everyNodeOwnsItsEntry(final DocumentSet docs, final QName name, @Nullable final String fieldName) {
+        boolean found = false;
+        for (final LuceneConfigs.Group group : LuceneConfigs.of(broker, docs).groups()) {
+            for (final LuceneIndexConfig first : group.config().getIndexConfigurations()) {
+                for (LuceneIndexConfig idxConf = first; idxConf != null; idxConf = idxConf.getNext()) {
+                    final QName configured = idxConf.getQName();
+                    if (configured == null || !name.equals(configured) || configured.getNameType() != name.getNameType()) {
+                        continue;
+                    }
+                    for (final AbstractFieldConfig fieldConfig : idxConf.getFacetsAndFields()) {
+                        if (fieldConfig instanceof LuceneVectorFieldConfig vectorField
+                                && (fieldName == null || fieldName.equals(vectorField.getName()))) {
+                            if (vectorField.hasExpression()) {
+                                return false;
+                            }
+                            found = true;
+                        }
+                    }
                 }
             }
         }

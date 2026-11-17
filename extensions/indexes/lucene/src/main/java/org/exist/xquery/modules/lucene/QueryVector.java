@@ -196,6 +196,8 @@ public class QueryVector extends AbstractVectorQueryFunction {
         final NodeSet contextSet = useContext ? nodes : null;
         final Sequence result = runSearch(true, nodes, stepName, contextSequence.getDocumentSet(), contextSet, nodes, vector, k, options);
         preselectResult = result.toNodeSet();
+        // with the context's nodes known, the search ranks them; else it found the step's entries, which are the nodes
+        preselectedExactly = useContext;
         return preselectResult;
     }
 

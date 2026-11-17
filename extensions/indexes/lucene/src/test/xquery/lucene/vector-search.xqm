@@ -1154,18 +1154,19 @@ function vs:profiler-none-when-unknown-field() {
     collection($vs:COLLECTION)//article[ft:query-field-vector("unknown_field", [1.0, 0.0, 0.0, 0.0], 2)]
 };
 
-(:~ ft:query-vector with configured vector-field reports OPTIMIZED. :)
+(:~ ft:query-vector with configured vector-field reports BASIC when the field is computed by an expression: an element
+ : may have no entry, so the nodes the step selects are ranked as written. :)
 declare
     %test:stats
-    %test:assertXPath("$result//stats:index[@type eq 'lucene-vector'][@optimization-level eq 'OPTIMIZED']")
+    %test:assertXPath("$result//stats:index[@type eq 'lucene-vector'][@optimization-level eq 'BASIC']")
 function vs:profiler-optimized-when-vector-config-present() {
     collection($vs:COLLECTION)//article[ft:query-vector(., [1.0, 0.0, 0.0, 0.0], 2)]
 };
 
-(:~ ft:query-field-vector with configured field name reports OPTIMIZED. :)
+(:~ ft:query-field-vector with configured field name reports BASIC when the field is computed by an expression. :)
 declare
     %test:stats
-    %test:assertXPath("$result//stats:index[@type eq 'lucene-vector'][@optimization-level eq 'OPTIMIZED']")
+    %test:assertXPath("$result//stats:index[@type eq 'lucene-vector'][@optimization-level eq 'BASIC']")
 function vs:profiler-optimized-query-field-vector() {
     collection($vs:COLLECTION)//article[ft:query-field-vector("embedding", [1.0, 0.0, 0.0, 0.0], 2)]
 };

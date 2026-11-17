@@ -43,7 +43,8 @@ public class Score extends BasicFunction {
         new FunctionSignature(
             new QName("score", LuceneModule.NAMESPACE_URI, LuceneModule.PREFIX),
             "Returns a computed relevance score for the given node. The score is the sum of all " +
-            "relevance scores provided by Lucene for the node and its descendants. In general, the score " +
+            "relevance scores provided by Lucene for the node and its descendants. For a vector query it is the best " +
+            "similarity among the entries the node owns: its own entry, or else the best entry below it. In general, the score " +
             "will be a number between 0.0 and 1.0 if the query had $node as context. If the query targeted " +
             "multiple descendants of $node (e.g. 'title' and 'author' within a 'book'), the score will be the " +
             "sum of all sub-scores and may thus be greater than 1.",
@@ -76,14 +77,27 @@ public class Score extends BasicFunction {
      * @return the node's score, 0 if it has no Lucene matches
      */
     static float scoreOf(final NodeProxy proxy) {
-        float score = 0.0f;
+        float text = 0.0f;
+        // a vector query's score is a similarity, so it is the best of the entries the node owns, not a sum: its own
+        // entry if it has one, otherwise the best entry below it
+        float own = -1.0f;
+        float below = -1.0f;
         Match match = proxy.getMatches();
         while (match != null) {
             if (match.getIndexId().equals(LuceneIndex.ID)) {
-                score += ((LuceneMatch) match).getScore();
+                final LuceneMatch luceneMatch = (LuceneMatch) match;
+                if (luceneMatch.isVector()) {
+                    if (luceneMatch.getNodeId().equals(proxy.getNodeId())) {
+                        own = Math.max(own, luceneMatch.getScore());
+                    } else {
+                        below = Math.max(below, luceneMatch.getScore());
+                    }
+                } else {
+                    text += luceneMatch.getScore();
+                }
             }
             match = match.getNextMatch();
         }
-        return score;
+        return text + (own >= 0 ? own : Math.max(below, 0.0f));
     }
 }

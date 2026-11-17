@@ -215,24 +215,26 @@ function qvs:sibling-step() {
     sort(collection($qvs:COLLECTION)/h:html/h:head/following-sibling::h:body[ft:query-vector(., $qvs:VEC, 3)]/@n/string())
 };
 
-(: a selected element is found through the nearest element of its name below it, not by its own vector :)
+(: a selected element that has an entry is ranked by its own entry, not by the nested elements below it: the three
+   nearest own vectors are those of 10, 8 and 9, whatever the nearer ones of the sections inside them :)
 declare
-    %test:assertEquals("1", "2", "3")
+    %test:assertEquals("10", "8", "9")
 function qvs:child-step-over-nested-elements() {
     sort(collection($qvs:COLLECTION)/root/sec[ft:query-vector(., $qvs:VEC, 3)]/@n/string())
 };
 
 declare
-    %test:assertEquals("1", "2", "3")
+    %test:assertEquals("10", "8", "9")
 function qvs:first-step-over-nested-elements() {
     sort(collection($qvs:COLLECTION)/part[ft:query-vector(., $qvs:VEC, 3)]/@n/string())
 };
 
-(: the 3 nearest are all below one selected element, so k hits give that one node :)
+(: k counts the selected elements: the three nearest own vectors are those of three chapters, the nearer ones of the
+   chapters inside the first do not make it the only hit :)
 declare
-    %test:assertEquals("1")
+    %test:assertEquals("1", "2", "3")
 function qvs:hits-below-one-selected-element() {
-    collection($qvs:COLLECTION)/book/ch[ft:query-vector(., $qvs:VEC, 3)]/@n/string()
+    sort(collection($qvs:COLLECTION)/book/ch[ft:query-vector(., $qvs:VEC, 3)]/@n/string())
 };
 
 declare
