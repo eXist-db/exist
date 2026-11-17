@@ -1,0 +1,29 @@
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/LuceneIndexWorker.java
+  s_19aec81a054b3b::t_918dafa3409d09 81,1059-1068,1134-1139,1230-1256
+extensions/indexes/lucene/src/main/java/org/exist/xquery/modules/lucene/LuceneModule.java
+  s_19aec81a054b3b::t_a9ec4e4a3643c9 61-62
+extensions/indexes/lucene/src/main/java/org/exist/xquery/modules/lucene/QueryFieldVector.java
+  s_19aec81a054b3b::t_3885bbff12e0b5 63-64
+extensions/indexes/lucene/src/main/java/org/exist/xquery/modules/lucene/QueryVector.java
+  s_19aec81a054b3b::t_4c89eeb04187e5 76-77
+extensions/indexes/lucene/src/test/java/xquery/lucene/VectorSearchTests.java
+  s_19aec81a054b3b::t_ddd0deb3d1e8e1 40-41
+extensions/indexes/lucene/src/test/xquery/lucene/vector-models.xqm
+  s_19aec81a054b3b::t_3519942ca993e6 1-120
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "e00a1121cb1aae6ef6b58ce8a950b95bbfe26829",
+  "prompts": {},
+  "sessions": {
+    "s_19aec81a054b3b": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "142f6088-4463-4f99-95e9-91a245386216",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
