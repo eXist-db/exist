@@ -1,0 +1,23 @@
+exist-core/src/main/java/org/exist/xquery/XQueryContext.java
+  s_14610e7a010aa6::t_a3b455f904ff81 3269-3278
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/AbstractFieldConfig.java
+  s_14610e7a010aa6::t_35b265023f17b7 196-198
+extensions/indexes/range/src/test/xquery/range/field-range-predicate.xqm
+  s_14610e7a010aa6::t_c7ced7a8c712c4 1-218
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "07b4b1d252aab022c43f9eac63cdc6ec5fd6bb67",
+  "prompts": {},
+  "sessions": {
+    "s_14610e7a010aa6": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e4cad6ae-04b3-4758-9320-0ed360dca998",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
