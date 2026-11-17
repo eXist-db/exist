@@ -62,6 +62,18 @@ declare function frpl:lang-self($entry as element()) as element()* {
     $entry[@xml:lang = 'cs']/form
 };
 
+declare function frpl:fitem($entry as element()) as element()* {
+    for-each($entry, function($x) { $x/gram[@type = 'pos'] })
+};
+
+declare function frpl:fref($entry as element()) as element()* {
+    for-each($entry, frpl:type#1)
+};
+
+declare function frpl:fref-nested($entry as element()) as element()* {
+    for-each($entry, frpl2:type#1)
+};
+
 declare function frpl:nested($entry as element()) as element()* {
     frpl2:type($entry)
 };
@@ -120,6 +132,9 @@ declare function t:xconf($range as xs:boolean) as element() {
                     <!-- the same predicates in a library function -->
                     <field name="module-type"          expression="frpl:type(.)"/>
                     <field name="module-nested"        expression="frpl:nested(.)"/>
+                    <field name="module-fitem"         expression="frpl:fitem(.)"/>
+                    <field name="module-fref"          expression="frpl:fref(.)"/>
+                    <field name="module-fref-nested"   expression="frpl:fref-nested(.)"/>
                     <field name="module-type-param"    expression="frpl:type-param(., 'pos')"/>
                     <field name="module-subtype"       expression="frpl:subtype(.)"/>
                     <field name="module-lang"          expression="frpl:lang(.)"/>
@@ -194,6 +209,9 @@ declare %test:assertEquals('{"house":1}') function t:inline-lang-facet() { t:fac
 
 declare %test:assertEquals("noun")  function t:module-type()       { t:field($t:COLL, "module-type") };
 declare %test:assertEquals("noun")  function t:module-nested()     { t:field($t:COLL, "module-nested") };
+declare %test:assertEquals("noun")  function t:module-fitem()      { t:field($t:COLL, "module-fitem") };
+declare %test:assertEquals("noun")  function t:module-fref()       { t:field($t:COLL, "module-fref") };
+declare %test:assertEquals("noun")  function t:module-fref-nested(){ t:field($t:COLL, "module-fref-nested") };
 declare %test:assertEquals("noun")  function t:module-type-param() { t:field($t:COLL, "module-type-param") };
 declare %test:assertEquals("noun")  function t:module-subtype()    { t:field($t:COLL, "module-subtype") };
 declare %test:assertEquals("house") function t:module-lang()       { t:field($t:COLL, "module-lang") };

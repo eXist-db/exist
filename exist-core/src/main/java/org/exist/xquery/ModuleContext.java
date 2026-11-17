@@ -74,6 +74,10 @@ public class ModuleContext extends XQueryContext {
         setParentContext(parentContext);
 
         loadDefaults(this.configuration);
+        if (parentContext != null) {
+            // a module follows the importing context: its function items are optimized in its own context
+            setOptimizationsEnabled(parentContext.optimizationsEnabled());
+        }
     }
 
     @Override
