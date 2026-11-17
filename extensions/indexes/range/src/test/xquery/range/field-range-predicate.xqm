@@ -40,6 +40,8 @@ declare variable $t:INDEX_LIB :=
 
 module namespace frpl="http://exist-db.org/xquery/lucene/field-range-predicate-lib";
 
+import module namespace frpl2="http://exist-db.org/xquery/lucene/field-range-predicate-lib2" at "frp-lib2.xql";
+
 declare function frpl:type($entry as element()) as element()* {
     $entry/gram[@type = 'pos']
 };
@@ -60,10 +62,26 @@ declare function frpl:lang-self($entry as element()) as element()* {
     $entry[@xml:lang = 'cs']/form
 };
 
+declare function frpl:nested($entry as element()) as element()* {
+    frpl2:type($entry)
+};
+
 declare function frpl:lang-value($entry as element()) as attribute()* {
     $entry/def/@xml:lang
 };
 ]``;
+
+declare variable $t:INDEX_LIB2 :=
+    ``[xquery version "3.1";
+
+module namespace frpl2="http://exist-db.org/xquery/lucene/field-range-predicate-lib2";
+
+declare function frpl2:type($entry as element()) as element()* {
+    $entry/gram[@type = 'pos']
+};
+]``;
+
+declare variable $t:LIB2_NAME := "frp-lib2.xql";
 
 declare variable $t:LIB_NAME := "frp-lib.xql";
 
@@ -101,6 +119,7 @@ declare function t:xconf($range as xs:boolean) as element() {
                     <facet dimension="inline-lang"     expression="def[@xml:lang = 'en']"/>
                     <!-- the same predicates in a library function -->
                     <field name="module-type"          expression="frpl:type(.)"/>
+                    <field name="module-nested"        expression="frpl:nested(.)"/>
                     <field name="module-type-param"    expression="frpl:type-param(., 'pos')"/>
                     <field name="module-subtype"       expression="frpl:subtype(.)"/>
                     <field name="module-lang"          expression="frpl:lang(.)"/>
@@ -137,6 +156,7 @@ function t:setup() {
     let $_ := xmldb:create-collection("/db", substring-after($coll, "/db/"))
     let $_ := xmldb:create-collection("/db/system/config/db", substring-after($coll, "/db/"))
     return (
+        xmldb:store($coll, $t:LIB2_NAME, $t:INDEX_LIB2, "application/xquery"),
         xmldb:store($coll, $t:LIB_NAME, $t:INDEX_LIB, "application/xquery"),
         xmldb:store(t:conf-coll($coll), "collection.xconf", t:xconf($coll eq $t:COLL)),
         xmldb:store($coll, "test.xml", $t:XML)
@@ -173,6 +193,7 @@ declare %test:assertEquals('{"house":1}') function t:inline-lang-facet() { t:fac
 (:~ --- predicates in a library function (range index) --- :)
 
 declare %test:assertEquals("noun")  function t:module-type()       { t:field($t:COLL, "module-type") };
+declare %test:assertEquals("noun")  function t:module-nested()     { t:field($t:COLL, "module-nested") };
 declare %test:assertEquals("noun")  function t:module-type-param() { t:field($t:COLL, "module-type-param") };
 declare %test:assertEquals("noun")  function t:module-subtype()    { t:field($t:COLL, "module-subtype") };
 declare %test:assertEquals("house") function t:module-lang()       { t:field($t:COLL, "module-lang") };
