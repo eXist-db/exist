@@ -63,11 +63,14 @@ public abstract class AbstractFieldConfig {
     protected static final Logger LOG = LogManager.getLogger(AbstractFieldConfig.class);
 
     protected final Optional<String> expression;
+    /** Whether the expression is the context node itself, {@code .}, which gives the same text as having none. */
+    private final boolean identityExpression;
     protected boolean isValid = true;
     private CompiledXQuery compiled = null;
 
     public AbstractFieldConfig(final LuceneConfig config, final Element configElement, final Map<String, String> namespaces) {
         final String xpath = configElement.getAttribute(XPATH_ATTR);
+        identityExpression = ".".equals(xpath.trim());
         if (xpath.isEmpty()) {
             expression = Optional.empty();
             return;
@@ -97,6 +100,14 @@ public abstract class AbstractFieldConfig {
     @Nullable
     public Analyzer getAnalyzer() {
         return null;
+    }
+
+    /**
+     * @return true if the expression is the context node itself ({@code .}), which gives the node's own text: the
+     *     same as having no expression
+     */
+    public boolean isIdentityExpression() {
+        return identityExpression;
     }
 
     /**

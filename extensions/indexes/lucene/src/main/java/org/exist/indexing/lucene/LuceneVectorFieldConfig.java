@@ -205,6 +205,16 @@ public class LuceneVectorFieldConfig extends AbstractFieldConfig {
     }
 
     /**
+     * Whether every element this field is configured on that has text has one entry of its own in the field, so that the
+     * entries of the field are the nodes a step on that element selects, and no such node owns entries below it. That
+     * holds when the field is the element's own text, with no expression or with the identity expression {@code .}; an
+     * expression may leave an element without an entry, or give it several.
+     */
+    public boolean hasOneEntryPerNode() {
+        return !hasExpression() || isIdentityExpression();
+    }
+
+    /**
      * Returns the vector field name.
      *
      * @return the field name

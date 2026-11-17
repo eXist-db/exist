@@ -110,6 +110,32 @@ public class VectorSearchEmbeddingIT {
             </index>
         </collection>""".formatted(MODEL, MODEL_PATH);
 
+    /** Nested elements with a vector field of the element's own text and no expression: every element has its own entry. */
+    private static final String NESTED_XCONF = """
+        <collection xmlns="http://exist-db.org/collection-config/1.0">
+            <index xmlns:xs="http://www.w3.org/2001/XMLSchema">
+                <lucene>
+                    <text qname="div">
+                        <vector-field name="embedding" dimension="384" similarity="cosine"
+                            embedding="local" model="%s" model-path="%s"/>
+                    </text>
+                </lucene>
+            </index>
+        </collection>""".formatted(MODEL, MODEL_PATH);
+
+    private static final String NESTED_DATA = """
+        <book>
+            <div n="war">Wars and treaties of the twentieth century.
+                <div n="ww1">The first world war began in 1914 and ended with the treaty of Versailles.</div>
+                <div n="ww2">The second world war ended in 1945 with the surrender of Germany and Japan.</div>
+                <div n="cold">The cold war was a standoff between the United States and the Soviet Union.</div>
+            </div>
+            <div n="food">Cooking and baking.
+                <div n="bread">To bake bread, mix flour, water, yeast and salt, and let the dough rise.</div>
+                <div n="soup">A good soup starts with onions, carrots and a slow simmer.</div>
+            </div>
+        </book>""";
+
     private static final String DATA = """
         <articles>
             <article><title>Hello world</title></article>
@@ -126,6 +152,34 @@ public class VectorSearchEmbeddingIT {
     void embeddingLocalIndexedAndQueried() throws XPathException, PermissionDeniedException, EXistException {
         setupDefaultCollection();
         assertCount(queryVectorCount(COLLECTION, "Hello world", 3), 3);
+    }
+
+    /**
+     * A node's score is the best similarity among its own entries, not a sum over the entries of the elements nested in
+     * it: it is never above 1 and is the same whatever k is. A part of a book holds chapters, each with an entry of its
+     * own, and the field has no expression, so the search looks among the documents.
+     */
+    @Test
+    void nestedElementsScoreTheSameAtEveryK() throws XPathException, PermissionDeniedException, EXistException {
+        setupCollection("/db/lucene-test-vector-nested-it", "lucene-test-vector-nested-it",
+                "/db/system/config/db/lucene-test-vector-nested-it", NESTED_XCONF, NESTED_DATA);
+        final String query = """
+            xquery version "3.1";
+            import module namespace ft="http://exist-db.org/xquery/lucene";
+            import module namespace vector="http://exist-db.org/xquery/vector";
+            let $v := %s
+            let $scores := function($k) {
+                map:merge(for $d in collection("/db/lucene-test-vector-nested-it")//div[ft:query-vector(., $v, $k)]
+                    return map { string($d/@n): round(ft:score($d) * 10000) div 10000 })
+            }
+            let $few := $scores(3)
+            let $all := $scores(20)
+            return string-join((
+                'few=' || count(map:keys($few)),
+                'all=' || count(map:keys($all)),
+                'above-1=' || count((map:keys($all) ! $all(.))[. gt 1]),
+                'differing=' || count(map:keys($few)[$few(.) ne $all(.)])), ' ')""".formatted(embedExpr("the first world war"));
+        assertEquals("few=3 all=7 above-1=0 differing=0", executeQuery(query).getStringValue());
     }
 
     @Test

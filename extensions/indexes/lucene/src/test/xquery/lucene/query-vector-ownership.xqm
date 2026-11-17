@@ -46,6 +46,14 @@ declare variable $qvo:XCONF :=
                 <text qname="leaf">
                     <vector-field name="qvo-leaf" dimension="3" similarity="cosine" encoding="text"/>
                 </text>
+                <!-- the identity expression is the element's own text, as no expression is: the same entry per element -->
+                <text qname="idleaf">
+                    <vector-field name="qvo-id" expression="." dimension="3" similarity="cosine" encoding="text"/>
+                </text>
+                <!-- any other expression may leave an element without an entry: ranked as written -->
+                <text qname="strleaf">
+                    <vector-field name="qvo-str" expression="string(.)" dimension="3" similarity="cosine" encoding="text"/>
+                </text>
             </lucene>
         </index>
     </collection>;
@@ -66,6 +74,8 @@ function qvo:setUp() {
                 <div n="a2"><embedding>1 0.9 0</embedding></div>
             </div>
             <leaf n="l1">1 0.2 0</leaf><leaf n="l2">1 0.6 0</leaf><leaf n="l3">1 0.8 0</leaf>
+            <idleaf n="i1">1 0.2 0</idleaf><idleaf n="i2">1 0.6 0</idleaf><idleaf n="i3">1 0.8 0</idleaf>
+            <strleaf n="s1">1 0.2 0</strleaf><strleaf n="s2">1 0.6 0</strleaf><strleaf n="s3">1 0.8 0</strleaf>
         </book>)
 };
 
@@ -139,4 +149,32 @@ declare
     %test:assertEquals("l1", "l2")
 function qvo:a-field-without-an-expression-finds-the-nearest() {
     sort(collection($qvo:COLLECTION)//leaf[ft:query-vector(., $qvo:VEC, 2)]/@n/string())
+};
+
+(: the identity expression is the element's own text, so it is pre-selected like a field without an expression :)
+declare
+    %test:stats
+    %test:assertXPath("$result//stats:index[@type eq 'lucene-vector'][@optimization-level eq 'OPTIMIZED']")
+function qvo:the-identity-expression-is-pre-selected() {
+    collection($qvo:COLLECTION)//idleaf[ft:query-vector(., $qvo:VEC, 2)]
+};
+
+declare
+    %test:assertEquals("i1", "i2")
+function qvo:the-identity-expression-finds-the-nearest() {
+    sort(collection($qvo:COLLECTION)//idleaf[ft:query-vector(., $qvo:VEC, 2)]/@n/string())
+};
+
+(: another expression, even one that gives the same text, may leave an element without an entry: ranked as written :)
+declare
+    %test:stats
+    %test:assertXPath("$result//stats:index[@type eq 'lucene-vector'][@optimization-level eq 'BASIC']")
+function qvo:another-expression-is-ranked-as-written() {
+    collection($qvo:COLLECTION)//strleaf[ft:query-vector(., $qvo:VEC, 2)]
+};
+
+declare
+    %test:assertEquals("s1", "s2")
+function qvo:another-expression-finds-the-nearest() {
+    sort(collection($qvo:COLLECTION)//strleaf[ft:query-vector(., $qvo:VEC, 2)]/@n/string())
 };

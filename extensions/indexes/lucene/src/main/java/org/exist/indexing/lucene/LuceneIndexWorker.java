@@ -1387,9 +1387,9 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     }
 
     /**
-     * Whether every element of the given name that has text has an entry of its own in the vector field, so that the
-     * entries of the name are the nodes a step on that name selects, and no such node owns entries below it: no
-     * configuration computes the field with an expression, which may leave an element without an entry.
+     * Whether every element of the given name that has text has one entry of its own in the vector field, so that the
+     * entries of the name are the nodes a step on that name selects, and no such node owns entries below it: see
+     * {@link LuceneVectorFieldConfig#hasOneEntryPerNode()}.
      *
      * @param fieldName the vector field, or null for every vector field configured on the name
      */
@@ -1405,7 +1405,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                     for (final AbstractFieldConfig fieldConfig : idxConf.getFacetsAndFields()) {
                         if (fieldConfig instanceof LuceneVectorFieldConfig vectorField
                                 && (fieldName == null || fieldName.equals(vectorField.getName()))) {
-                            if (vectorField.hasExpression()) {
+                            if (!vectorField.hasOneEntryPerNode()) {
                                 return false;
                             }
                             found = true;
