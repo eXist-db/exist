@@ -295,6 +295,8 @@ public class QueryOptions {
     /**
      * The nearest neighbors a vector query looks for, of which it returns the best k: more candidates find better
      * matches, as the vector index's search explores only as many neighbors as it is asked for.
+     * Only the approximate search uses it: the nodes of a step, when they are known, are ranked exactly, which looks at
+     * every entry they own and has no such pool.
      *
      * @return the number of candidates, or 0 for the default
      */

@@ -87,7 +87,7 @@ public class Score extends BasicFunction {
             if (match.getIndexId().equals(LuceneIndex.ID)) {
                 final LuceneMatch luceneMatch = (LuceneMatch) match;
                 if (luceneMatch.isVector()) {
-                    if (luceneMatch.getNodeId().equals(proxy.getNodeId())) {
+                    if (luceneMatch.getNodeId().compareTo(proxy.getNodeId()) == 0) {
                         own = Math.max(own, luceneMatch.getScore());
                     } else {
                         below = Math.max(below, luceneMatch.getScore());

@@ -37,7 +37,6 @@ import org.apache.lucene.search.Weight;
 import org.apache.lucene.util.Bits;
 import org.apache.lucene.util.BytesRef;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
-import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.persistent.NodeSet;
 import org.exist.numbering.NodeId;
@@ -80,6 +79,8 @@ final class VectorExactSearch {
     /** The candidates of the document of the entry being looked at that own it, nearest first: reused for every entry. */
     private int[] found = new int[16];
     private int foundCount;
+    /** Whether the first of {@link #found} is at the entry's own node. */
+    private boolean ownEntry;
 
     /** The entry that gave a candidate its score. */
     record Entry(int luceneDoc, NodeId node, int docId, float score) {
@@ -179,11 +180,10 @@ final class VectorExactSearch {
     /**
      * Selects the k candidates with the best score, best first; a tie is broken by document order.
      *
-     * @param docs the documents the entries are in
-     * @param within the nodes the step selects, which are ranked
+     * @param within the nodes the step selects, which are ranked; entries of other nodes and documents are ignored
      * @return the selected candidates, each with the entry that gives it its score
      */
-    List<Owner> select(final DocumentSet docs, final NodeSet within) throws IOException {
+    List<Owner> select(final NodeSet within) throws IOException {
         slots.clear();
         owners.clear();
         index(within);
@@ -281,6 +281,8 @@ final class VectorExactSearch {
      */
     private void locate(final Slot slot, final NodeId entryNode) {
         foundCount = 0;
+        ownEntry = false;
+        boolean atEntry = true;
         for (NodeId id = entryNode; id != null && id != NodeId.DOCUMENT_NODE; id = id.getParentId()) {
             final int i = slot.find(id);
             if (i >= 0) {
@@ -288,7 +290,9 @@ final class VectorExactSearch {
                     found = Arrays.copyOf(found, foundCount * 2);
                 }
                 found[foundCount++] = i;
+                ownEntry |= atEntry;
             }
+            atEntry = false;
         }
     }
 
@@ -303,10 +307,13 @@ final class VectorExactSearch {
             return;
         }
         final float score = scorer.score();
+        if (Float.isNaN(score)) {
+            // it would sort above every real score
+            return;
+        }
         for (int n = 0; n < foundCount; n++) {
             // the first of them is at the entry's own node, if any is
-            final boolean own = n == 0 && slot.nodes[found[0]].getNodeId().equals(entryNode);
-            ownerAt(slot, found[n]).credit(own ? OWN : BELOW, score, luceneDoc, entryNode, docId);
+            ownerAt(slot, found[n]).credit(n == 0 && ownEntry ? OWN : BELOW, score, luceneDoc, entryNode, docId);
         }
         if (slot.document != null) {
             documentOwnerOf(slot).credit(BELOW, score, luceneDoc, entryNode, docId);

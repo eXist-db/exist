@@ -882,6 +882,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             final VectorExactSearch.Entry entry = owner.entry();
             final LuceneMatch match = new LuceneMatch(contextId, entry.luceneDoc(), entry.node(), query, facets);
             match.setScore(entry.score());
+            match.setVector();
             // the candidate is the caller's: the hit is a copy of it, with the match, whose context in the predicate
             // is the candidate, so that the predicate keeps it
             final NodeProxy candidate = owner.node();
@@ -935,6 +936,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         final FacetsCollector facetsCollector = new FacetsCollector();
         // a vector query returns the context's nodes the nearest vectors are in, or below
         final LuceneHitCollector collector = new LuceneHitCollector(qname, query, docs, contextSet, resultSet, true, contextId, facets, facetsCollector);
+        collector.vector = true;
 
         // feed the best hits to the collector in index order, one leaf at a time, as a search would
         final ScoreDoc[] hits = best.scoreDocs.clone();
@@ -1128,7 +1130,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 // the candidates are known: rank them, by what they own
                 final List<VectorExactSearch.Owner> best = new VectorExactSearch(index.getBrokerPool().getNodeFactory(),
                         searcher.searcher(), vector, k, List.of(new VectorExactSearch.Probe(luceneField, typedFilter)))
-                        .select(docs, contextSet);
+                        .select(contextSet);
                 returnBest(contextId, best, baseQuery, searcher, configs.facetDimensions(), contextSet, resultSet);
                 return resultSet;
             }
@@ -1215,7 +1217,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             }
             if (contextSet != null && lastQuery != null) {
                 final List<VectorExactSearch.Owner> best = new VectorExactSearch(index.getBrokerPool().getNodeFactory(),
-                        searcher.searcher(), vector, k, probes).select(docs, contextSet);
+                        searcher.searcher(), vector, k, probes).select(contextSet);
                 returnBest(contextId, best, lastQuery, searcher, configs.facetDimensions(), contextSet, resultSet);
             }
             return resultSet;
@@ -1368,45 +1370,38 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     }
 
     /**
-     * @return true when the Lucene configuration for {@code docs} declares a {@code vector-field} of this name, and only
-     *     on elements of the given name
+     * Whether the vector field of this name is configured only on elements of the given name, and gives each of them one
+     * entry of its own (see {@link LuceneVectorFieldConfig#hasOneEntryPerNode()}): then the entries of the field are the
+     * nodes a step on that name selects, and a search among the documents finds them.
      */
-    public boolean isVectorFieldOnlyOn(final DocumentSet docs, final String fieldName, final QName name) {
-        boolean found = false;
-        for (final LuceneConfigs.Group group : LuceneConfigs.of(broker, docs).groups()) {
-            for (final LuceneIndexConfig idxConf : group.config().getIndexConfigurations()) {
-                if (findVectorField(idxConf, fieldName) != null) {
-                    final QName configured = idxConf.getQName();
-                    if (!name.equals(configured) || configured.getNameType() != name.getNameType()) {
-                        return false;
-                    }
-                    found = true;
-                }
-            }
-        }
-        return found;
+    public boolean entriesAreTheNodes(final DocumentSet docs, final String fieldName, final QName name) {
+        return entriesAreTheNodes(docs, name, fieldName);
     }
 
     /**
-     * Whether every element of the given name that has text has one entry of its own in the vector field, so that the
-     * entries of the name are the nodes a step on that name selects, and no such node owns entries below it: see
-     * {@link LuceneVectorFieldConfig#hasOneEntryPerNode()}.
-     *
-     * @param fieldName the vector field, or null for every vector field configured on the name
+     * Whether every vector field configured on elements of the given name gives each of them one entry of its own, see
+     * {@link #entriesAreTheNodes(DocumentSet, String, QName)}; false if there is none.
      */
-    public boolean everyNodeOwnsItsEntry(final DocumentSet docs, final QName name, @Nullable final String fieldName) {
+    public boolean entriesAreTheNodes(final DocumentSet docs, final QName name) {
+        return entriesAreTheNodes(docs, name, null);
+    }
+
+    /**
+     * @param fieldName the vector field, which must be configured on no other element name; or null for every vector
+     *     field of the element name
+     */
+    private boolean entriesAreTheNodes(final DocumentSet docs, final QName name, @Nullable final String fieldName) {
         boolean found = false;
         for (final LuceneConfigs.Group group : LuceneConfigs.of(broker, docs).groups()) {
             for (final LuceneIndexConfig first : group.config().getIndexConfigurations()) {
                 for (LuceneIndexConfig idxConf = first; idxConf != null; idxConf = idxConf.getNext()) {
                     final QName configured = idxConf.getQName();
-                    if (configured == null || !name.equals(configured) || configured.getNameType() != name.getNameType()) {
-                        continue;
-                    }
+                    final boolean onName = configured != null && name.equals(configured)
+                            && configured.getNameType() == name.getNameType();
                     for (final AbstractFieldConfig fieldConfig : idxConf.getFacetsAndFields()) {
                         if (fieldConfig instanceof LuceneVectorFieldConfig vectorField
-                                && (fieldName == null || fieldName.equals(vectorField.getName()))) {
-                            if (!vectorField.hasOneEntryPerNode()) {
+                                && (fieldName == null ? onName : fieldName.equals(vectorField.getName()))) {
+                            if (!onName || !vectorField.hasOneEntryPerNode()) {
                                 return false;
                             }
                             found = true;
@@ -1998,6 +1993,8 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         private boolean selfOnly = false;
         // a hit also gives the context nodes above the nearest that have its name
         private boolean ancestorsOfItsName = false;
+        // the hits are those of a vector query, whose matches score by similarity
+        private boolean vector = false;
         private final int contextId;
         private final Query query;
         private final LuceneFacets facets;
@@ -2192,6 +2189,9 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 final Query matchQuery = query instanceof PerConfigQuery perConfig ? perConfig.forDocument(existDocId) : query;
                 final LuceneMatch match = new LuceneMatch(contextId, docId + docBase, nodeId, matchQuery, facets);
                 match.setScore(score);
+                if (vector) {
+                    match.setVector();
+                }
                 return match;
             }
         }

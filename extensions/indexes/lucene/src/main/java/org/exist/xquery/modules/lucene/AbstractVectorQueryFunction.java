@@ -113,7 +113,7 @@ abstract class AbstractVectorQueryFunction extends BasicFunction implements Opti
      */
     private boolean entriesAreTheNodes(final Sequence documents) {
         final LuceneIndexWorker index = (LuceneIndexWorker) context.getBroker().getIndexController().getWorkerByIndexId(LuceneIndex.ID);
-        return index != null && index.everyNodeOwnsItsEntry(documents.getDocumentSet(), stepName, null);
+        return index != null && index.entriesAreTheNodes(documents.getDocumentSet(), stepName);
     }
 
     private static boolean onlyDocuments(final Sequence sequence) {

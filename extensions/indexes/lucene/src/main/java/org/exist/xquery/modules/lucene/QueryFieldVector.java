@@ -131,8 +131,7 @@ public class QueryFieldVector extends AbstractVectorQueryFunction {
         try {
             final Expression fieldArg = getArgument(0);
             if (index != null && fieldArg.getDependencies() == Dependency.NO_DEPENDENCY
-                    && index.isVectorFieldOnlyOn(contextSequence.getDocumentSet(), fieldArg.eval(contextSequence, null).getStringValue(), stepName)
-                    && index.everyNodeOwnsItsEntry(contextSequence.getDocumentSet(), stepName, fieldArg.eval(contextSequence, null).getStringValue())) {
+                    && index.entriesAreTheNodes(contextSequence.getDocumentSet(), fieldArg.eval(contextSequence, null).getStringValue(), stepName)) {
                 return optimizable;
             }
         } catch (final XPathException e) {
