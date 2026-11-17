@@ -102,22 +102,26 @@ public class VectorContextBenchmark {
     private static final String ROOTS = "collection('" + ROOTS_COLLECTION + "')";
     private static final int ROOT_DOCUMENTS = 5000;
 
-    private static final int DIMENSION = 64;
     private static final int K = 5;
 
     @Param({"5000", "20000"})
     private int articles;
 
-    private static final String LUCENE_CONFIG = """
+    @Param({"64"})
+    private int dimension;
+
+    private static final String LUCENE_CONFIG_TEMPLATE = """
             <collection xmlns="http://exist-db.org/collection-config/1.0">
               <index>
                 <lucene>
                   <text qname="article">
-                    <vector-field name="emb" expression="embedding" dimension="64" similarity="cosine" encoding="text"/>
+                    <vector-field name="emb" expression="embedding" dimension="%d" similarity="cosine" encoding="text"/>
                   </text>
                 </lucene>
               </index>
             </collection>""";
+
+    private String luceneConfig;
 
     private ExistEmbeddedServer server;
     private BrokerPool pool;
@@ -145,6 +149,7 @@ public class VectorContextBenchmark {
         server.startDb();
         pool = server.getBrokerPool();
 
+        luceneConfig = LUCENE_CONFIG_TEMPLATE.formatted(dimension);
         storeCorpus();
 
         final String vector = "array { (" + vectorText(0.5, ", ") + ") }";
@@ -270,14 +275,14 @@ public class VectorContextBenchmark {
             broker.saveCollection(tx, coll);
 
             final CollectionConfigurationManager mgr = pool.getConfigurationManager();
-            mgr.addConfiguration(tx, broker, coll, LUCENE_CONFIG);
+            mgr.addConfiguration(tx, broker, coll, luceneConfig);
 
             broker.storeDocument(tx, XmldbURI.create("articles.xml"), new StringInputSource(generateCorpus()),
                     MimeType.XML_TYPE, coll);
 
             final Collection roots = broker.getOrCreateCollection(tx, ROOTS_COLLECTION);
             broker.saveCollection(tx, roots);
-            mgr.addConfiguration(tx, broker, roots, LUCENE_CONFIG);
+            mgr.addConfiguration(tx, broker, roots, luceneConfig);
             for (int i = 1; i <= ROOT_DOCUMENTS; i++) {
                 broker.storeDocument(tx, XmldbURI.create("article" + i + ".xml"), new StringInputSource(
                         "<article n=\"" + i + "\"><embedding>" + vectorText(i, " ") + "</embedding></article>"),
@@ -299,9 +304,9 @@ public class VectorContextBenchmark {
     }
 
     /** The same pseudo-random vector as query-vector-candidates.xqm, for a seed. */
-    private static String vectorText(final double seed, final String separator) {
+    private String vectorText(final double seed, final String separator) {
         final StringBuilder text = new StringBuilder();
-        for (int j = 1; j <= DIMENSION; j++) {
+        for (int j = 1; j <= dimension; j++) {
             final double x = Math.sin(seed * 12.9898 + j * 78.233) * 43758.5453;
             if (j > 1) {
                 text.append(separator);
