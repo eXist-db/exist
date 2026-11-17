@@ -21,11 +21,11 @@
  */
 package org.exist.indexing.lucene;
 
+import org.apache.lucene.index.BinaryDocValues;
 import org.apache.lucene.index.DocValues;
 import org.apache.lucene.index.FloatVectorValues;
 import org.apache.lucene.index.LeafReaderContext;
 import org.apache.lucene.index.SortedNumericDocValues;
-import org.apache.lucene.index.BinaryDocValues;
 import org.apache.lucene.search.ConjunctionUtils;
 import org.apache.lucene.search.DocIdSetIterator;
 import org.apache.lucene.search.IndexSearcher;
@@ -36,7 +36,7 @@ import org.apache.lucene.search.VectorScorer;
 import org.apache.lucene.search.Weight;
 import org.apache.lucene.util.Bits;
 import org.apache.lucene.util.BytesRef;
-import org.exist.dom.persistent.DocumentImpl;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.persistent.NodeSet;
@@ -47,11 +47,10 @@ import org.exist.util.ByteConversion;
 import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 import java.util.PriorityQueue;
-import java.util.TreeMap;
 
 /**
  * The exact answer of a vector query, as an access path: {@link #select} gives the k candidates with the best score,
@@ -62,27 +61,44 @@ import java.util.TreeMap;
  *
  * <p>The candidates are the nodes the step selects, so an entry can count for several of them (nested candidates
  * without an entry of their own) and the units that are ranked are the nodes, not the entries.</p>
+ *
+ * <p>One pass over the entries of the field: an entry is looked up by its document, then by its node and the nodes
+ * above it among that document's candidates, and is scored only if some candidate owns it.</p>
  */
 final class VectorExactSearch {
+
+    private static final int OWN = 0;
+    private static final int BELOW = 1;
 
     private final NodeIdFactory nodeFactory;
     private final IndexSearcher searcher;
     private final float[] vector;
     private final int k;
     private final List<Probe> probes;
-    private DocumentSet docs;
-    private NodeSet candidates;
-    private final Map<Key, Owner> owners = new TreeMap<>(Key.ORDER);
+    private final Int2ObjectOpenHashMap<Slot> slots = new Int2ObjectOpenHashMap<>();
+    private final List<Owner> owners = new ArrayList<>();
+    /** The candidates of the document of the entry being looked at that own it, nearest first: reused for every entry. */
+    private int[] found = new int[16];
+    private int foundCount;
 
     /** The entry that gave a candidate its score. */
     record Entry(int luceneDoc, NodeId node, int docId, float score) {
     }
 
+    /**
+     * Where the entries are: one vector field of a space and the filter that tells which of its entries count (the index
+     * type and the call's filters), or null for all.
+     *
+     * @param field the Lucene field of the space
+     * @param filter the entries that count, or null for all
+     */
+    record Probe(String field, @Nullable Query filter) {
+    }
+
     /** A candidate that owns at least one entry, and the best entry it owns by its own entry and by those below. */
     static final class Owner {
         private final NodeProxy node;
-        private Entry own;
-        private Entry below;
+        private final Entry[] best = new Entry[2];
 
         private Owner(final NodeProxy node) {
             this.node = node;
@@ -90,38 +106,61 @@ final class VectorExactSearch {
 
         /** The entry that gives the candidate its score: its own entry if it has one, else the best below it. */
         Entry entry() {
-            return own != null ? own : below;
+            return best[OWN] != null ? best[OWN] : best[BELOW];
         }
 
         NodeProxy node() {
             return node;
         }
 
-        void credit(final Entry entry, final boolean isOwn) {
-            if (isOwn) {
-                if (own == null || entry.score() > own.score()) {
-                    own = entry;
-                }
-            } else if (below == null || entry.score() > below.score()) {
-                below = entry;
+        float score() {
+            return best[OWN] != null ? best[OWN].score() : best[BELOW].score();
+        }
+
+        void credit(final int kind, final float score, final int luceneDoc, final NodeId entryNode, final int docId) {
+            final Entry held = best[kind];
+            if (held == null || score > held.score()) {
+                best[kind] = new Entry(luceneDoc, entryNode, docId, score);
             }
         }
     }
 
-    /** A node, by document and node id: node ids have no hash code, so the owners are kept in order, not hashed. */
-    private record Key(int docId, NodeId node) {
-        private static final Comparator<Key> ORDER = Comparator.comparingInt(Key::docId).thenComparing(Key::node);
+    /** The candidates of one document, sorted by node id, with their owners; the document node apart. */
+    private static final class Slot {
+        private final NodeProxy[] nodes;
+        private final Owner[] owners;
+        private final int from;
+        private final int to;
+        @Nullable private final NodeProxy document;
+        @Nullable private Owner documentOwner;
+
+        private Slot(final NodeProxy[] nodes, final Owner[] owners, final int from, final int to, @Nullable final NodeProxy document) {
+            this.nodes = nodes;
+            this.owners = owners;
+            this.from = from;
+            this.to = to;
+            this.document = document;
+        }
+
+        /** @return the index of the candidate with this node id, or -1 */
+        int find(final NodeId id) {
+            int low = from;
+            int high = to - 1;
+            while (low <= high) {
+                final int mid = (low + high) >>> 1;
+                final int order = nodes[mid].getNodeId().compareTo(id);
+                if (order < 0) {
+                    low = mid + 1;
+                } else if (order > 0) {
+                    high = mid - 1;
+                } else {
+                    return mid;
+                }
+            }
+            return -1;
+        }
     }
 
-    /**
-     * Where the entries are: one vector field of a space and the filter that tells which of its entries count (the index
-     * type, the call's filters, the candidates).
-     *
-     * @param field the Lucene field of the space
-     * @param filter the entries that count, or null for all
-     */
-    record Probe(String field, @Nullable Query filter) {
-    }
 
     /**
      * @param vector the query vector
@@ -145,20 +184,55 @@ final class VectorExactSearch {
      * @return the selected candidates, each with the entry that gives it its score
      */
     List<Owner> select(final DocumentSet docs, final NodeSet within) throws IOException {
-        this.docs = docs;
-        this.candidates = within;
+        slots.clear();
         owners.clear();
+        index(within);
         for (final Probe probe : probes) {
             collect(probe.field(), probe.filter());
         }
         return best();
     }
 
+    /** Groups the candidates by document, in node order. */
+    private void index(final NodeSet within) {
+        final NodeProxy[] nodes = inOrder(within);
+        final Owner[] ownersOf = new Owner[nodes.length];
+        int start = 0;
+        while (start < nodes.length) {
+            final int docId = nodes[start].getOwnerDocument().getDocId();
+            int end = start + 1;
+            while (end < nodes.length && nodes[end].getOwnerDocument().getDocId() == docId) {
+                end++;
+            }
+            // the document node, which sorts first, owns what is in the document: it is not found by an entry's node ids
+            final boolean hasDocument = nodes[start].getNodeId() == NodeId.DOCUMENT_NODE;
+            slots.put(docId, new Slot(nodes, ownersOf, hasDocument ? start + 1 : start, end, hasDocument ? nodes[start] : null));
+            start = end;
+        }
+    }
+
+    /** @return the candidates, by document and then by node id */
+    private static NodeProxy[] inOrder(final NodeSet within) {
+        final NodeProxy[] all = new NodeProxy[within.getItemCount()];
+        int count = 0;
+        boolean sorted = true;
+        for (final NodeProxy node : within) {
+            sorted &= count == 0 || all[count - 1].compareTo(node) <= 0;
+            all[count++] = node;
+        }
+        final NodeProxy[] nodes = count == all.length ? all : Arrays.copyOf(all, count);
+        if (!sorted) {
+            Arrays.sort(nodes, Comparator.comparingInt((NodeProxy node) -> node.getOwnerDocument().getDocId())
+                    .thenComparing(NodeProxy::getNodeId));
+        }
+        return nodes;
+    }
+
     /**
      * Scores the entries of one vector field that pass a filter, and credits them to the candidates that own them.
      *
      * @param field the Lucene field of the space
-     * @param filter the entries that count (index type, the call's filters, the candidates), or null for all
+     * @param filter the entries that count (index type, the call's filters), or null for all
      */
     private void collect(final String field, @Nullable final Query filter) throws IOException {
         final Weight filterWeight = filter == null ? null
@@ -187,38 +261,83 @@ final class VectorExactSearch {
         final SortedNumericDocValues docIds = DocValues.getSortedNumeric(leaf.reader(), LuceneFieldNames.FIELD_DOC_ID);
         final BinaryDocValues nodeIds = DocValues.getBinary(leaf.reader(), LuceneFieldNames.FIELD_NODE_ID_DV);
         for (int doc = entries.nextDoc(); doc != DocIdSetIterator.NO_MORE_DOCS; doc = entries.nextDoc()) {
-            if ((live != null && !live.get(doc)) || !docIds.advanceExact(doc) || !nodeIds.advanceExact(doc)) {
+            if ((live != null && !live.get(doc)) || !docIds.advanceExact(doc)) {
                 continue;
             }
             final int docId = (int) docIds.nextValue();
-            final DocumentImpl document = docs.getDoc(docId);
-            if (document == null) {
+            final Slot slot = slots.get(docId);
+            if (slot == null || !nodeIds.advanceExact(doc)) {
                 continue;
             }
             final BytesRef ref = nodeIds.binaryValue();
             final NodeId node = nodeFactory.createFromData(ByteConversion.byteToShortH(ref.bytes, ref.offset), ref.bytes, ref.offset + 2);
-            credit(document, new Entry(leaf.docBase + doc, node, docId, scorer.score()));
+            credit(slot, node, docId, leaf.docBase + doc, scorer);
         }
     }
 
-    /** Gives the entry to the candidate it is the own entry of, and to the candidates above it. */
-    private void credit(final DocumentImpl document, final Entry entry) {
-        for (NodeId id = entry.node(); id != null; id = id.getParentId()) {
-            final NodeProxy candidate = candidates.get(document, id);
-            if (candidate != null) {
-                owners.computeIfAbsent(new Key(entry.docId(), id), key -> new Owner(candidate))
-                        .credit(entry, id.equals(entry.node()));
+    /**
+     * Finds the candidates of a document that own an entry at this node: the one at the node itself, which owns it as its
+     * own entry, and those above it. They are left in {@link #found}, the nearest first.
+     */
+    private void locate(final Slot slot, final NodeId entryNode) {
+        foundCount = 0;
+        for (NodeId id = entryNode; id != null && id != NodeId.DOCUMENT_NODE; id = id.getParentId()) {
+            final int i = slot.find(id);
+            if (i >= 0) {
+                if (foundCount == found.length) {
+                    found = Arrays.copyOf(found, foundCount * 2);
+                }
+                found[foundCount++] = i;
             }
         }
+    }
+
+    /**
+     * Gives the entry to the candidate it is the own entry of, to the candidates above it, and to its document if that
+     * is a candidate. The entry is scored only if one of them owns it.
+     */
+    private void credit(final Slot slot, final NodeId entryNode, final int docId, final int luceneDoc, final VectorScorer scorer)
+            throws IOException {
+        locate(slot, entryNode);
+        if (foundCount == 0 && slot.document == null) {
+            return;
+        }
+        final float score = scorer.score();
+        for (int n = 0; n < foundCount; n++) {
+            // the first of them is at the entry's own node, if any is
+            final boolean own = n == 0 && slot.nodes[found[0]].getNodeId().equals(entryNode);
+            ownerAt(slot, found[n]).credit(own ? OWN : BELOW, score, luceneDoc, entryNode, docId);
+        }
+        if (slot.document != null) {
+            documentOwnerOf(slot).credit(BELOW, score, luceneDoc, entryNode, docId);
+        }
+    }
+
+    private Owner ownerAt(final Slot slot, final int index) {
+        Owner owner = slot.owners[index];
+        if (owner == null) {
+            owner = new Owner(slot.nodes[index]);
+            slot.owners[index] = owner;
+            owners.add(owner);
+        }
+        return owner;
+    }
+
+    private Owner documentOwnerOf(final Slot slot) {
+        if (slot.documentOwner == null) {
+            slot.documentOwner = new Owner(slot.document);
+            owners.add(slot.documentOwner);
+        }
+        return slot.documentOwner;
     }
 
     private List<Owner> best() {
         // the worst of the kept candidates first, so that it is the one a better candidate replaces
         final Comparator<Owner> worstFirst = Comparator
-                .comparingDouble((Owner owner) -> owner.entry().score())
+                .comparingDouble(Owner::score)
                 .thenComparing((Owner a, Owner b) -> b.node().compareTo(a.node()));
         final PriorityQueue<Owner> heap = new PriorityQueue<>(k + 1, worstFirst);
-        for (final Owner owner : owners.values()) {
+        for (final Owner owner : owners) {
             heap.add(owner);
             if (heap.size() > k) {
                 heap.poll();

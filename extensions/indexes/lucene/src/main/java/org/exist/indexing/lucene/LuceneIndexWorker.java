@@ -1118,7 +1118,8 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 return resultSet;
             }
             logSkippedSpaces(spaces, Set.of(luceneField), vector.length);
-            final Query filterQuery = inContext(buildVectorFilterQuery(options, defining), luceneField, docs, within);
+            final Query typedFilter = buildVectorFilterQuery(options, defining);
+            final Query filterQuery = inContext(typedFilter, luceneField, docs, within);
             final int candidates = vectorCandidates(k, options);
             final KnnFloatVectorQuery baseQuery = filterQuery != null
                     ? new KnnFloatVectorQuery(luceneField, vector, candidates, filterQuery)
@@ -1126,7 +1127,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             if (contextSet != null) {
                 // the candidates are known: rank them, by what they own
                 final List<VectorExactSearch.Owner> best = new VectorExactSearch(index.getBrokerPool().getNodeFactory(),
-                        searcher.searcher(), vector, k, List.of(new VectorExactSearch.Probe(luceneField, filterQuery)))
+                        searcher.searcher(), vector, k, List.of(new VectorExactSearch.Probe(luceneField, typedFilter)))
                         .select(docs, contextSet);
                 returnBest(contextId, best, baseQuery, searcher, configs.facetDimensions(), contextSet, resultSet);
                 return resultSet;
@@ -1199,12 +1200,12 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                     final String field = vectorField.getKey();
                     final String indexField = LuceneFieldNames.encodeQName(qname, index.getBrokerPool().getSymbols());
                     // the index type is part of the filter, so that the candidates are all of this qname's index
-                    final Query filterQuery = inContext(withIndexType(buildVectorFilterQuery(options, vectorField.getValue()), indexField),
-                            field, docs, within);
+                    final Query typedFilter = withIndexType(buildVectorFilterQuery(options, vectorField.getValue()), indexField);
+                    final Query filterQuery = inContext(typedFilter, field, docs, within);
                     final int candidates = vectorCandidates(k, options);
                     final KnnFloatVectorQuery vectorQuery = new KnnFloatVectorQuery(field, vector, candidates, filterQuery);
                     if (contextSet != null) {
-                        probes.add(new VectorExactSearch.Probe(field, filterQuery));
+                        probes.add(new VectorExactSearch.Probe(field, typedFilter));
                         lastQuery = vectorQuery;
                     } else {
                         searchVectorAndProcess(contextId, qname, docs, contextSet, resultSet,
