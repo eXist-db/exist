@@ -529,6 +529,19 @@ public class Lookup extends Function implements Optimizable, IndexUseReporter {
         canOptimize = optimizables != null && optimizables.getItemCount() == contextSequence.getItemCount();
         usesCollation = usesCollationCount == contextSequence.getItemCount();
 
+        if (canOptimize && isRewrittenMatches() && getOperator() == RangeIndex.Operator.MATCH) {
+            // a pattern or flag the index cannot serve is decided here, not after the index was chosen: the fallback
+            // then evaluates as written, or through a legacy index if the collection has one
+            try {
+                final AtomicValue[] keys = getKeys(contextSequence);
+                if (keys.length > 0 && requiresFallback(RangeIndex.Operator.MATCH, keys, contextSequence)) {
+                    canOptimize = false;
+                }
+            } catch (final XPathException e) {
+                canOptimize = false;
+            }
+        }
+
         if (!canOptimize && fallback instanceof final Optimizable optimizableFallback) {
             return optimizableFallback.canOptimizeSequence(contextSequence);
         }

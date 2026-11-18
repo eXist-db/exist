@@ -123,6 +123,7 @@ public final class FunMatches extends Function implements BoundSequenceOptimizab
     private LocationStep contextStep = null;
     private QName contextQName = null;
     private int axis = Constants.UNKNOWN_AXIS;
+    private boolean optimizeSelf = false;
     private NodeSet preselectResult = null;
     private boolean optimizedOverBoundSequence = false;
     private final GeneralComparison.IndexFlags idxflags = new GeneralComparison.IndexFlags();
@@ -175,6 +176,7 @@ public final class FunMatches extends Function implements BoundSequenceOptimizab
         contextQName = null;
         contextStep = null;
         axis = Constants.UNKNOWN_AXIS;
+        optimizeSelf = false;
 
         final List<LocationStep> steps = BasicExpressionVisitor.findLocationSteps(path);
         if (steps.isEmpty()) {
@@ -256,6 +258,10 @@ public final class FunMatches extends Function implements BoundSequenceOptimizab
 
     @Override
     public Sequence canOptimizeSequence(final Sequence contextSequence) {
+        if (optimizeSelf) {
+            // the axis is reported for the range index rewriter only; the legacy index does not serve matches(., ...)
+            return Sequence.EMPTY_SEQUENCE;
+        }
         if (contextQName != null && Type.subTypeOf(Optimize.getQNameIndexType(context, contextSequence, contextQName), Type.STRING)) {
             return contextSequence;
         }
@@ -265,7 +271,7 @@ public final class FunMatches extends Function implements BoundSequenceOptimizab
 
     @Override
     public boolean optimizeOnSelf() {
-        return false;
+        return optimizeSelf;
     }
 
     @Override
@@ -375,6 +381,30 @@ public final class FunMatches extends Function implements BoundSequenceOptimizab
         for (int i = 0; i < getArgumentCount(); i++) {
             getArgument(i).analyze(newContextInfo);
         }
+        resolveSelfStep(contextInfo);
+    }
+
+    /**
+     * A lone {@code .} as first argument names no node: take the index target from the step the predicate is on,
+     * as {@link org.exist.xquery.GeneralComparison#analyze} does. Named steps only.
+     */
+    private void resolveSelfStep(final AnalyzeContextInfo contextInfo) {
+        if (optimizedOverBoundSequence || contextQName != null || getArgumentCount() < 1) {
+            return;
+        }
+        final List<LocationStep> steps = BasicExpressionVisitor.findLocationSteps(getArgument(0));
+        if (steps.size() != 1 || steps.getFirst() == null || steps.getFirst().getAxis() != Constants.SELF_AXIS
+                || !(contextInfo.getContextStep() instanceof final LocationStep outerStep)) {
+            return;
+        }
+        final NodeTest test = outerStep.getTest();
+        if (test.isWildcardTest() || test.getName() == null) {
+            return;
+        }
+        contextQName = indexedQNameFor(outerStep, test);
+        contextStep = steps.getFirst();
+        axis = outerStep.getAxis();
+        optimizeSelf = true;
     }
 
     @Override

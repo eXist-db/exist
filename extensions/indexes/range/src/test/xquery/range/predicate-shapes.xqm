@@ -40,10 +40,22 @@ declare variable $rps:XCONF :=
         <index>
             <range>
                 <create qname="item" type="xs:string"/>
+                <create qname="@n" type="xs:string"/>
                 <create qname="t" type="xs:string"/>
                 <create qname="sec" type="xs:string"/>
                 <create qname="other"><field name="rps-field" match="t" type="xs:string"/></create>
             </range>
+        </index>
+    </collection>;
+
+declare variable $rps:LEGACY_NAME := "test-range-predicate-shapes-legacy";
+declare variable $rps:LEGACY := "/db/" || $rps:LEGACY_NAME;
+declare variable $rps:LEGACY_CONF := "/db/system/config/db/" || $rps:LEGACY_NAME;
+
+declare variable $rps:LEGACY_XCONF :=
+    <collection xmlns="http://exist-db.org/collection-config/1.0">
+        <index>
+            <create qname="item" type="xs:string"/>
         </index>
     </collection>;
 
@@ -54,7 +66,13 @@ function rps:setUp() {
     xmldb:create-collection("/db/system/config", "db"),
     xmldb:create-collection("/db/system/config/db", $rps:COLLECTION_NAME),
     xmldb:store($rps:CONF, "collection.xconf", $rps:XCONF),
+    xmldb:create-collection("/db/system/config/db", $rps:LEGACY_NAME),
+    xmldb:store($rps:LEGACY_CONF, "collection.xconf", $rps:LEGACY_XCONF),
+    xmldb:create-collection("/db", $rps:LEGACY_NAME),
+    for $i in 1 to 2
+    return xmldb:store($rps:LEGACY, "d" || $i || ".xml", <wrap><item n="{$i}">hit</item></wrap>),
     xmldb:create-collection("/db", $rps:COLLECTION_NAME),
+    xmldb:store($rps:COLLECTION, "q.xml", <wrap><item n="q">^hit$</item></wrap>),
     for $i in 1 to 4
     let $term := if ($i <= 2) then "hit" else "miss"
     return (
@@ -69,7 +87,9 @@ declare
     %test:tearDown
 function rps:tearDown() {
     xmldb:remove($rps:COLLECTION),
-    xmldb:remove($rps:CONF)
+    xmldb:remove($rps:CONF),
+    xmldb:remove($rps:LEGACY),
+    xmldb:remove($rps:LEGACY_CONF)
 };
 
 (: a step without a name searches all the indexes, and keeps the nodes with an entry of their own, which other has not :)
@@ -213,4 +233,159 @@ declare
     %test:assertXPath("exists($result//stats:index[@type eq 'new-range']) and empty($result//stats:index[@optimization-level eq 'OPTIMIZED'])")
 function rps:field-function-in-a-predicate-reports-basic() {
     collection($rps:COLLECTION)//other[range:field-eq("rps-field", "hit")]
+};
+
+(: the range index has no equivalent of the s, m and x flags, nor of i together with another flag: the lookup steps aside and
+   fn:matches is evaluated as written. It must not ask the old-style index, which a collection with only a range index does
+   not have: that answered nothing :)
+declare
+    %test:assertEquals("1")
+function rps:matches-with-the-s-flag-on-an-attribute() {
+    collection($rps:COLLECTION)//item[matches(@n, "^1$", "s")]/@n/string()
+};
+
+declare
+    %test:assertEquals("1")
+function rps:matches-with-the-m-flag-on-an-attribute() {
+    collection($rps:COLLECTION)//item[matches(@n, "^1$", "m")]/@n/string()
+};
+
+declare
+    %test:assertEquals("1")
+function rps:matches-with-the-x-flag-on-an-attribute() {
+    collection($rps:COLLECTION)//item[matches(@n, "^1$", "x")]/@n/string()
+};
+
+declare
+    %test:assertEquals("1")
+function rps:matches-with-the-i-flag-and-another-on-an-attribute() {
+    collection($rps:COLLECTION)//item[matches(@n, "^1$", "is")]/@n/string()
+};
+
+declare
+    %test:stats
+    %test:assertXPath("empty($result//stats:index[@type eq 'range'][@optimization-level eq 'OPTIMIZED'])")
+function rps:matches-with-the-s-flag-does-not-ask-the-old-style-index() {
+    collection($rps:COLLECTION)//item[matches(@n, "^1$", "s")]
+};
+
+(: an anchored fn:matches on the context item uses the index of the step it is on, as range:matches does.
+   See https://github.com/eXist-db/exist/issues/6983 :)
+declare
+    %test:assertEquals("1", "2")
+function rps:anchored-matches-of-self() {
+    sort(collection($rps:COLLECTION)//item[matches(., "^hit$")]/@n/string())
+};
+
+declare
+    %test:stats
+    %test:assertXPath("exists($result//stats:index[@type eq 'new-range'][@optimization-level eq 'OPTIMIZED'])")
+function rps:anchored-matches-of-self-reports-optimized() {
+    collection($rps:COLLECTION)//item[matches(., "^hit$")]
+};
+
+declare
+    %test:assertEquals("c1", "c2")
+function rps:anchored-matches-of-self-on-a-nested-step() {
+    sort(collection($rps:COLLECTION)//sec[matches(., "^hit$")]/@n/string())
+};
+
+declare
+    %test:assertEquals("1", "2")
+function rps:anchored-matches-of-self-with-flags() {
+    sort(collection($rps:COLLECTION)//item[matches(., "^HIT$", "i")]/@n/string())
+};
+
+(: an unanchored pattern stays with fn:matches, which evaluates itself :)
+declare
+    %test:stats
+    %test:assertXPath("empty($result//stats:index[@optimization-level eq 'OPTIMIZED'])")
+function rps:unanchored-matches-of-self-reports-basic() {
+    collection($rps:COLLECTION)//item[matches(., "hit")]
+};
+
+declare
+    %test:assertEquals("1")
+function rps:anchored-matches-of-self-on-an-attribute-step() {
+    collection($rps:COLLECTION)//item/@n[matches(., "^1$")]/string()
+};
+
+declare
+    %test:stats
+    %test:assertXPath("exists($result//stats:index[@type eq 'new-range'][@optimization-level eq 'OPTIMIZED'])")
+function rps:anchored-matches-of-self-on-an-attribute-step-reports-optimized() {
+    collection($rps:COLLECTION)//item/@n[matches(., "^1$")]
+};
+
+(: a step without a name is left alone, as . = "hit" is :)
+declare
+    %test:assertEquals(4)
+function rps:anchored-matches-of-self-on-a-wildcard-step() {
+    count(collection($rps:COLLECTION)/wrap/*[matches(., "^hit$")])
+};
+
+declare
+    %test:stats
+    %test:assertXPath("empty($result//stats:index[@optimization-level eq 'OPTIMIZED'])")
+function rps:anchored-matches-of-self-on-a-wildcard-step-reports-basic() {
+    collection($rps:COLLECTION)/wrap/*[matches(., "^hit$")]
+};
+
+(: the legacy index does not serve matches(., ...): same answer, evaluated as written :)
+declare
+    %test:assertEquals("1", "2")
+function rps:anchored-matches-of-self-with-a-legacy-index() {
+    sort(collection($rps:LEGACY)//item[matches(., "^hit$")]/@n/string())
+};
+
+declare
+    %test:stats
+    %test:assertXPath("empty($result//stats:index[@optimization-level eq 'OPTIMIZED'])")
+function rps:anchored-matches-of-self-with-a-legacy-index-reports-basic() {
+    collection($rps:LEGACY)//item[matches(., "^hit$")]
+};
+
+(: a second predicate on the step :)
+declare
+    %test:assertEquals("2")
+function rps:anchored-matches-of-self-then-a-second-predicate() {
+    collection($rps:COLLECTION)//item[matches(., "^hit$")][@n = "2"]/@n/string()
+};
+
+declare
+    %test:assertEquals("2")
+function rps:anchored-matches-of-self-after-a-second-predicate() {
+    collection($rps:COLLECTION)//item[@n = "2"][matches(., "^hit$")]/@n/string()
+};
+
+(: the flags the index has no equivalent of, on the context item: the lookup steps aside and fn:matches is evaluated as written :)
+declare
+    %test:assertEquals("1", "2")
+function rps:anchored-matches-of-self-with-the-s-flag() {
+    sort(collection($rps:COLLECTION)//item[matches(., "^hit$", "s")]/@n/string())
+};
+
+declare
+    %test:assertEquals("1", "2")
+function rps:anchored-matches-of-self-with-the-m-flag() {
+    sort(collection($rps:COLLECTION)//item[matches(., "^hit$", "m")]/@n/string())
+};
+
+declare
+    %test:assertEquals("1", "2")
+function rps:anchored-matches-of-self-with-the-x-flag() {
+    sort(collection($rps:COLLECTION)//item[matches(., "^hit$", "x")]/@n/string())
+};
+
+declare
+    %test:assertEquals("1", "2")
+function rps:anchored-matches-of-self-with-the-i-flag-and-another() {
+    sort(collection($rps:COLLECTION)//item[matches(., "^HIT$", "is")]/@n/string())
+};
+
+(: with the q flag the pattern is the text itself, here a value that starts with a caret :)
+declare
+    %test:assertEquals("q")
+function rps:anchored-matches-of-self-with-the-q-flag() {
+    collection($rps:COLLECTION)//item[matches(., "^hit$", "q")]/@n/string()
 };
