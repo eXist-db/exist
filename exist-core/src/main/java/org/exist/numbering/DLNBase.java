@@ -494,6 +494,11 @@ public class DLNBase {
         return Arrays.equals(bits, other.bits);
     }
 
+    @Override
+    public int hashCode() {
+        return 31 * bitIndex + Arrays.hashCode(bits);
+    }
+
 //    public int compareTo(final DLNBase other) {
 //        if (other == null)
 //            return 1;
