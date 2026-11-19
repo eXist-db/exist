@@ -7,5 +7,5 @@ ft-query-forms.xqm: optimizer-query-on-self
 ft-query-forms.xqm: optimizer-query-on-wildcard
 ft-query-forms.xqm: optimizer-wildcard-long-path
 ft-query-forms.xqm: optimizer-wildcard-self-descendant
-vector-search.xqm: profiler-optimized-query-field-vector
-vector-search.xqm: profiler-optimized-when-vector-config-present
+query-vector-ownership.xqm: a-field-without-an-expression-is-pre-selected
+query-vector-ownership.xqm: the-identity-expression-is-pre-selected

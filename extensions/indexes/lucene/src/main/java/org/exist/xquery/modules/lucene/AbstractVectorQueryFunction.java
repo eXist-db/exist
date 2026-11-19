@@ -22,7 +22,10 @@
 package org.exist.xquery.modules.lucene;
 
 import org.exist.dom.QName;
+import org.exist.dom.persistent.NewArrayNodeSet;
+import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.persistent.NodeSet;
+import org.exist.indexing.lucene.LuceneIndex;
 import org.exist.indexing.lucene.LuceneIndexWorker;
 import org.exist.storage.ElementValue;
 import org.exist.xquery.*;
@@ -58,6 +61,9 @@ abstract class AbstractVectorQueryFunction extends BasicFunction implements Opti
      * documents: a step on the descendant axis with a name test. See {@link #canOptimizeSequence(Sequence)}.
      */
     @Nullable protected QName stepName = null;
+
+    /** Whether {@link #preselectResult} ranks the candidates themselves, as opposed to the entries of a step's name. */
+    protected boolean preselectedExactly = false;
 
     /** Whether the call is in a predicate of a variable, whose value is the nodes the predicate filters. */
     private boolean filtersVariable = false;
@@ -97,8 +103,17 @@ abstract class AbstractVectorQueryFunction extends BasicFunction implements Opti
      */
     @Override
     public Sequence canOptimizeSequence(final Sequence contextSequence) {
-        return filtersVariable || (stepName != null && onlyDocuments(contextSequence))
+        return filtersVariable || (stepName != null && onlyDocuments(contextSequence) && entriesAreTheNodes(contextSequence))
                 ? contextSequence : Sequence.EMPTY_SEQUENCE;
+    }
+
+    /**
+     * Whether a search among the documents finds the nodes the step selects: every element of the step's name has an
+     * entry of its own. Otherwise the nodes are ranked as written, which knows them.
+     */
+    private boolean entriesAreTheNodes(final Sequence documents) {
+        final LuceneIndexWorker index = (LuceneIndexWorker) context.getBroker().getIndexController().getWorkerByIndexId(LuceneIndex.ID);
+        return index != null && index.entriesAreTheNodes(documents.getDocumentSet(), stepName);
     }
 
     private static boolean onlyDocuments(final Sequence sequence) {
@@ -140,10 +155,26 @@ abstract class AbstractVectorQueryFunction extends BasicFunction implements Opti
             if (effectiveContextSequence == null) {
                 return Sequence.EMPTY_SEQUENCE;
             }
-            return preselectResult.selectAncestorDescendant(effectiveContextSequence.toNodeSet(), NodeSet.DESCENDANT,
-                    true, getContextId(), true);
+            final NodeSet candidates = effectiveContextSequence.toNodeSet();
+            if (preselectedExactly) {
+                // the result is the candidates, ranked by what they own: no match belongs to another node
+                return keepCandidates(preselectResult, candidates, false);
+            }
+            // the entries are the nodes, each with its own match: a node in another does not take the other's match
+            return keepCandidates(preselectResult, candidates, true);
         }
         return super.eval(effectiveContextSequence, contextItem);
+    }
+
+    private NodeSet keepCandidates(final NodeSet ranked, final NodeSet candidates, final boolean addContext) {
+        final NodeSet kept = new NewArrayNodeSet();
+        for (final NodeProxy node : ranked) {
+            if (candidates.contains(node)) {
+                // the hit is a copy of the node, whose context in the predicate is the node, so that the predicate keeps it
+                kept.add(addContext && getContextId() != Expression.NO_CONTEXT_ID ? node.withContextNode(getContextId(), node) : node);
+            }
+        }
+        return kept;
     }
 
     @Override
@@ -151,6 +182,7 @@ abstract class AbstractVectorQueryFunction extends BasicFunction implements Opti
         super.resetState(postOptimization);
         if (!postOptimization) {
             preselectResult = null;
+            preselectedExactly = false;
         }
     }
 

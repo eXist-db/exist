@@ -70,7 +70,9 @@ function t:setup() {
         ["divs-bodies", ["divs", "div", "embedding"], ["bodies", "body", "embedding"]],
         ["bodies-divs", ["z-divs", "div", "embedding"], ["a-bodies", "body", "embedding"]],
         (: the field name differs, on the same element :)
-        ["two-names", ["first", "div", "embedding-a"], ["second", "div", "embedding-b"]]
+        ["two-names", ["first", "div", "embedding-a"], ["second", "div", "embedding-b"]],
+        (: the element and the name differ: a step that names one element has one space :)
+        ["elements-and-names", ["e-divs", "div", "embedding-a"], ["e-bodies", "body", "embedding-b"]]
     )
     let $parent := xmldb:create-collection("/db", substring-after($t:ROOT, "/db/") || "-" || $layout(1))
     let $_ := xmldb:create-collection("/db/system/config/db", substring-after($parent, "/db/"))
@@ -82,7 +84,7 @@ function t:setup() {
 declare
     %test:tearDown
 function t:teardown() {
-    for $layout in ("divs-bodies", "bodies-divs", "two-names")
+    for $layout in ("divs-bodies", "bodies-divs", "two-names", "elements-and-names")
     let $parent := $t:ROOT || "-" || $layout
     return (
         xmldb:remove($parent),
@@ -110,10 +112,35 @@ function t:element-differs-other-order() {
     )
 };
 
+(: two names of one dimension on one element: the query vector cannot pick one, see vector-field-pairs.xqm :)
 declare
-    %test:assertEquals(8)
+    %test:assertError("EXXQDYFT0007")
 function t:name-differs() {
     count(collection($t:ROOT || "-two-names")//div[ft:query-vector(., $t:VEC, 10)])
+};
+
+declare
+    %test:assertEquals(4, 4)
+function t:elements-and-names-differ-a-step-names-one() {
+    let $parent := $t:ROOT || "-elements-and-names"
+    return (
+        count(collection($parent)//div[ft:query-vector(., $t:VEC, 10)]),
+        count(collection($parent)//body[ft:query-vector(., $t:VEC, 10)])
+    )
+};
+
+(: a wildcard step searches both names, and the query vector cannot pick one :)
+declare
+    %test:assertError("EXXQDYFT0007")
+function t:elements-and-names-differ-a-wildcard-is-ambiguous() {
+    count(collection($t:ROOT || "-elements-and-names")//*[ft:query-vector(., $t:VEC, 10)])
+};
+
+declare
+    %test:assertEquals(4, 4)
+function t:name-differs-by-field() {
+    count(collection($t:ROOT || "-two-names")//div[ft:query-field-vector("embedding-a", $t:VEC, 10)]),
+    count(collection($t:ROOT || "-two-names")//div[ft:query-field-vector("embedding-b", $t:VEC, 10)])
 };
 
 declare

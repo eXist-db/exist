@@ -58,18 +58,23 @@ public class QueryFieldVector extends AbstractVectorQueryFunction {
 
     final static FunctionSignature[] signatures = {
             functionSignature("query-field-vector",
-                    "KNN vector search by field name. Uses context document set.",
+                    "KNN vector search by field name. Uses context document set. The field is searched at the "
+                            + "dimension of the query vector: collections that configure it with another dimension are "
+                            + "not searched. Raises EXXQDYFT0006 if the field is configured with other dimensions only; "
+                            + "an unknown field name gives an empty result.",
                     returnsOptMany(Type.NODE, "Nodes matching the vector query."),
                     FS_PARAM_FIELD,
                     FS_PARAM_VECTOR),
             functionSignature("query-field-vector",
-                    "KNN vector search by field with explicit k.",
+                    "KNN vector search by field with explicit k. The field is searched at the dimension of the "
+                            + "query vector, see ft:query-field-vector#1.",
                     returnsOptMany(Type.NODE, "Nodes matching the vector query."),
                     FS_PARAM_FIELD,
                     FS_PARAM_VECTOR,
                     FS_PARAM_K),
             functionSignature("query-field-vector",
-                    "KNN vector search by field with k and options.",
+                    "KNN vector search by field with k and options. The field is searched at the dimension of the "
+                            + "query vector, see ft:query-field-vector#1.",
                     returnsOptMany(Type.NODE, "Nodes matching the vector query."),
                     FS_PARAM_FIELD,
                     FS_PARAM_VECTOR,
@@ -126,7 +131,7 @@ public class QueryFieldVector extends AbstractVectorQueryFunction {
         try {
             final Expression fieldArg = getArgument(0);
             if (index != null && fieldArg.getDependencies() == Dependency.NO_DEPENDENCY
-                    && index.isVectorFieldOnlyOn(contextSequence.getDocumentSet(), fieldArg.eval(contextSequence, null).getStringValue(), stepName)) {
+                    && index.entriesAreTheNodes(contextSequence.getDocumentSet(), fieldArg.eval(contextSequence, null).getStringValue(), stepName)) {
                 return optimizable;
             }
         } catch (final XPathException e) {
@@ -160,6 +165,8 @@ public class QueryFieldVector extends AbstractVectorQueryFunction {
         final NodeSet contextSet = useContext ? nodes : null;
         final Sequence result = runSearch(true, contextSequence.getDocumentSet(), contextSet, nodes, field, vector, k, options);
         preselectResult = result.toNodeSet();
+        // with the context's nodes known, the search ranks them; else it found the step's entries, which are the nodes
+        preselectedExactly = useContext;
         return preselectResult;
     }
 

@@ -57,6 +57,8 @@ public final class LuceneFieldNames {
 
     private static final String QNAME_PREFIX = "qn:";
 
+    private static final String VECTOR_PREFIX = "vec:";
+
     private LuceneFieldNames() {
     }
 
@@ -92,6 +94,49 @@ public final class LuceneFieldNames {
         if (!isConfiguredName(name)) {
             throw new DatabaseConfigurationException("Invalid config: the name of " + element + " must be an NCName, without a colon: '" + name + "'");
         }
+    }
+
+    /**
+     * The field a vector field's vectors are in: its configured name and its dimension, after the prefix
+     * {@code vec:}. Lucene allows one dimension per field name, so the dimension is part of the name, and a vector
+     * field name can be configured with different dimensions in different collections.
+     *
+     * @param name the configured name of the vector field
+     * @param dimension the dimension of its vectors
+     * @return the field name
+     */
+    public static String vectorField(final String name, final int dimension) {
+        return VECTOR_PREFIX + name + ':' + dimension;
+    }
+
+    /**
+     * Whether a field holds the vectors of a vector field, see {@link #vectorField}.
+     *
+     * @param name the field name
+     * @return true for the field of a vector field's vectors
+     */
+    public static boolean isVectorField(final String name) {
+        return name.startsWith(VECTOR_PREFIX);
+    }
+
+    /**
+     * The configured name of a vector field, from the field its vectors are in.
+     *
+     * @param field a field for which {@link #isVectorField} is true
+     * @return the name
+     */
+    public static String vectorFieldName(final String field) {
+        return field.substring(VECTOR_PREFIX.length(), field.lastIndexOf(':'));
+    }
+
+    /**
+     * The dimension of a vector field's vectors, from the field they are in.
+     *
+     * @param field a field for which {@link #isVectorField} is true
+     * @return the dimension
+     */
+    public static int vectorFieldDimension(final String field) {
+        return Integer.parseInt(field.substring(field.lastIndexOf(':') + 1));
     }
 
     /**

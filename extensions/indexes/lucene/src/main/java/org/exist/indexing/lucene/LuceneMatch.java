@@ -42,6 +42,7 @@ public class LuceneMatch extends Match {
     private final int luceneDocId;
     private float score = 0.0f;
     private final Query query;
+    private boolean vector = false;
 
     private final LuceneIndexWorker.LuceneFacets facets;
 
@@ -57,6 +58,7 @@ public class LuceneMatch extends Match {
         this.score = copy.score;
         this.luceneDocId = copy.luceneDocId;
         this.query = copy.query;
+        this.vector = copy.vector;
         this.facets = copy.facets;
     }
 
@@ -77,6 +79,16 @@ public class LuceneMatch extends Match {
     @Override
     public String getIndexId() {
         return LuceneIndex.ID;
+    }
+
+    /** Whether the match is of a vector query: its score is a similarity, not a text relevance. */
+    public boolean isVector() {
+        return vector;
+    }
+
+    /** Marks the match as one of a vector query, by the search that makes it, not by the class of its query. */
+    void setVector() {
+        this.vector = true;
     }
 
     public Query getQuery() {

@@ -81,6 +81,8 @@ public class LuceneVectorFieldConfig extends AbstractFieldConfig {
 
     /** Vector field name from config. */
     protected final String fieldName;
+    /** The Lucene field the vectors are in, see {@link LuceneFieldNames#vectorField}. */
+    private final String luceneField;
     /** Vector dimension (1–1024). */
     protected final int dimension;
     /** Similarity function for KNN (cosine, euclidean, dot_product). */
@@ -120,6 +122,7 @@ public class LuceneVectorFieldConfig extends AbstractFieldConfig {
         LuceneFieldNames.checkConfiguredName(fieldName, "a vector-field");
 
         dimension = parseDimension(configElement);
+        luceneField = LuceneFieldNames.vectorField(fieldName, dimension);
         similarity = parseSimilarity(configElement.getAttribute(ATTR_SIMILARITY));
         useBase64 = parseEncoding(configElement);
 
@@ -202,6 +205,16 @@ public class LuceneVectorFieldConfig extends AbstractFieldConfig {
     }
 
     /**
+     * Whether every element this field is configured on that has text has one entry of its own in the field, so that the
+     * entries of the field are the nodes a step on that element selects, and no such node owns entries below it. That
+     * holds when the field is the element's own text, with no expression or with the identity expression {@code .}; an
+     * expression may leave an element without an entry, or give it several.
+     */
+    public boolean hasOneEntryPerNode() {
+        return !hasExpression() || isIdentityExpression();
+    }
+
+    /**
      * Returns the vector field name.
      *
      * @return the field name
@@ -218,6 +231,15 @@ public class LuceneVectorFieldConfig extends AbstractFieldConfig {
      */
     public int getDimension() {
         return dimension;
+    }
+
+    /**
+     * Returns the Lucene field the vectors are in, by name and dimension.
+     *
+     * @return the field name, see {@link LuceneFieldNames#vectorField}
+     */
+    public String getLuceneField() {
+        return luceneField;
     }
 
     /**
@@ -263,7 +285,7 @@ public class LuceneVectorFieldConfig extends AbstractFieldConfig {
         }
         final float[] combined = vectors.size() == 1 ? vectors.getFirst() : meanPool(vectors);
         if (combined != null) {
-            luceneDoc.add(new KnnFloatVectorField(fieldName, combined, similarity));
+            luceneDoc.add(new KnnFloatVectorField(luceneField, combined, similarity));
         }
     }
 
@@ -288,7 +310,7 @@ public class LuceneVectorFieldConfig extends AbstractFieldConfig {
         }
         final float[] combined = vectors.size() == 1 ? vectors.getFirst() : meanPool(vectors);
         if (combined != null) {
-            luceneDoc.add(new KnnFloatVectorField(fieldName, combined, similarity));
+            luceneDoc.add(new KnnFloatVectorField(luceneField, combined, similarity));
             storeVectorIfLocal(combined);
         }
     }
@@ -304,7 +326,7 @@ public class LuceneVectorFieldConfig extends AbstractFieldConfig {
             if (provider != null) {
                 final float[] vec = provider.embed(content);
                 if (vec != null) {
-                    luceneDoc.add(new KnnFloatVectorField(fieldName, vec, similarity));
+                    luceneDoc.add(new KnnFloatVectorField(luceneField, vec, similarity));
                     storeVectorIfLocal(vec);
                 }
             }
@@ -312,7 +334,7 @@ public class LuceneVectorFieldConfig extends AbstractFieldConfig {
         }
         final float[] vec = parseVector(content);
         if (vec != null) {
-            luceneDoc.add(new KnnFloatVectorField(fieldName, vec, similarity));
+            luceneDoc.add(new KnnFloatVectorField(luceneField, vec, similarity));
         }
     }
 
@@ -376,21 +398,18 @@ public class LuceneVectorFieldConfig extends AbstractFieldConfig {
         final NodeId nodeId = contextNode.getNodeId();
         final ReindexScope scope = broker.getIndexController().getReindexScope();
         try {
-            if (scope == ReindexScope.FULLTEXT && VECTOR_STORE_DB.equals(luceneConfig.getVectorStore())) {
-                tryRestoreVectorFromStore(broker, document, nodeId, luceneDoc);
+            // a "fulltext" reindex restores the stored vector, and computes it only if there is none
+            if (VECTOR_STORE_DB.equals(luceneConfig.getVectorStore()) && (scope == ReindexScope.FULLTEXT || !embeddingLocal)
+                    && tryRestoreVectorFromStore(broker, document, nodeId, luceneDoc)) {
                 return;
             }
-            if (!embeddingLocal && VECTOR_STORE_DB.equals(luceneConfig.getVectorStore())) {
-                if (tryRestoreVectorFromStore(broker, document, nodeId, luceneDoc)) {
-                    return;
-                }
-            } else if (embeddingLocal && VECTOR_STORE_DB.equals(luceneConfig.getVectorStore())) {
+            if (embeddingLocal && VECTOR_STORE_DB.equals(luceneConfig.getVectorStore())) {
                 STORE_CONTEXT.set(new StoreContext(broker, document, nodeId));
             }
-            final int vectorsBefore = luceneDoc.getFields(fieldName).length;
+            final int vectorsBefore = luceneDoc.getFields(luceneField).length;
             try {
                 doBuild(broker, contextNode, luceneDoc, text);
-                if (embeddingLocal && luceneDoc.getFields(fieldName).length > vectorsBefore) {
+                if (embeddingLocal && luceneDoc.getFields(luceneField).length > vectorsBefore) {
                     countRecomputed(broker);
                 }
             } finally {
@@ -436,7 +455,7 @@ public class LuceneVectorFieldConfig extends AbstractFieldConfig {
         }
         final float[] vec = bytesToFloats(stored);
         if (vec != null && allFinite(vec)) {
-            luceneDoc.add(new KnnFloatVectorField(fieldName, vec, similarity));
+            luceneDoc.add(new KnnFloatVectorField(luceneField, vec, similarity));
             return true;
         }
         return false;
