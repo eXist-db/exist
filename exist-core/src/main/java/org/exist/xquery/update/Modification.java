@@ -43,9 +43,12 @@ import org.exist.dom.memtree.DocumentBuilderReceiver;
 import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.dom.persistent.NodeHandle;
 import org.exist.storage.DBBroker;
+import org.exist.storage.DocumentRestructures;
+import org.exist.xmldb.XmldbURI;
 import org.exist.storage.lock.LockManager;
 import org.exist.storage.lock.ManagedDocumentLock;
 import org.exist.storage.serializers.Serializer;
+import org.exist.storage.txn.TransactionException;
 import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
 import org.exist.xquery.*;
@@ -75,6 +78,9 @@ public abstract class Modification extends AbstractExpression
     protected final Expression select;
     protected final Expression value;
 
+    /** How often a document is selected and locked again when it is defragmented in between, before the update fails. */
+    private static final int MAX_ATTEMPTS = 5;
+
     protected ManagedLocks<ManagedDocumentLock> lockedDocumentsLocks;
     protected MutableDocumentSet modifiedDocuments = new DefaultDocumentSet();
     protected final Int2ObjectMap<DocumentTrigger> triggers;
@@ -84,6 +90,96 @@ public abstract class Modification extends AbstractExpression
         this.select = select;
         this.value = value;
         this.triggers = new Int2ObjectOpenHashMap<>();
+    }
+
+    /**
+     * Evaluates the expression. An update selects its targets first and locks their documents afterwards, so a document can
+     * be defragmented in between, which gives its nodes other ids: the targets then name other nodes, or none. If that
+     * happened, nothing has been changed yet, and the targets are selected again. The select expression is therefore
+     * evaluated up to {@value #MAX_ATTEMPTS} times; the content expression is evaluated once.
+     */
+    @Override
+    public final Sequence eval(final Sequence contextSequence, final Item contextItem) throws XPathException {
+        final DocumentRestructures restructures = context.getBroker().getBrokerPool().getDocumentRestructures();
+        // local to this evaluation, not a field: the same expression can be evaluated again while this one runs
+        // (an update in a function that calls itself)
+        final Evaluation evaluation = new Evaluation();
+        for (int attempt = 1; ; attempt++) {
+            evaluation.selectStamp = restructures.current();
+            try {
+                final Sequence result = evaluate(contextSequence, contextItem, evaluation);
+                if (attempt > 1) {
+                    LOG.info("The targets of an update were selected {} times, because a document was defragmented after they were selected.", attempt);
+                }
+                return result;
+            } catch (final StaleTargetsException e) {
+                if (attempt >= MAX_ATTEMPTS) {
+                    LOG.warn("{} It happened {} times in a row, so the update was not applied.", e.getMessage(), attempt);
+                    throw new XPathException(this, e.getMessage() + " It happened " + attempt + " times in a row, so the update was not applied.", e);
+                }
+                LOG.debug("{} Selecting the targets again, attempt {}.", e.getMessage(), attempt + 1);
+            }
+        }
+    }
+
+    /**
+     * The state of one evaluation of an update expression, shared by its attempts. It is not kept on the expression, so
+     * that evaluations of the same expression cannot see each other's.
+     */
+    protected final class Evaluation {
+        /** The value of {@link DocumentRestructures#current()} read before the targets of the current attempt were selected. */
+        private long selectStamp;
+
+        /** What the content expression gave in the first attempt, which a retry reuses; null until the content was evaluated. */
+        private Sequence content;
+
+        /**
+         * Evaluates the content expression, or returns what the first attempt got: a retry selects the targets again,
+         * because their ids are stale, but must not run the content expression again, so that what it does besides giving a
+         * value (storing a resource, a nested update) happens once. Nodes of stored documents are copied, as their ids can
+         * be stale at the retry too.
+         *
+         * @param contextSequence the context sequence
+         * @return the content, not checked for being empty
+         * @throws XPathException if the content expression fails
+         */
+        public Sequence content(final Sequence contextSequence) throws XPathException {
+            if (content == null) {
+                final Sequence evaluated = value.eval(contextSequence, null);
+                content = containsStoredNode(evaluated) ? deepCopy(evaluated) : evaluated;
+            }
+            return content;
+        }
+    }
+
+    private static boolean containsStoredNode(final Sequence sequence) throws XPathException {
+        for (final SequenceIterator i = sequence.iterate(); i.hasNext(); ) {
+            final Item item = i.nextItem();
+            if (Type.subTypeOf(item.getType(), Type.NODE) && ((NodeValue) item).getImplementationType() == NodeValue.PERSISTENT_NODE) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Evaluates the expression once: selects the targets, locks their documents with {@link #selectAndLock} and changes them.
+     *
+     * @param contextSequence the context sequence
+     * @param contextItem the context item
+     * @param evaluation the state of this evaluation, to pass to {@link #selectAndLock} and to get the content from
+     * @return the result, an empty sequence
+     * @throws XPathException on an error, or a {@link StaleTargetsException} from {@link #selectAndLock} before anything was changed
+     */
+    protected abstract Sequence evaluate(Sequence contextSequence, Item contextItem, Evaluation evaluation) throws XPathException;
+
+    /** Thrown by {@link #selectAndLock} when a document of the selected targets was defragmented after they were selected. */
+    private static final class StaleTargetsException extends XPathException {
+        private static final long serialVersionUID = 1L;
+
+        StaleTargetsException(final Expression expression, final XmldbURI document) {
+            super(expression, "The document " + document + " was defragmented after the nodes to update were selected.");
+        }
     }
 
     @Override
@@ -142,7 +238,7 @@ public abstract class Modification extends AbstractExpression
      * @throws TriggerException in case of error thrown by triggers
      * @throws XPathException in case of dynamic error
      */
-    protected StoredNode[] selectAndLock(Txn transaction, Sequence nodes) throws LockException,
+    protected StoredNode[] selectAndLock(Txn transaction, Sequence nodes, Evaluation evaluation) throws LockException,
             XPathException, TriggerException {
         final java.util.concurrent.locks.Lock globalLock = context.getBroker().getBrokerPool().getGlobalUpdateLock();
         globalLock.lock();
@@ -153,6 +249,23 @@ public abstract class Modification extends AbstractExpression
             // we have to avoid that node positions change
             // during the modification
             lockedDocumentsLocks = lockedDocuments.lock(context.getBroker(), true);
+
+            // The documents are locked now, so none can be defragmented any more. If one was defragmented after the targets
+            // were selected, the ids of the selected nodes are stale and name other nodes, or none.
+            final DocumentRestructures restructures = context.getBroker().getBrokerPool().getDocumentRestructures();
+            for (final Iterator<DocumentImpl> i = lockedDocuments.getDocumentIterator(); i.hasNext(); ) {
+                final DocumentImpl locked = i.next();
+                if (restructures.changedSince(locked.getDocId(), evaluation.selectStamp)) {
+                    // nothing was changed: finish the transaction, so that closing it does not abort the transaction of a caller
+                    // that this one continues
+                    try {
+                        transaction.commit();
+                    } catch (final TransactionException te) {
+                        throw new XPathException(this, te.getMessage(), te);
+                    }
+                    throw new StaleTargetsException(this, locked.getURI());
+                }
+            }
 
             final StoredNode ql[] = new StoredNode[nodes.getItemCount()];
             for (int i = 0; i < ql.length; i++) {

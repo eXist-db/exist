@@ -55,7 +55,7 @@ public class Rename extends Modification {
     }
 
     @Override
-    public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
+    protected Sequence evaluate(Sequence contextSequence, Item contextItem, Evaluation evaluation) throws XPathException {
         if (context.getProfiler().isEnabled()) {
             context.getProfiler().start(this);       
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
@@ -71,7 +71,7 @@ public class Rename extends Modification {
             contextSequence = contextItem.toSequence();
         }
 
-        final Sequence contentSeq = value.eval(contextSequence, null);
+        final Sequence contentSeq = evaluation.content(contextSequence);
         if (contentSeq.isEmpty()) {
             throw new XPathException(this, Messages.getMessage(Error.UPDATE_EMPTY_CONTENT));
         }
@@ -122,7 +122,7 @@ public class Rename extends Modification {
 
             //start a transaction
             try (final Txn transaction = getTransaction()) {
-                final StoredNode[] ql = selectAndLock(transaction, inSeq);
+                final StoredNode[] ql = selectAndLock(transaction, inSeq, evaluation);
                 final NotificationService notifier = context.getBroker().getBrokerPool().getNotificationService();
                 for (final StoredNode node : ql) {
                     final DocumentImpl doc = node.getOwnerDocument();

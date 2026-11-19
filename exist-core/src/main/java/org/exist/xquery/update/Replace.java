@@ -67,7 +67,7 @@ public class Replace extends Modification {
     /* (non-Javadoc)
      * @see org.exist.xquery.AbstractExpression#eval(org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
      */
-    public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
+    protected Sequence evaluate(Sequence contextSequence, Item contextItem, Evaluation evaluation) throws XPathException {
         if (context.getProfiler().isEnabled()) {
             context.getProfiler().start(this);
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
@@ -119,7 +119,7 @@ public class Replace extends Modification {
         }
         //END trap Replace failure
 
-        Sequence contentSeq = value.eval(contextSequence, null);
+        Sequence contentSeq = evaluation.content(contextSequence);
         if (contentSeq.isEmpty()) {
             throw new XPathException(this, Messages.getMessage(Error.UPDATE_EMPTY_CONTENT));
         }
@@ -128,7 +128,7 @@ public class Replace extends Modification {
         
         //start a transaction
         try (final Txn transaction = getTransaction()) {
-            final StoredNode ql[] = selectAndLock(transaction, inSeq);
+            final StoredNode ql[] = selectAndLock(transaction, inSeq, evaluation);
             final NotificationService notifier = context.getBroker().getBrokerPool().getNotificationService();
             for (final StoredNode node : ql) {
                 final DocumentImpl doc = node.getOwnerDocument();
