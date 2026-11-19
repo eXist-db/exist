@@ -47,6 +47,13 @@ declare variable $ps:XCONF :=
         </index>
     </collection>;
 
+declare variable $ps:PARTIAL_XCONF :=
+    <collection xmlns="http://exist-db.org/collection-config/1.0">
+        <index>
+            <lucene><text qname="item"/></lucene>
+        </index>
+    </collection>;
+
 (: the term is in the first 3 of 10 :)
 declare function ps:term($i) {
     <t xmlns="">{if ($i <= 3) then "hit" else "miss"}</t>
@@ -76,9 +83,14 @@ function ps:setUp() {
     xmldb:store($ps:CONF, "collection.xconf", $ps:XCONF),
     xmldb:create-collection("/db", $ps:COLLECTION_NAME),
     for $c in ("flat", "ns", "nest", "rootnest", "plain") return xmldb:create-collection($ps:COLLECTION, $c),
+    xmldb:create-collection("/db", $ps:COLLECTION_NAME || "-bare"),
+    xmldb:create-collection("/db/system/config/db", $ps:COLLECTION_NAME || "-partial"),
+    xmldb:store($ps:CONF || "-partial", "collection.xconf", $ps:PARTIAL_XCONF),
+    xmldb:create-collection("/db", $ps:COLLECTION_NAME || "-partial"),
     for $i in 1 to 10
     return (
-        xmldb:store($ps:COLLECTION || "/flat", "d" || $i || ".xml",
+        for $target in ($ps:COLLECTION || "/flat", $ps:COLLECTION || "-bare", $ps:COLLECTION || "-partial")
+        return xmldb:store($target, "d" || $i || ".xml",
             <wrap><!--c-->{processing-instruction pi {"x"}}<item n="{$i}" a="{ps:term($i)}" v="1 {$i div 10} 0 0 0">{ps:term($i), ps:vector($i), ps:sub($i), ps:fast($i)}</item><other n="o{$i}">{ps:term($i), ps:vector($i + 0.5)}</other></wrap>),
         xmldb:store($ps:COLLECTION || "/ns", "h" || $i || ".xml",
             <html xmlns="http://www.w3.org/1999/xhtml"><head/><body n="{$i}">{ps:term($i), ps:vector($i)}</body></html>),
@@ -97,7 +109,10 @@ declare
     %test:tearDown
 function ps:tearDown() {
     xmldb:remove($ps:COLLECTION),
-    xmldb:remove($ps:CONF)
+    xmldb:remove($ps:COLLECTION || "-bare"),
+    xmldb:remove($ps:COLLECTION || "-partial"),
+    xmldb:remove($ps:CONF),
+    xmldb:remove($ps:CONF || "-partial")
 };
 
 declare function ps:typed($nodes as element()*) as element()* {
@@ -599,6 +614,46 @@ declare %test:assertEquals("1 2 3 #3") function ps:attribute-field-vector--from-
 declare %test:assertEquals("1 2 3 #3") function ps:attribute-field-vector--attribute-wildcard() { ps:answer(collection($ps:COLLECTION || "/flat")/wrap/item/@*[ft:query-field-vector("ps-attribute-vector", [1, 0, 0, 0, 0], 3)]) };
 declare %test:assertEquals("1 2 3 #3") function ps:attribute-field-vector--attribute-vector() { ps:answer(collection($ps:COLLECTION || "/flat")/wrap/item/@v[ft:query-field-vector("ps-attribute-vector", [1, 0, 0, 0, 0], 3)]) };
 declare %test:assertEquals("1 2 3 #3") function ps:attribute-field-vector--attribute-vector-desc() { ps:answer(collection($ps:COLLECTION || "/flat")//@v[ft:query-field-vector("ps-attribute-vector", [1, 0, 0, 0, 0], 3)]) };
+
+(: === After a sequence that was empty: ft:query === :)
+
+(: After a sequence that was empty :)
+declare %test:assertEquals("1 2 #2") function ps:after-nothing-query--empty-first() { ps:answer((for $i in (11, 1, 12, 2) let $d := collection($ps:COLLECTION || "/flat")/wrap/item[xs:integer(@n) = $i] return $d[ft:query(., "hit")])) };
+declare %test:assertEquals("1 2 #2") function ps:after-nothing-query--empty-between() { ps:answer((for $i in (1, 11, 2) let $d := collection($ps:COLLECTION || "/flat")/wrap/item[xs:integer(@n) = $i] return $d[ft:query(., "hit")])) };
+declare %test:assertEquals("1 2 #2") function ps:after-nothing-query--typed-count() { ps:answer((for $i in (11, 1, 12, 2) let $d := collection($ps:COLLECTION || "/flat")/wrap/item[xs:integer(@n) = $i] return if (count($d[ft:query(., "hit")]) > 0) then $d else ())) };
+
+(: === After a sequence that was empty: ft:query-field === :)
+
+(: After a sequence that was empty :)
+declare %test:assertEquals("1 2 #2") function ps:after-nothing-field--empty-first() { ps:answer((for $i in (11, 1, 12, 2) let $d := collection($ps:COLLECTION || "/flat")/wrap/item[xs:integer(@n) = $i] return $d[ft:query-field("ps-title", "hit")])) };
+declare %test:assertEquals("1 2 #2") function ps:after-nothing-field--empty-between() { ps:answer((for $i in (1, 11, 2) let $d := collection($ps:COLLECTION || "/flat")/wrap/item[xs:integer(@n) = $i] return $d[ft:query-field("ps-title", "hit")])) };
+declare %test:assertEquals("1 2 #2") function ps:after-nothing-field--typed-count() { ps:answer((for $i in (11, 1, 12, 2) let $d := collection($ps:COLLECTION || "/flat")/wrap/item[xs:integer(@n) = $i] return if (count($d[ft:query-field("ps-title", "hit")]) > 0) then $d else ())) };
+
+(: === After a sequence that was empty: ft:query-vector === :)
+
+(: After a sequence that was empty :)
+declare %test:assertEquals("1 2 #2") function ps:after-nothing-vector--empty-first() { ps:answer((for $i in (11, 1, 12, 2) let $d := collection($ps:COLLECTION || "/flat")/wrap/item[xs:integer(@n) = $i] return $d[ft:query-vector(., [1, 0, 0], 3)])) };
+declare %test:assertEquals("1 2 #2") function ps:after-nothing-vector--empty-between() { ps:answer((for $i in (1, 11, 2) let $d := collection($ps:COLLECTION || "/flat")/wrap/item[xs:integer(@n) = $i] return $d[ft:query-vector(., [1, 0, 0], 3)])) };
+declare %test:assertEquals("1 2 #2") function ps:after-nothing-vector--typed-count() { ps:answer((for $i in (11, 1, 12, 2) let $d := collection($ps:COLLECTION || "/flat")/wrap/item[xs:integer(@n) = $i] return if (count($d[ft:query-vector(., [1, 0, 0], 3)]) > 0) then $d else ())) };
+
+(: === After a sequence that was empty: ft:query-field-vector === :)
+
+(: After a sequence that was empty :)
+declare %test:assertEquals("1 2 #2") function ps:after-nothing-field-vector--empty-first() { ps:answer((for $i in (11, 1, 12, 2) let $d := collection($ps:COLLECTION || "/flat")/wrap/item[xs:integer(@n) = $i] return $d[ft:query-field-vector("ps-vector", [1, 0, 0], 3)])) };
+declare %test:assertEquals("1 2 #2") function ps:after-nothing-field-vector--empty-between() { ps:answer((for $i in (1, 11, 2) let $d := collection($ps:COLLECTION || "/flat")/wrap/item[xs:integer(@n) = $i] return $d[ft:query-field-vector("ps-vector", [1, 0, 0], 3)])) };
+declare %test:assertEquals("1 2 #2") function ps:after-nothing-field-vector--typed-count() { ps:answer((for $i in (11, 1, 12, 2) let $d := collection($ps:COLLECTION || "/flat")/wrap/item[xs:integer(@n) = $i] return if (count($d[ft:query-field-vector("ps-vector", [1, 0, 0], 3)]) > 0) then $d else ())) };
+
+(: === After another collection: ft:query, which has no fallback === :)
+
+(: After another collection :)
+declare %test:assertEquals("1 2 3 #3") function ps:elsewhere-query--indexed-then-bare() { ps:answer((for $c in ($ps:COLLECTION || "/flat", $ps:COLLECTION || "-bare") return collection($c)//item[ft:query(., "hit")])) };
+declare %test:assertEquals("1 2 3 #3") function ps:elsewhere-query--bare-then-indexed() { ps:answer((for $c in ($ps:COLLECTION || "-bare", $ps:COLLECTION || "/flat") return collection($c)//item[ft:query(., "hit")])) };
+
+(: === After another collection: ft:query-field, which has no fallback === :)
+
+(: After another collection :)
+declare %test:assertEquals("1 2 3 #3") function ps:elsewhere-field--indexed-then-bare() { ps:answer((for $c in ($ps:COLLECTION || "/flat", $ps:COLLECTION || "-bare") return collection($c)//item[ft:query-field("ps-title", "hit")])) };
+declare %test:assertEquals("1 2 3 #3") function ps:elsewhere-field--bare-then-indexed() { ps:answer((for $c in ($ps:COLLECTION || "-bare", $ps:COLLECTION || "/flat") return collection($c)//item[ft:query-field("ps-title", "hit")])) };
 
 (: Fast forms stay pre-selected, and forms that cannot be stay evaluated as written: the answers cannot show a
    lost optimization. Without the optimizer, the fast group is on the known failures list. :)

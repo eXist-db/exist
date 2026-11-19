@@ -49,6 +49,13 @@ declare variable $ps:XCONF :=
         </index>
     </collection>;
 
+declare variable $ps:PARTIAL_XCONF :=
+    <collection xmlns="http://exist-db.org/collection-config/1.0">
+        <index>
+            <range><create qname="t" type="xs:string"/></range>
+        </index>
+    </collection>;
+
 (: the term is in the first 3 of 10 :)
 declare function ps:term($i) {
     <t xmlns="">{if ($i <= 3) then "hit" else "miss"}</t>
@@ -63,9 +70,14 @@ function ps:setUp() {
     xmldb:store($ps:CONF, "collection.xconf", $ps:XCONF),
     xmldb:create-collection("/db", $ps:COLLECTION_NAME),
     for $c in ("flat", "ns", "nest", "rootnest", "plain") return xmldb:create-collection($ps:COLLECTION, $c),
+    xmldb:create-collection("/db", $ps:COLLECTION_NAME || "-bare"),
+    xmldb:create-collection("/db/system/config/db", $ps:COLLECTION_NAME || "-partial"),
+    xmldb:store($ps:CONF || "-partial", "collection.xconf", $ps:PARTIAL_XCONF),
+    xmldb:create-collection("/db", $ps:COLLECTION_NAME || "-partial"),
     for $i in 1 to 10
     return (
-        xmldb:store($ps:COLLECTION || "/flat", "d" || $i || ".xml",
+        for $target in ($ps:COLLECTION || "/flat", $ps:COLLECTION || "-bare", $ps:COLLECTION || "-partial")
+        return xmldb:store($target, "d" || $i || ".xml",
             <wrap><!--c-->{processing-instruction pi {"x"}}<item n="{$i}" a="{ps:term($i)}" v="1 {$i div 10} 0">{ps:term($i)}</item><other n="o{$i}">{ps:term($i)}</other></wrap>),
         xmldb:store($ps:COLLECTION || "/ns", "h" || $i || ".xml",
             <html xmlns="http://www.w3.org/1999/xhtml"><head/><body n="{$i}">{ps:term($i)}</body></html>),
@@ -84,7 +96,10 @@ declare
     %test:tearDown
 function ps:tearDown() {
     xmldb:remove($ps:COLLECTION),
-    xmldb:remove($ps:CONF)
+    xmldb:remove($ps:COLLECTION || "-bare"),
+    xmldb:remove($ps:COLLECTION || "-partial"),
+    xmldb:remove($ps:CONF),
+    xmldb:remove($ps:CONF || "-partial")
 };
 
 declare function ps:typed($nodes as element()*) as element()* {
@@ -552,6 +567,70 @@ declare %test:assertEquals("#3") function ps:range-field--doc-filter() { ps:answ
 (: Other kinds of node :)
 (: An index function finds nothing on a node that no configuration indexes :)
 declare %test:assertEquals("#0") function ps:range-field--unindexed() { ps:answer(collection($ps:COLLECTION || "/plain")/doc/u[range:field-eq("ps-range", "hit")]) };
+
+(: === After a sequence that was empty: a comparison on an attribute === :)
+
+(: After a sequence that was empty :)
+declare %test:assertEquals("1 2 #2") function ps:after-nothing-eq-attribute--empty-first() { ps:answer((for $i in (11, 1, 12, 2) let $d := collection($ps:COLLECTION || "/flat")/wrap/item[xs:integer(@n) = $i] return $d[@a = "hit"])) };
+declare %test:assertEquals("1 2 #2") function ps:after-nothing-eq-attribute--empty-between() { ps:answer((for $i in (1, 11, 2) let $d := collection($ps:COLLECTION || "/flat")/wrap/item[xs:integer(@n) = $i] return $d[@a = "hit"])) };
+declare %test:assertEquals("1 2 #2") function ps:after-nothing-eq-attribute--typed-count() { ps:answer((for $i in (11, 1, 12, 2) let $d := collection($ps:COLLECTION || "/flat")/wrap/item[xs:integer(@n) = $i] return if (count($d[@a = "hit"]) > 0) then $d else ())) };
+
+(: === After a sequence that was empty: a comparison on a child === :)
+
+(: After a sequence that was empty :)
+declare %test:assertEquals("1 2 #2") function ps:after-nothing-eq-child--empty-first() { ps:answer((for $i in (11, 1, 12, 2) let $d := collection($ps:COLLECTION || "/flat")/wrap/item[xs:integer(@n) = $i] return $d[t = "hit"])) };
+declare %test:assertEquals("1 2 #2") function ps:after-nothing-eq-child--empty-between() { ps:answer((for $i in (1, 11, 2) let $d := collection($ps:COLLECTION || "/flat")/wrap/item[xs:integer(@n) = $i] return $d[t = "hit"])) };
+declare %test:assertEquals("1 2 #2") function ps:after-nothing-eq-child--typed-count() { ps:answer((for $i in (11, 1, 12, 2) let $d := collection($ps:COLLECTION || "/flat")/wrap/item[xs:integer(@n) = $i] return if (count($d[t = "hit"]) > 0) then $d else ())) };
+
+(: === After a sequence that was empty: fn:matches on a child === :)
+
+(: After a sequence that was empty :)
+declare %test:assertEquals("1 2 #2") function ps:after-nothing-matches-child--empty-first() { ps:answer((for $i in (11, 1, 12, 2) let $d := collection($ps:COLLECTION || "/flat")/wrap/item[xs:integer(@n) = $i] return $d[matches(t, "hit")])) };
+declare %test:assertEquals("1 2 #2") function ps:after-nothing-matches-child--empty-between() { ps:answer((for $i in (1, 11, 2) let $d := collection($ps:COLLECTION || "/flat")/wrap/item[xs:integer(@n) = $i] return $d[matches(t, "hit")])) };
+declare %test:assertEquals("1 2 #2") function ps:after-nothing-matches-child--typed-count() { ps:answer((for $i in (11, 1, 12, 2) let $d := collection($ps:COLLECTION || "/flat")/wrap/item[xs:integer(@n) = $i] return if (count($d[matches(t, "hit")]) > 0) then $d else ())) };
+
+(: === After a sequence that was empty: fn:contains on a child === :)
+
+(: After a sequence that was empty :)
+declare %test:assertEquals("1 2 #2") function ps:after-nothing-contains-child--empty-first() { ps:answer((for $i in (11, 1, 12, 2) let $d := collection($ps:COLLECTION || "/flat")/wrap/item[xs:integer(@n) = $i] return $d[contains(t, "hit")])) };
+declare %test:assertEquals("1 2 #2") function ps:after-nothing-contains-child--empty-between() { ps:answer((for $i in (1, 11, 2) let $d := collection($ps:COLLECTION || "/flat")/wrap/item[xs:integer(@n) = $i] return $d[contains(t, "hit")])) };
+declare %test:assertEquals("1 2 #2") function ps:after-nothing-contains-child--typed-count() { ps:answer((for $i in (11, 1, 12, 2) let $d := collection($ps:COLLECTION || "/flat")/wrap/item[xs:integer(@n) = $i] return if (count($d[contains(t, "hit")]) > 0) then $d else ())) };
+
+(: === After a sequence that was empty: a quantified fn:matches === :)
+
+(: After a sequence that was empty :)
+declare %test:assertEquals("1 2 #2") function ps:after-nothing-quantified--empty-first() { ps:answer((for $i in (11, 1, 12, 2) let $d := collection($ps:COLLECTION || "/flat")/wrap/item[xs:integer(@n) = $i] return $d[some $s in t satisfies matches($s, "hit")])) };
+declare %test:assertEquals("1 2 #2") function ps:after-nothing-quantified--empty-between() { ps:answer((for $i in (1, 11, 2) let $d := collection($ps:COLLECTION || "/flat")/wrap/item[xs:integer(@n) = $i] return $d[some $s in t satisfies matches($s, "hit")])) };
+declare %test:assertEquals("1 2 #2") function ps:after-nothing-quantified--typed-count() { ps:answer((for $i in (11, 1, 12, 2) let $d := collection($ps:COLLECTION || "/flat")/wrap/item[xs:integer(@n) = $i] return if (count($d[some $s in t satisfies matches($s, "hit")]) > 0) then $d else ())) };
+
+(: === After a sequence that was empty: range:eq on a child === :)
+
+(: After a sequence that was empty :)
+declare %test:assertEquals("1 2 #2") function ps:after-nothing-range-eq-child--empty-first() { ps:answer((for $i in (11, 1, 12, 2) let $d := collection($ps:COLLECTION || "/flat")/wrap/item[xs:integer(@n) = $i] return $d[range:eq(t, "hit")])) };
+declare %test:assertEquals("1 2 #2") function ps:after-nothing-range-eq-child--empty-between() { ps:answer((for $i in (1, 11, 2) let $d := collection($ps:COLLECTION || "/flat")/wrap/item[xs:integer(@n) = $i] return $d[range:eq(t, "hit")])) };
+declare %test:assertEquals("1 2 #2") function ps:after-nothing-range-eq-child--typed-count() { ps:answer((for $i in (11, 1, 12, 2) let $d := collection($ps:COLLECTION || "/flat")/wrap/item[xs:integer(@n) = $i] return if (count($d[range:eq(t, "hit")]) > 0) then $d else ())) };
+
+(: === After another collection: a comparison on an attribute === :)
+
+(: After another collection :)
+declare %test:assertEquals("1 1 2 2 3 3 #6") function ps:elsewhere-eq-attribute--indexed-then-bare() { ps:answer((for $c in ($ps:COLLECTION || "/flat", $ps:COLLECTION || "-bare") return collection($c)//item[@a = "hit"])) };
+declare %test:assertEquals("1 1 2 2 3 3 #6") function ps:elsewhere-eq-attribute--bare-then-indexed() { ps:answer((for $c in ($ps:COLLECTION || "-bare", $ps:COLLECTION || "/flat") return collection($c)//item[@a = "hit"])) };
+declare %test:assertEquals("1 1 2 2 3 3 #6") function ps:elsewhere-eq-attribute--indexed-then-partial() { ps:answer((for $c in ($ps:COLLECTION || "/flat", $ps:COLLECTION || "-partial") return collection($c)//item[@a = "hit"][t = "hit"])) };
+declare %test:assertEquals("1 1 2 2 3 3 #6") function ps:elsewhere-eq-attribute--partial-then-indexed() { ps:answer((for $c in ($ps:COLLECTION || "-partial", $ps:COLLECTION || "/flat") return collection($c)//item[@a = "hit"][t = "hit"])) };
+
+(: === After another collection: fn:matches on an attribute === :)
+
+(: After another collection :)
+declare %test:assertEquals("1 1 2 2 3 3 #6") function ps:elsewhere-matches-attribute--indexed-then-bare() { ps:answer((for $c in ($ps:COLLECTION || "/flat", $ps:COLLECTION || "-bare") return collection($c)//item[matches(@a, "^hit")])) };
+declare %test:assertEquals("1 1 2 2 3 3 #6") function ps:elsewhere-matches-attribute--bare-then-indexed() { ps:answer((for $c in ($ps:COLLECTION || "-bare", $ps:COLLECTION || "/flat") return collection($c)//item[matches(@a, "^hit")])) };
+declare %test:assertEquals("1 1 2 2 3 3 #6") function ps:elsewhere-matches-attribute--indexed-then-partial() { ps:answer((for $c in ($ps:COLLECTION || "/flat", $ps:COLLECTION || "-partial") return collection($c)//item[matches(@a, "^hit")][t = "hit"])) };
+declare %test:assertEquals("1 1 2 2 3 3 #6") function ps:elsewhere-matches-attribute--partial-then-indexed() { ps:answer((for $c in ($ps:COLLECTION || "-partial", $ps:COLLECTION || "/flat") return collection($c)//item[matches(@a, "^hit")][t = "hit"])) };
+
+(: === After another collection: range:eq on a child, which has no fallback === :)
+
+(: After another collection :)
+declare %test:assertEquals("1 2 3 #3") function ps:elsewhere-range-eq-child--indexed-then-bare() { ps:answer((for $c in ($ps:COLLECTION || "/flat", $ps:COLLECTION || "-bare") return collection($c)//item[range:eq(t, "hit")])) };
+declare %test:assertEquals("1 2 3 #3") function ps:elsewhere-range-eq-child--bare-then-indexed() { ps:answer((for $c in ($ps:COLLECTION || "-bare", $ps:COLLECTION || "/flat") return collection($c)//item[range:eq(t, "hit")])) };
 
 (: Fast forms stay pre-selected, and forms that cannot be stay evaluated as written: the answers cannot show a
    lost optimization. Without the optimizer, the fast group is on the known failures list. :)

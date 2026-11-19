@@ -27,11 +27,13 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -133,6 +135,38 @@ public final class PathShapes {
     public static final List<Shape> ARGUMENT = only("desc", "child", "desc-after-child", "self", "wildcard", "wildcard-desc",
             "union", "variable", "two-filters", "typed-argument", "parent", "following-sibling", "nested-child", "nested-desc",
             "pred-before", "narrowed", "for", "doc-filter");
+
+    /**
+     * The same predicate evaluated again over a let-bound sequence of stored nodes that was empty in an earlier evaluation, as
+     * in a loop that takes one document at a time: an expression that kept what it found, or decided to optimize, for an empty
+     * context gives wrong nodes in the next. A variable is the only way to give a pre-selecting expression an empty context.
+     * The keys 11 and 12 match no item, so the order does not depend on the order the collection is walked in; items 1 and 2
+     * are the nodes, both hits of the predicates tested.
+     */
+    public static final List<Shape> AFTER_NOTHING = shapes(
+        group("After a sequence that was empty",
+            shape("empty-first", "(for $i in (11, 1, 12, 2) let $d := {flat}/wrap/item[xs:integer(@n) = $i] return $d[{p}])"),
+            shape("empty-between", "(for $i in (1, 11, 2) let $d := {flat}/wrap/item[xs:integer(@n) = $i] return $d[{p}])"),
+            shape("typed-count", "(for $i in (11, 1, 12, 2) let $d := {flat}/wrap/item[xs:integer(@n) = $i] "
+                    + "return if (count($d[{p}]) > 0) then $d else ())")
+        )
+    );
+
+    /**
+     * The same predicate evaluated again over another collection of the same documents, in one loop: {@code flat} has the
+     * matrix's configuration, {@code -bare} none, {@code -partial} only the one given to {@link Matrix#withStateCollections}.
+     * A predicate that read what the collection before left behind finds nothing, or something it must not, in the next. The
+     * path is pre-selected from the index, so this is the case the state is kept for. State belongs to the expression, not
+     * to the path, so a few paths stand for all.
+     */
+    public static final List<Shape> ELSEWHERE = shapes(
+        group("After another collection",
+            shape("indexed-then-bare", "(for $c in ($ps:COLLECTION || \"/flat\", $ps:COLLECTION || \"-bare\") return collection($c)//item[{p}])"),
+            shape("bare-then-indexed", "(for $c in ($ps:COLLECTION || \"-bare\", $ps:COLLECTION || \"/flat\") return collection($c)//item[{p}])"),
+            shape("indexed-then-partial", "(for $c in ($ps:COLLECTION || \"/flat\", $ps:COLLECTION || \"-partial\") return collection($c)//item[{p}][t = \"hit\"])"),
+            shape("partial-then-indexed", "(for $c in ($ps:COLLECTION || \"-partial\", $ps:COLLECTION || \"/flat\") return collection($c)//item[{p}][t = \"hit\"])")
+        )
+    );
 
     /** An answer that starts with this is the error code the shape raises, such as {@code error:EXXQDYFT0006}. */
     private static final String ERROR_PREFIX = "error:";
@@ -315,7 +349,9 @@ public final class PathShapes {
         private final List<String> imports = new ArrayList<>();
         private String index = "";
         private boolean vectors;
+        private String partialIndex;
         private final List<Object> parts = new ArrayList<>();
+        private final Map<String, String> pendingCells = new LinkedHashMap<>();
 
         /** @param name the name of the file's module and collection: {@code path-shapes/name} and {@code test-path-shapes-name} */
         public Matrix(final String name) {
@@ -331,6 +367,16 @@ public final class PathShapes {
         /** The content of the collection configuration's {@code index} element. */
         public Matrix index(final String index) {
             this.index = index;
+            return this;
+        }
+
+        /**
+         * Adds two collections next to the matrix's, with the documents of {@code flat}: {@code -bare}, which no
+         * configuration indexes, and {@code -partial}, whose configuration is {@code partialIndex}, the content of its
+         * {@code index} element. See {@link #ACROSS_COLLECTIONS}.
+         */
+        public Matrix withStateCollections(final String partialIndex) {
+            this.partialIndex = partialIndex;
             return this;
         }
 
@@ -364,6 +410,31 @@ public final class PathShapes {
             return section;
         }
 
+        /**
+         * Marks tests pending, by their name in the generated file, {@code prefix--shape}, for one reason. For the cells a
+         * known defect makes fail until its fix is merged: delete the call then. A name that is no cell of this matrix is
+         * an error, so a stale list is found.
+         *
+         * @param reason why they are pending, with the issue
+         * @param cells the names of the tests
+         */
+        public Matrix pendingCells(final String reason, final String... cells) {
+            for (final String cell : cells) {
+                if (pendingCells.put(cell, reason) != null) {
+                    throw new IllegalArgumentException("pending twice: " + cell);
+                }
+            }
+            return this;
+        }
+
+        /** A section running over the shapes of {@code shapes} listed in {@code answers}. */
+        public Section partialSection(final String title, final String prefix, final String call, final List<Shape> shapes,
+                final String answers) {
+            final Section section = new Section(title, prefix, call, shapes, answers, false);
+            parts.add(section);
+            return section;
+        }
+
         /** XQuery written into the file as it is, such as tests of the optimizer. */
         public Matrix raw(final String xquery) {
             parts.add(xquery.strip());
@@ -372,6 +443,7 @@ public final class PathShapes {
 
         public String render() {
             final StringBuilder out = new StringBuilder();
+            final Set<String> usedCells = new HashSet<>();
             final String importLines = imports.stream().map(i -> i + "\n").collect(Collectors.joining());
             out.append(HEADER.replace("{name}", name).replace("{imports}", importLines.isEmpty() ? "" : importLines + "\n"));
             out.append("declare variable $ps:XCONF :=\n");
@@ -380,14 +452,28 @@ public final class PathShapes {
             out.append("            ").append(index).append('\n');
             out.append("        </index>\n");
             out.append("    </collection>;\n\n");
-            out.append(vectors ? FIXTURE_WITH_VECTORS : FIXTURE);
+            if (partialIndex != null) {
+                out.append("declare variable $ps:PARTIAL_XCONF :=\n");
+                out.append("    <collection xmlns=\"http://exist-db.org/collection-config/1.0\">\n");
+                out.append("        <index>\n");
+                out.append("            ").append(partialIndex).append('\n');
+                out.append("        </index>\n");
+                out.append("    </collection>;\n\n");
+            }
+            final String fixture = vectors ? FIXTURE_WITH_VECTORS : FIXTURE;
+            out.append(partialIndex == null ? fixture : addStateCollections(fixture));
             for (final Object part : parts) {
                 out.append('\n');
                 if (part instanceof Section section) {
-                    section.render(out);
+                    section.render(out, pendingCells, usedCells);
                 } else {
                     out.append(part).append('\n');
                 }
+            }
+            if (!usedCells.containsAll(pendingCells.keySet())) {
+                final Set<String> unknown = new TreeSet<>(pendingCells.keySet());
+                unknown.removeAll(usedCells);
+                throw new IllegalArgumentException("pending cells that are no test of this matrix: " + unknown);
             }
             return out.toString();
         }
@@ -447,7 +533,7 @@ public final class PathShapes {
             }
         }
 
-        void render(final StringBuilder out) {
+        void render(final StringBuilder out, final Map<String, String> pendingCells, final Set<String> usedCells) {
             out.append("(: === ").append(title).append(" === :)\n");
             String group = null;
             for (final Map.Entry<Shape, String> entry : answers.entrySet()) {
@@ -461,7 +547,12 @@ public final class PathShapes {
                     out.append("(: ").append(note).append(" :)\n");
                 }
                 out.append("declare ");
-                final String reason = pending.get(shape.name());
+                final String cell = prefix + "--" + shape.name();
+                String reason = pending.get(shape.name());
+                if (pendingCells.containsKey(cell)) {
+                    usedCells.add(cell);
+                    reason = reason == null ? pendingCells.get(cell) : reason;
+                }
                 if (reason != null) {
                     out.append("%test:pending(\"").append(reason).append("\") ");
                 }
@@ -474,6 +565,30 @@ public final class PathShapes {
                         .append(expand(shape.path()).replace("{p}", call)).append(") };\n");
             }
         }
+    }
+
+    /** The fixture with the collections of {@link Matrix#withStateCollections}, which get the documents of {@code flat} too. */
+    private static String addStateCollections(final String fixture) {
+        return replaceOnce(replaceOnce(replaceOnce(fixture,
+                "    for $c in (\"flat\", \"ns\", \"nest\", \"rootnest\", \"plain\") return xmldb:create-collection($ps:COLLECTION, $c),\n",
+                "    for $c in (\"flat\", \"ns\", \"nest\", \"rootnest\", \"plain\") return xmldb:create-collection($ps:COLLECTION, $c),\n"
+                        + "    xmldb:create-collection(\"/db\", $ps:COLLECTION_NAME || \"-bare\"),\n"
+                        + "    xmldb:create-collection(\"/db/system/config/db\", $ps:COLLECTION_NAME || \"-partial\"),\n"
+                        + "    xmldb:store($ps:CONF || \"-partial\", \"collection.xconf\", $ps:PARTIAL_XCONF),\n"
+                        + "    xmldb:create-collection(\"/db\", $ps:COLLECTION_NAME || \"-partial\"),\n"),
+                "        xmldb:store($ps:COLLECTION || \"/flat\", \"d\" || $i || \".xml\",\n",
+                "        for $target in ($ps:COLLECTION || \"/flat\", $ps:COLLECTION || \"-bare\", $ps:COLLECTION || \"-partial\")\n"
+                        + "        return xmldb:store($target, \"d\" || $i || \".xml\",\n"),
+                "    xmldb:remove($ps:COLLECTION),\n    xmldb:remove($ps:CONF)\n",
+                "    xmldb:remove($ps:COLLECTION),\n    xmldb:remove($ps:COLLECTION || \"-bare\"),\n    xmldb:remove($ps:COLLECTION || \"-partial\"),\n"
+                        + "    xmldb:remove($ps:CONF),\n    xmldb:remove($ps:CONF || \"-partial\")\n");
+    }
+
+    private static String replaceOnce(final String text, final String target, final String replacement) {
+        if (!text.contains(target)) {
+            throw new IllegalStateException("the fixture has changed, update the state collections: " + target);
+        }
+        return text.replace(target, replacement);
     }
 
     private static String expand(final String path) {

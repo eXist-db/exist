@@ -49,6 +49,13 @@ declare variable $ps:XCONF :=
         </index>
     </collection>;
 
+declare variable $ps:PARTIAL_XCONF :=
+    <collection xmlns="http://exist-db.org/collection-config/1.0">
+        <index>
+            <ngram qname="item"/>
+        </index>
+    </collection>;
+
 (: the term is in the first 3 of 10 :)
 declare function ps:term($i) {
     <t xmlns="">{if ($i <= 3) then "hit" else "miss"}</t>
@@ -63,9 +70,14 @@ function ps:setUp() {
     xmldb:store($ps:CONF, "collection.xconf", $ps:XCONF),
     xmldb:create-collection("/db", $ps:COLLECTION_NAME),
     for $c in ("flat", "ns", "nest", "rootnest", "plain") return xmldb:create-collection($ps:COLLECTION, $c),
+    xmldb:create-collection("/db", $ps:COLLECTION_NAME || "-bare"),
+    xmldb:create-collection("/db/system/config/db", $ps:COLLECTION_NAME || "-partial"),
+    xmldb:store($ps:CONF || "-partial", "collection.xconf", $ps:PARTIAL_XCONF),
+    xmldb:create-collection("/db", $ps:COLLECTION_NAME || "-partial"),
     for $i in 1 to 10
     return (
-        xmldb:store($ps:COLLECTION || "/flat", "d" || $i || ".xml",
+        for $target in ($ps:COLLECTION || "/flat", $ps:COLLECTION || "-bare", $ps:COLLECTION || "-partial")
+        return xmldb:store($target, "d" || $i || ".xml",
             <wrap><!--c-->{processing-instruction pi {"x"}}<item n="{$i}" a="{ps:term($i)}" v="1 {$i div 10} 0">{ps:term($i)}</item><other n="o{$i}">{ps:term($i)}</other></wrap>),
         xmldb:store($ps:COLLECTION || "/ns", "h" || $i || ".xml",
             <html xmlns="http://www.w3.org/1999/xhtml"><head/><body n="{$i}">{ps:term($i)}</body></html>),
@@ -84,7 +96,10 @@ declare
     %test:tearDown
 function ps:tearDown() {
     xmldb:remove($ps:COLLECTION),
-    xmldb:remove($ps:CONF)
+    xmldb:remove($ps:COLLECTION || "-bare"),
+    xmldb:remove($ps:COLLECTION || "-partial"),
+    xmldb:remove($ps:CONF),
+    xmldb:remove($ps:CONF || "-partial")
 };
 
 declare function ps:typed($nodes as element()*) as element()* {
@@ -242,6 +257,19 @@ declare %test:assertEquals("1 2 #2") function ps:ngram-attribute--for() { ps:ans
 
 (: Documents as candidates :)
 declare %test:assertEquals("#0") function ps:ngram-attribute--doc-filter() { ps:answer(collection($ps:COLLECTION || "/flat")[ngram:contains(@a, "hit")]) };
+
+(: === After a sequence that was empty: ngram:contains === :)
+
+(: After a sequence that was empty :)
+declare %test:assertEquals("1 2 #2") function ps:after-nothing-contains--empty-first() { ps:answer((for $i in (11, 1, 12, 2) let $d := collection($ps:COLLECTION || "/flat")/wrap/item[xs:integer(@n) = $i] return $d[ngram:contains(., "hit")])) };
+declare %test:assertEquals("1 2 #2") function ps:after-nothing-contains--empty-between() { ps:answer((for $i in (1, 11, 2) let $d := collection($ps:COLLECTION || "/flat")/wrap/item[xs:integer(@n) = $i] return $d[ngram:contains(., "hit")])) };
+declare %test:assertEquals("1 2 #2") function ps:after-nothing-contains--typed-count() { ps:answer((for $i in (11, 1, 12, 2) let $d := collection($ps:COLLECTION || "/flat")/wrap/item[xs:integer(@n) = $i] return if (count($d[ngram:contains(., "hit")]) > 0) then $d else ())) };
+
+(: === After another collection: ngram:contains, which has no fallback === :)
+
+(: After another collection :)
+declare %test:assertEquals("1 2 3 #3") function ps:elsewhere-contains--indexed-then-bare() { ps:answer((for $c in ($ps:COLLECTION || "/flat", $ps:COLLECTION || "-bare") return collection($c)//item[ngram:contains(., "hit")])) };
+declare %test:assertEquals("1 2 3 #3") function ps:elsewhere-contains--bare-then-indexed() { ps:answer((for $c in ($ps:COLLECTION || "-bare", $ps:COLLECTION || "/flat") return collection($c)//item[ngram:contains(., "hit")])) };
 
 (: Fast forms stay pre-selected, and forms that cannot be stay evaluated as written: the answers cannot show a
    lost optimization. Without the optimizer, the fast group is on the known failures list. :)

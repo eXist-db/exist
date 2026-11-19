@@ -56,7 +56,8 @@ class PathShapesTest {
     static Matrix range() {
         final Matrix matrix = new Matrix("range")
                 .imports("import module namespace range=\"http://exist-db.org/xquery/range\";")
-                .index("<range><create qname=\"item\" type=\"xs:string\"/><create qname=\"sec\" type=\"xs:string\"/><create qname=\"part\" type=\"xs:string\"/><create qname=\"h:body\" type=\"xs:string\"/><create qname=\"t\" type=\"xs:string\"/><create qname=\"@a\" type=\"xs:string\"/><create qname=\"other\"><field name=\"ps-range\" match=\"t\" type=\"xs:string\"/></create></range>");
+                .index("<range><create qname=\"item\" type=\"xs:string\"/><create qname=\"sec\" type=\"xs:string\"/><create qname=\"part\" type=\"xs:string\"/><create qname=\"h:body\" type=\"xs:string\"/><create qname=\"t\" type=\"xs:string\"/><create qname=\"@a\" type=\"xs:string\"/><create qname=\"other\"><field name=\"ps-range\" match=\"t\" type=\"xs:string\"/></create></range>")
+                .withStateCollections("<range><create qname=\"t\" type=\"xs:string\"/></range>");
 
         matrix.section("A range comparison", "eq", ". = \"hit\"", PathShapes.STEP, """
                 desc                    1 2 3 #3
@@ -357,6 +358,52 @@ class PathShapesTest {
                 .pending("wildcard", "An element test drops the nodes with their own entry, see https://github.com/eXist-db/exist/issues/6987")
                 .pending("wildcard-desc", "An element test drops the nodes with their own entry, see https://github.com/eXist-db/exist/issues/6987")
                 .pending("element", "An element test drops the nodes with their own entry, see https://github.com/eXist-db/exist/issues/6987");
+        matrix.section("After a sequence that was empty: a comparison on an attribute", "after-nothing-eq-attribute", "@a = \"hit\"", PathShapes.AFTER_NOTHING, """
+                empty-first            1 2 #2
+                empty-between          1 2 #2
+                typed-count            1 2 #2
+                """);
+        matrix.section("After a sequence that was empty: a comparison on a child", "after-nothing-eq-child", "t = \"hit\"", PathShapes.AFTER_NOTHING, """
+                empty-first            1 2 #2
+                empty-between          1 2 #2
+                typed-count            1 2 #2
+                """);
+        matrix.section("After a sequence that was empty: fn:matches on a child", "after-nothing-matches-child", "matches(t, \"hit\")", PathShapes.AFTER_NOTHING, """
+                empty-first            1 2 #2
+                empty-between          1 2 #2
+                typed-count            1 2 #2
+                """);
+        matrix.section("After a sequence that was empty: fn:contains on a child", "after-nothing-contains-child", "contains(t, \"hit\")", PathShapes.AFTER_NOTHING, """
+                empty-first            1 2 #2
+                empty-between          1 2 #2
+                typed-count            1 2 #2
+                """);
+        matrix.section("After a sequence that was empty: a quantified fn:matches", "after-nothing-quantified", "some $s in t satisfies matches($s, \"hit\")", PathShapes.AFTER_NOTHING, """
+                empty-first            1 2 #2
+                empty-between          1 2 #2
+                typed-count            1 2 #2
+                """);
+        matrix.section("After a sequence that was empty: range:eq on a child", "after-nothing-range-eq-child", "range:eq(t, \"hit\")", PathShapes.AFTER_NOTHING, """
+                empty-first            1 2 #2
+                empty-between          1 2 #2
+                typed-count            1 2 #2
+                """);
+        matrix.partialSection("After another collection: a comparison on an attribute", "elsewhere-eq-attribute", "@a = \"hit\"", PathShapes.ELSEWHERE, """
+                indexed-then-bare      1 1 2 2 3 3 #6
+                bare-then-indexed      1 1 2 2 3 3 #6
+                indexed-then-partial   1 1 2 2 3 3 #6
+                partial-then-indexed   1 1 2 2 3 3 #6
+                """);
+        matrix.partialSection("After another collection: fn:matches on an attribute", "elsewhere-matches-attribute", "matches(@a, \"^hit\")", PathShapes.ELSEWHERE, """
+                indexed-then-bare      1 1 2 2 3 3 #6
+                bare-then-indexed      1 1 2 2 3 3 #6
+                indexed-then-partial   1 1 2 2 3 3 #6
+                partial-then-indexed   1 1 2 2 3 3 #6
+                """);
+        matrix.partialSection("After another collection: range:eq on a child, which has no fallback", "elsewhere-range-eq-child", "range:eq(t, \"hit\")", PathShapes.ELSEWHERE, """
+                indexed-then-bare      1 2 3 #3
+                bare-then-indexed      1 2 3 #3
+                """);
         matrix.raw("""
                 (: Fast forms stay pre-selected, and forms that cannot be stay evaluated as written: the answers cannot show a
                    lost optimization. Without the optimizer, the fast group is on the known failures list. :)
@@ -583,6 +630,31 @@ class PathShapesTest {
                 narrowed           3 #1
                 for                1 2 #2
                 doc-filter         #0
+                """);
+        matrix.section("After a sequence that was empty: a comparison on an attribute", "after-nothing-eq-attribute", "@a = \"hit\"", PathShapes.AFTER_NOTHING, """
+                empty-first            1 2 #2
+                empty-between          1 2 #2
+                typed-count            1 2 #2
+                """);
+        matrix.section("After a sequence that was empty: a comparison on a child", "after-nothing-eq-child", "t = \"hit\"", PathShapes.AFTER_NOTHING, """
+                empty-first            1 2 #2
+                empty-between          1 2 #2
+                typed-count            1 2 #2
+                """);
+        matrix.section("After a sequence that was empty: fn:matches on a child", "after-nothing-matches-child", "matches(t, \"hit\")", PathShapes.AFTER_NOTHING, """
+                empty-first            1 2 #2
+                empty-between          1 2 #2
+                typed-count            1 2 #2
+                """);
+        matrix.section("After a sequence that was empty: fn:contains on a child", "after-nothing-contains-child", "contains(t, \"hit\")", PathShapes.AFTER_NOTHING, """
+                empty-first            1 2 #2
+                empty-between          1 2 #2
+                typed-count            1 2 #2
+                """);
+        matrix.section("After a sequence that was empty: a quantified fn:matches", "after-nothing-quantified", "some $s in t satisfies matches($s, \"hit\")", PathShapes.AFTER_NOTHING, """
+                empty-first            1 2 #2
+                empty-between          1 2 #2
+                typed-count            1 2 #2
                 """);
         return matrix;
     }
