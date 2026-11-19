@@ -23,7 +23,7 @@ package org.exist.client;
 
 import static org.exist.security.SecurityManager.DBA_USER;
 
-import org.exist.SystemProperties;
+import org.exist.ExistSystemProperties;
 import org.exist.backup.Backup;
 import org.exist.backup.CreateBackupDialog;
 import org.exist.backup.GuiRestoreServiceTaskListener;
@@ -241,7 +241,7 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
 
         final ConnectionDialog connectionDialog = new ConnectionDialog(null, true, defaultConnectionSettings, Boolean.parseBoolean(props.getProperty(InteractiveClient.LOCAL_MODE, InteractiveClient.LOCAL_MODE_DEFAULT)), Boolean.parseBoolean(props.getProperty(InteractiveClient.NO_EMBED_MODE, InteractiveClient.NO_EMBED_MODE_DEFAULT)));
 
-        connectionDialog.setTitle(SystemProperties.getInstance().getSystemProperty("product-name", "eXist-db") + " " + SystemProperties.getInstance().getSystemProperty("product-version", "unknown") + " Database Login");
+        connectionDialog.setTitle(ExistSystemProperties.getInstance().getExistSystemProperty(ExistSystemProperties.PROP_PRODUCT_NAME, "eXist-db") + " " + ExistSystemProperties.getInstance().getExistSystemProperty(ExistSystemProperties.PROP_PRODUCT_VERSION, "unknown") + " Database Login");
 
         connectionDialog.addDialogCompleteWithResponseCallback(connection -> {
             properties.setProperty(InteractiveClient.USER, connection.getUsername());
