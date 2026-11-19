@@ -21,15 +21,37 @@
  */
 package org.exist.numbering;
 
+import java.util.HashSet;
+import java.util.Set;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
 /**
  * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
  */
 class DLNBaseTest {
+
+    @Test
+    void hashCode_matchesForEqualIds() {
+        final DLN id = new DLN("1.2.3");
+        final DLN equalId = new DLN("1.2.3");
+
+        assertEquals(id, equalId);
+        assertEquals(id.hashCode(), equalId.hashCode());
+    }
+
+    @Test
+    void hashSet_findsParentId() {
+        final NodeId parentId = new DLN("1.2.3");
+        final NodeId returnedParentId = new DLN("1.2.3.4").getParentId();
+        final Set<NodeId> ids = new HashSet<>();
+        ids.add(parentId);
+
+        assertTrue(ids.contains(returnedParentId));
+    }
 
     @Test
     void DLNByteArrayConstructor_roundTrip() {
