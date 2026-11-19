@@ -426,6 +426,20 @@ class PathShapesTest {
                 declare %test:assertEquals("1 2 3 #3") function ps:anchored-matches-of-an-attribute() { ps:answer(collection($ps:COLLECTION || "/flat")//item[matches(@a, "it$")]) };
                 declare %test:assertEquals("1 2 3 #3") function ps:anchored-matches-ignoring-case() { ps:answer(collection($ps:COLLECTION || "/flat")//item[matches(t, "^HIT$", "i")]) };
                 """);
+        matrix.pendingCells("A let-bound sequence that was empty in an earlier evaluation: https://github.com/eXist-db/exist/issues/7058, fixed by https://github.com/eXist-db/exist/pull/7059",
+                "after-nothing-eq-attribute--empty-first", "after-nothing-eq-attribute--empty-between",
+                "after-nothing-eq-attribute--typed-count", "after-nothing-eq-child--empty-first",
+                "after-nothing-eq-child--empty-between", "after-nothing-eq-child--typed-count",
+                "after-nothing-matches-child--empty-first", "after-nothing-matches-child--empty-between",
+                "after-nothing-matches-child--typed-count", "after-nothing-contains-child--empty-first",
+                "after-nothing-contains-child--empty-between", "after-nothing-contains-child--typed-count",
+                "after-nothing-quantified--empty-first", "after-nothing-quantified--empty-between",
+                "after-nothing-quantified--typed-count", "after-nothing-range-eq-child--empty-first",
+                "after-nothing-range-eq-child--empty-between", "after-nothing-range-eq-child--typed-count");
+        matrix.pendingCells("A predicate that used the index leaves its nodes for the next evaluation: https://github.com/eXist-db/exist/issues/6846 and https://github.com/eXist-db/exist/issues/7034, fixed by https://github.com/eXist-db/exist/pull/7060",
+                "elsewhere-eq-attribute--indexed-then-bare", "elsewhere-eq-attribute--indexed-then-partial",
+                "elsewhere-matches-attribute--indexed-then-bare", "elsewhere-matches-attribute--indexed-then-partial");
+
         return matrix;
     }
 
@@ -656,6 +670,16 @@ class PathShapesTest {
                 empty-between          1 2 #2
                 typed-count            1 2 #2
                 """);
+        matrix.pendingCells("A let-bound sequence that was empty in an earlier evaluation: https://github.com/eXist-db/exist/issues/7058, fixed by https://github.com/eXist-db/exist/pull/7059",
+                "after-nothing-eq-attribute--empty-first", "after-nothing-eq-attribute--empty-between",
+                "after-nothing-eq-attribute--typed-count", "after-nothing-eq-child--empty-first",
+                "after-nothing-eq-child--empty-between", "after-nothing-eq-child--typed-count",
+                "after-nothing-matches-child--empty-first", "after-nothing-matches-child--empty-between",
+                "after-nothing-matches-child--typed-count", "after-nothing-contains-child--empty-first",
+                "after-nothing-contains-child--empty-between", "after-nothing-contains-child--typed-count",
+                "after-nothing-quantified--empty-first", "after-nothing-quantified--empty-between",
+                "after-nothing-quantified--typed-count");
+
         return matrix;
     }
 }
