@@ -3266,6 +3266,16 @@ public class XQueryContext implements BinaryValueManager, Context {
         return enableOptimizer;
     }
 
+    /**
+     * Switches the optimizer on or off for this context, as <code>declare option exist:optimize "enable=no"</code>
+     * does for a query.
+     *
+     * @param enabled true to optimize the query compiled in this context
+     */
+    public void setOptimizationsEnabled(final boolean enabled) {
+        this.enableOptimizer = enabled;
+    }
+
     @Override
     public void addOption(final String name, final String value) throws XPathException {
         if (staticOptions == null) {
