@@ -1370,4 +1370,10 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
             this.hasIndexOnQNames = false;
         }
     }
+
+    @Override
+    public void clearPreSelection() {
+        preselectResult = null;
+        LocationStep.forgetPreloadedData(contextStep);
+    }
 }

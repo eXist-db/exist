@@ -59,4 +59,13 @@ public interface Optimizable extends Expression {
     default boolean isFilter() {
         return true;
     }
+
+    /**
+     * Forgets what {@link #preSelect(Sequence, boolean)} found, and what it gave to the location steps, when the
+     * evaluation that used it is over. The expression is evaluated again, perhaps over a collection without the index
+     * or a sequence that is empty, and must then evaluate as written, not read the previous evaluation's nodes.
+     */
+    default void clearPreSelection() {
+        // an expression that keeps nothing between evaluations has nothing to forget
+    }
 }

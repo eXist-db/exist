@@ -140,75 +140,15 @@ public class Optimize extends AbstractPragma {
         }
 
         if (optimize) {
-            cachedContext = originalContext;
-            cachedTimestamp = originalContext == null ? 0 : originalContext.getState();
-            cachedOptimize = true;
-            NodeSet result = null;
-            for (int current = 0; current < optimizables.length; current++) {
-                // the first is pre-selected without the context, unless it isn't a filter and the context is the nodes
-                // a filter expression filters: a top-k search must look for its k in those
-                final boolean useContext = current > 0 || (contextStep == null && !optimizables[current].isFilter());
-                final NodeSet selection = optimizables[current].preSelect(contextSequence, useContext);
-                if (LOG.isTraceEnabled()) {
-                    LOG.trace("exist:optimize: pre-selection: {}", selection.getLength());
+            try {
+                return evalPreSelected(contextSequence, originalContext);
+            } finally {
+                // what the pre-selection left in the expressions and the step is for this evaluation only: the expression
+                // is evaluated again, perhaps over another collection, and then has to evaluate as written
+                for (final Optimizable optimizable : optimizables) {
+                    optimizable.clearPreSelection();
                 }
-                // determine the set of potential ancestors for which the predicate has to
-                // be re-evaluated to filter out wrong matches
-                final NodeSet ancestors;
-                if (selection.isEmpty()) {
-                    ancestors = selection;
-                } else if (contextStep == null || current > 0) {
-                    ancestors = selection.selectAncestorDescendant(contextSequence.toNodeSet(), NodeSet.ANCESTOR,
-                            true, contextId, true);
-                } else {
-//                    NodeSelector selector;
-                    final long start = System.currentTimeMillis();
-//                    selector = new AncestorSelector(selection, contextId, true, false);
-                    final StructuralIndex index = context.getBroker().getStructuralIndex();
-                    final QName ancestorQN = contextStep.getTest().getName();
-                    if (optimizables[current].optimizeOnSelf()) {
-                        ancestors = index.findAncestorsByTagName(ancestorQN.getNameType(), ancestorQN, Constants.SELF_AXIS,
-                                selection.getDocumentSet(), selection, contextId);
-                    } else {
-                        ancestors = index.findAncestorsByTagName(ancestorQN.getNameType(), ancestorQN,
-                                optimizables[current].optimizeOnChild() ? Constants.PARENT_AXIS : Constants.ANCESTOR_SELF_AXIS,
-                                selection.getDocumentSet(), selection, contextId);
-                    }
-                    if (LOG.isTraceEnabled()) {
-                        LOG.trace("Ancestor selection took {}", System.currentTimeMillis() - start);
-                        LOG.trace("Found: {}", ancestors.getLength());
-                    }
-                }
-                result = ancestors;
-                contextSequence = result;
-            }
-            if (contextVar != null && innerExpr instanceof final FilteredExpression filteredExpr) {
-                // innerExpr's source is a plain variable reference (e.g. `let $a := //SPEECH
-                // return $a[ft:query(., ...)]`). VariableReference#eval ignores whatever
-                // contextSequence it is passed and always returns the variable's full,
-                // unfiltered value, so delegating to innerExpr.eval(result, null) here would
-                // silently discard the pre-selected `result` NodeSet computed above and force
-                // the predicate to be re-evaluated across the full variable value -- see
-                // GH-873. Apply the predicates directly against `result` instead.
-                return filteredExpr.evalOnPreselected(result, result);
-            } else if (contextStep == null) {
-                return innerExpr.eval(result, null);
-            } else {
-                contextStep.setPreloadedData(result.getDocumentSet(), result);
-                if (LOG.isTraceEnabled()) {
-                    LOG.trace("exist:optimize: context after optimize: {}", result.getLength());
-                }
-                final long start = System.currentTimeMillis();
-                if (originalContext != null) {
-                    contextSequence = originalContext.filterDocuments(result);
-                } else {
-                    contextSequence = null;
-                }
-                final Sequence seq = innerExpr.eval(contextSequence, null);
-                if (LOG.isTraceEnabled()) {
-                    LOG.trace("exist:optimize: inner expr took {}; found: {}", System.currentTimeMillis() - start, seq.getItemCount());
-                }
-                return seq;
+                LocationStep.forgetPreloadedData(contextStep);
             }
         } else {
             if (LOG.isTraceEnabled()) {
@@ -218,6 +158,86 @@ public class Optimize extends AbstractPragma {
                 contextSequence = originalContext;
             }
             return innerExpr.eval(contextSequence, contextItem);
+        }
+    }
+
+    private NodeSet selectAncestors(final Optimizable optimizable, final int current, final NodeSet selection,
+            final Sequence contextSequence) throws XPathException {
+        final NodeSet ancestors;
+        if (selection.isEmpty()) {
+            ancestors = selection;
+        } else if (contextStep == null || current > 0) {
+            ancestors = selection.selectAncestorDescendant(contextSequence.toNodeSet(), NodeSet.ANCESTOR,
+                    true, contextId, true);
+        } else {
+            // NodeSelector selector;
+            final long start = System.currentTimeMillis();
+            // selector = new AncestorSelector(selection, contextId, true, false);
+            final StructuralIndex index = context.getBroker().getStructuralIndex();
+            final QName ancestorQN = contextStep.getTest().getName();
+            if (optimizable.optimizeOnSelf()) {
+                ancestors = index.findAncestorsByTagName(ancestorQN.getNameType(), ancestorQN, Constants.SELF_AXIS,
+                        selection.getDocumentSet(), selection, contextId);
+            } else {
+                ancestors = index.findAncestorsByTagName(ancestorQN.getNameType(), ancestorQN,
+                        optimizable.optimizeOnChild() ? Constants.PARENT_AXIS : Constants.ANCESTOR_SELF_AXIS,
+                        selection.getDocumentSet(), selection, contextId);
+            }
+            if (LOG.isTraceEnabled()) {
+                LOG.trace("Ancestor selection took {}", System.currentTimeMillis() - start);
+                LOG.trace("Found: {}", ancestors.getLength());
+            }
+        }
+        return ancestors;
+    }
+
+    private Sequence evalPreSelected(final Sequence initialContext, final NodeSet originalContext) throws XPathException {
+        Sequence contextSequence = initialContext;
+        cachedContext = originalContext;
+        cachedTimestamp = originalContext == null ? 0 : originalContext.getState();
+        cachedOptimize = true;
+        NodeSet result = null;
+        for (int current = 0; current < optimizables.length; current++) {
+            // the first is pre-selected without the context, unless it isn't a filter and the context is the nodes
+            // a filter expression filters: a top-k search must look for its k in those
+            final boolean useContext = current > 0 || (contextStep == null && !optimizables[current].isFilter());
+            final NodeSet selection = optimizables[current].preSelect(contextSequence, useContext);
+            if (LOG.isTraceEnabled()) {
+                LOG.trace("exist:optimize: pre-selection: {}", selection.getLength());
+            }
+            // determine the set of potential ancestors for which the predicate has to
+            // be re-evaluated to filter out wrong matches
+            final NodeSet ancestors = selectAncestors(optimizables[current], current, selection, contextSequence);
+            result = ancestors;
+            contextSequence = result;
+        }
+        if (contextVar != null && innerExpr instanceof final FilteredExpression filteredExpr) {
+            // innerExpr's source is a plain variable reference (e.g. `let $a := //SPEECH
+            // return $a[ft:query(., ...)]`). VariableReference#eval ignores whatever
+            // contextSequence it is passed and always returns the variable's full,
+            // unfiltered value, so delegating to innerExpr.eval(result, null) here would
+            // silently discard the pre-selected `result` NodeSet computed above and force
+            // the predicate to be re-evaluated across the full variable value -- see
+            // GH-873. Apply the predicates directly against `result` instead.
+            return filteredExpr.evalOnPreselected(result, result);
+        } else if (contextStep == null) {
+            return innerExpr.eval(result, null);
+        } else {
+            contextStep.setPreloadedData(result.getDocumentSet(), result);
+            if (LOG.isTraceEnabled()) {
+                LOG.trace("exist:optimize: context after optimize: {}", result.getLength());
+            }
+            final long start = System.currentTimeMillis();
+            if (originalContext != null) {
+                contextSequence = originalContext.filterDocuments(result);
+            } else {
+                contextSequence = null;
+            }
+            final Sequence seq = innerExpr.eval(contextSequence, null);
+            if (LOG.isTraceEnabled()) {
+                LOG.trace("exist:optimize: inner expr took {}; found: {}", System.currentTimeMillis() - start, seq.getItemCount());
+            }
+            return seq;
         }
     }
 

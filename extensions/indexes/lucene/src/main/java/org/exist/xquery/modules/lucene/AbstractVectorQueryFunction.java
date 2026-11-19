@@ -270,4 +270,10 @@ abstract class AbstractVectorQueryFunction extends BasicFunction implements Opti
         }
         return false;
     }
+
+    @Override
+    public void clearPreSelection() {
+        preselectResult = null;
+        preselectedExactly = false;
+    }
 }

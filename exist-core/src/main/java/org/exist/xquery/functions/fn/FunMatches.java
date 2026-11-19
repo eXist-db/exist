@@ -744,4 +744,10 @@ public final class FunMatches extends Function implements BoundSequenceOptimizab
             preselectResult = null;
         }
     }
+
+    @Override
+    public void clearPreSelection() {
+        preselectResult = null;
+        LocationStep.forgetPreloadedData(contextStep);
+    }
 }

@@ -436,4 +436,9 @@ public class FieldLookup extends Function implements Optimizable, IndexUseReport
     public boolean hasUsedIndex() {
         return true; // FieldLookup is only used when range field optimization was applied
     }
+
+    @Override
+    public void clearPreSelection() {
+        preselectResult = null;
+    }
 }
