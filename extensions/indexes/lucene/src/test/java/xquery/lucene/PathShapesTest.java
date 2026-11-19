@@ -48,7 +48,8 @@ class PathShapesTest {
     static Matrix lucene() {
         final Matrix matrix = new Matrix("lucene")
                 .index("<lucene><text qname=\"item\"><field name=\"ps-title\" expression=\"*:t\"/><vector-field name=\"ps-vector\" expression=\"*:embedding\" dimension=\"3\" similarity=\"cosine\" encoding=\"text\"/></text><text qname=\"other\"><field name=\"ps-title\" expression=\"*:t\"/><vector-field name=\"ps-vector\" expression=\"*:embedding\" dimension=\"3\" similarity=\"cosine\" encoding=\"text\"/></text><text qname=\"sec\"><field name=\"ps-title\" expression=\"*:t\"/><vector-field name=\"ps-vector\" expression=\"*:embedding\" dimension=\"3\" similarity=\"cosine\" encoding=\"text\"/></text><text qname=\"part\"><field name=\"ps-title\" expression=\"*:t\"/><vector-field name=\"ps-vector\" expression=\"*:embedding\" dimension=\"3\" similarity=\"cosine\" encoding=\"text\"/></text><text qname=\"h:body\"><field name=\"ps-title\" expression=\"*:t\"/><vector-field name=\"ps-vector\" expression=\"*:embedding\" dimension=\"3\" similarity=\"cosine\" encoding=\"text\"/></text><text qname=\"t\"/><text qname=\"sub\"><field name=\"ps-sub-title\" expression=\"st\"/><vector-field name=\"ps-sub-vector\" expression=\"embedding\" dimension=\"4\" similarity=\"cosine\" encoding=\"text\"/></text><text qname=\"fv\"><vector-field name=\"ps-fast-vector\" dimension=\"6\" similarity=\"cosine\" encoding=\"text\"/></text><text qname=\"@a\"><field name=\"ps-title\" expression=\".\"/></text><text qname=\"@v\"><vector-field name=\"ps-attribute-vector\" expression=\".\" dimension=\"5\" similarity=\"cosine\" encoding=\"text\"/></text></lucene>")
-                .withVectors();
+                .withVectors()
+                .withStateCollections("<lucene><text qname=\"item\"/></lucene>");
 
         matrix.section("ft:query", "query", "ft:query(., \"hit\")", PathShapes.STEP, """
                 desc                    1 2 3 #3
@@ -392,6 +393,34 @@ class PathShapesTest {
                 attribute-wildcard     1 2 3 #3
                 attribute-vector       1 2 3 #3
                 attribute-vector-desc  1 2 3 #3
+                """);
+        matrix.section("After a sequence that was empty: ft:query", "after-nothing-query", "ft:query(., \"hit\")", PathShapes.AFTER_NOTHING, """
+                empty-first            1 2 #2
+                empty-between          1 2 #2
+                typed-count            1 2 #2
+                """);
+        matrix.section("After a sequence that was empty: ft:query-field", "after-nothing-field", "ft:query-field(\"ps-title\", \"hit\")", PathShapes.AFTER_NOTHING, """
+                empty-first            1 2 #2
+                empty-between          1 2 #2
+                typed-count            1 2 #2
+                """);
+        matrix.section("After a sequence that was empty: ft:query-vector", "after-nothing-vector", "ft:query-vector(., [1, 0, 0], 3)", PathShapes.AFTER_NOTHING, """
+                empty-first            1 2 #2
+                empty-between          1 2 #2
+                typed-count            1 2 #2
+                """);
+        matrix.section("After a sequence that was empty: ft:query-field-vector", "after-nothing-field-vector", "ft:query-field-vector(\"ps-vector\", [1, 0, 0], 3)", PathShapes.AFTER_NOTHING, """
+                empty-first            1 2 #2
+                empty-between          1 2 #2
+                typed-count            1 2 #2
+                """);
+        matrix.partialSection("After another collection: ft:query, which has no fallback", "elsewhere-query", "ft:query(., \"hit\")", PathShapes.ELSEWHERE, """
+                indexed-then-bare      1 2 3 #3
+                bare-then-indexed      1 2 3 #3
+                """);
+        matrix.partialSection("After another collection: ft:query-field, which has no fallback", "elsewhere-field", "ft:query-field(\"ps-title\", \"hit\")", PathShapes.ELSEWHERE, """
+                indexed-then-bare      1 2 3 #3
+                bare-then-indexed      1 2 3 #3
                 """);
         matrix.raw("""
                 (: Fast forms stay pre-selected, and forms that cannot be stay evaluated as written: the answers cannot show a

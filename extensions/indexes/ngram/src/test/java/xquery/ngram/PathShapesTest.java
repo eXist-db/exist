@@ -48,7 +48,8 @@ class PathShapesTest {
     static Matrix ngram() {
         final Matrix matrix = new Matrix("ngram")
                 .imports("import module namespace ngram=\"http://exist-db.org/xquery/ngram\";")
-                .index("<ngram qname=\"item\"/><ngram qname=\"other\"/><ngram qname=\"sec\"/><ngram qname=\"part\"/><ngram qname=\"h:body\"/><ngram qname=\"@a\"/><ngram qname=\"t\"/>");
+                .index("<ngram qname=\"item\"/><ngram qname=\"other\"/><ngram qname=\"sec\"/><ngram qname=\"part\"/><ngram qname=\"h:body\"/><ngram qname=\"@a\"/><ngram qname=\"t\"/>")
+                .withStateCollections("<ngram qname=\"item\"/>");
 
         matrix.section("ngram:contains", "ngram", "ngram:contains(., \"hit\")", PathShapes.STEP, """
                 desc                    1 2 3 #3
@@ -149,6 +150,15 @@ class PathShapesTest {
                 narrowed           3 #1
                 for                1 2 #2
                 doc-filter         #0
+                """);
+        matrix.section("After a sequence that was empty: ngram:contains", "after-nothing-contains", "ngram:contains(., \"hit\")", PathShapes.AFTER_NOTHING, """
+                empty-first            1 2 #2
+                empty-between          1 2 #2
+                typed-count            1 2 #2
+                """);
+        matrix.partialSection("After another collection: ngram:contains, which has no fallback", "elsewhere-contains", "ngram:contains(., \"hit\")", PathShapes.ELSEWHERE, """
+                indexed-then-bare      1 2 3 #3
+                bare-then-indexed      1 2 3 #3
                 """);
         matrix.raw("""
                 (: Fast forms stay pre-selected, and forms that cannot be stay evaluated as written: the answers cannot show a
