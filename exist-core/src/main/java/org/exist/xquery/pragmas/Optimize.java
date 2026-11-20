@@ -117,10 +117,11 @@ public class Optimize extends AbstractPragma {
                 contextSequence = contextVar.eval(contextSequence, null);
             }
             // check if all Optimizable expressions signal that they can indeed optimize
-            // in the current context
+            // in the current context. Every Optimizable trivially can for an empty context,
+            // and pre-selecting over it leaves state that empties later evaluations (GH-7058).
             if (useCached) {
                 optimize = cachedOptimize;
-            } else if (optimizables != null && contextSequence != null) {
+            } else if (optimizables != null && contextSequence != null && !contextSequence.isEmpty()) {
                 for (final Optimizable optimizable : optimizables) {
                     final Sequence canBeOptimized = optimizable.canOptimizeSequence(contextSequence);
                     if (
