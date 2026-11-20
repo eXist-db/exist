@@ -46,7 +46,7 @@
     </scm>
 
     <properties>
-        <!-- set to true by the onnx-model profile: a missing model then fails the model tests instead of skipping them -->
+        <!-- set to true by the vector profile: a missing model then fails the model tests instead of skipping them -->
         <exist.vector.model.required>false</exist.vector.model.required>
     </properties>
 
@@ -216,7 +216,7 @@
 
     <profiles>
         <profile>
-            <id>onnx-model</id>
+            <id>vector</id>
             <properties>
                 <exist.vector.model.required>true</exist.vector.model.required>
             </properties>

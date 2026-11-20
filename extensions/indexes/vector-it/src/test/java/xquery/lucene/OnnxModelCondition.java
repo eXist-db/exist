@@ -48,7 +48,7 @@ final class OnnxModelCondition implements ExecutionCondition {
             return ConditionEvaluationResult.enabled("ONNX model found in " + modelDir);
         }
 
-        final String reason = "ONNX model not found in " + modelDir + " - run with -Ponnx-model";
+        final String reason = "ONNX model not found in " + modelDir + " - run with -Pvector";
         if (Boolean.getBoolean(REQUIRED_PROPERTY)) {
             throw new ExtensionConfigurationException(reason + " (required, " + REQUIRED_PROPERTY + " is set)");
         }

@@ -309,5 +309,24 @@ To disable or further tweak these features edit the relevant parts of the `Docke
 As always when using the latest and greatest, YMMV. 
 Feedback about real world experiences with these features in connection with eXist-db is very much welcome.
 
-**Vector search (SIMD)**  
-Neither the default image nor the debug image set `--add-modules jdk.incubator.vector` in `JAVA_TOOL_OPTIONS` (see FIXME in `Dockerfile-DEBUG`). On JDK 24+, also enable native access to avoid restricted-method warnings from vectorized Lucene paths. To use vector search with SIMD acceleration, build a custom image that adds both options to a JDK 16+ base, or pass them when running the container (e.g. `docker run -e JAVA_TOOL_OPTIONS="--add-modules jdk.incubator.vector --enable-native-access=ALL-UNNAMED ..." existdb/existdb:debug`).
+### Vector embeddings
+`-Pvector` is the single switch for vector embedding support across the build: it downloads the test model so the vector embedding tests run (and fail rather than skip without it), makes the distribution (archives and macOS app) ship and enable the models and gives its `bin/` scripts the SIMD options, and here builds a separate image (tags `latest-vector` / `debug-vector`):
+
+* the `exist-vector` extension (ONNX Runtime + tokenizers) is added and the `vector:` XQuery module enabled
+* every model in `vector.models` is downloaded at build time into `/exist/onnx-models/<id>` and registered in `conf.xml` `<vector-models>`, so `vector-field` definitions and `vector:embed("…", "<id>")` can refer to it by id (`vector:models()` lists them)
+* `JAVA_TOOL_OPTIONS` gains `--add-modules=jdk.incubator.vector --enable-native-access=ALL-UNNAMED` for SIMD
+
+Models are passed as their download locations. `vector.models` is a whitespace-separated list of `id|dimension|baseUrl` specs; `baseUrl` must serve `model.onnx` and `tokenizer.json`. The default is `all-MiniLM-L6-v2` (384 dimensions):
+
+```bash
+mvn -Pdocker,vector -DskipTests -Ddependency-check.skip=true clean package
+
+# several models
+mvn -Pdocker,vector -DskipTests -Ddependency-check.skip=true clean package \
+  -Dvector.models="all-MiniLM-L6-v2|384|https://huggingface.co/onnx-models/all-MiniLM-L6-v2-onnx/resolve/main
+                   my-model|768|https://models.example.org/my-model"
+```
+
+Downloads are cached in `~/.m2/onnx-models/<id>` (override with `-Dvector.cache.dir=…`). The cache is keyed by id only: after changing an id's download location, delete its cache directory. Models whose ONNX graph uses external weight files (`model.onnx_data`) are not supported.
+
+The default image does not set the SIMD options. To use them with another image, pass them when running the container (e.g. `docker run -e JAVA_TOOL_OPTIONS="--add-modules=jdk.incubator.vector --enable-native-access=ALL-UNNAMED ..." existdb/existdb:debug`).

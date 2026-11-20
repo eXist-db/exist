@@ -70,6 +70,11 @@
         <docker.vendor>existdb</docker.vendor>
         <docker.licenses>LGPL-2.1-or-later</docker.licenses>
         <docker.title>existdb</docker.title>
+
+        <!-- vector embeddings (`vector` profile): the models and conf.xml come from exist-distribution;
+             docker.vector.copy and vector.java.opts (exist-parent) are filtered into both Dockerfiles
+             and are empty for the default image -->
+        <docker.vector.copy/>
     </properties>
 
     <dependencies>
@@ -344,4 +349,28 @@
 
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <!-- Image with vector embedding support. Shares the `vector` id with exist-parent and
+                 exist-distribution, which ship the vector.models and enable them in conf.xml; here
+                 exist-vector goes into the uber jar (profile dependencies of the exist-distribution
+                 pom are not inherited), the models are copied in and vector.java.opts (SIMD) set.
+                 Tags default to latest-vector / debug-vector so it never replaces the default image. -->
+            <id>vector</id>
+            <properties>
+                <docker.tag>latest-vector</docker.tag>
+                <docker.debug.tag>debug-vector</docker.debug.tag>
+                <docker.vector.copy>COPY onnx-models /exist/onnx-models</docker.vector.copy>
+            </properties>
+            <dependencies>
+                <dependency>
+                    <groupId>${project.groupId}</groupId>
+                    <artifactId>exist-vector</artifactId>
+                    <version>${project.version}</version>
+                    <scope>runtime</scope>
+                </dependency>
+            </dependencies>
+        </profile>
+    </profiles>
 </project>

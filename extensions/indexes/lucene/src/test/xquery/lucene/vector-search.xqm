@@ -769,7 +769,7 @@ function vs:embedding-http-no-key-text-still-searchable() {
 
 (:~
  : embedding=local with real model: text embedded at index time, vector search finds hits.
- : Covered by VectorSearchEmbeddingIT (vector-it), which runs with -Ponnx-model.
+ : Covered by VectorSearchEmbeddingIT (vector-it), which runs with -Pvector.
  : XQSuite: pending so it does not fail when model is absent.
  :)
 declare

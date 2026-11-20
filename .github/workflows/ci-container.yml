@@ -11,6 +11,13 @@ on:
   schedule:
       - cron: "0 6 * * *"
   workflow_dispatch:
+    inputs:
+      vector_models:
+        description: >-
+          Models for the vector image job: whitespace-separated id|dimension|baseUrl specs
+          (baseUrl serves model.onnx and tokenizer.json). Empty = profile default (all-MiniLM-L6-v2).
+        required: false
+        default: ''
 
 # Prevent race for two pushes to develop on the shared tag.
 # Build B could overwrite A's staging image between A's push and A's promote.
@@ -247,3 +254,68 @@ jobs:
       #     DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
       #   run: mvn -q -Ddocker.tag=experimental -Ddocker.username=$DOCKER_USERNAME -Ddocker.password=$DOCKER_PASSWORD docker:build docker:push
       #   working-directory: ./exist-docker
+
+  # Image with Lucene vector embedding support (`vector` profile): models are
+  # downloaded at build time from their download locations and baked in. Build and test only;
+  # nothing is pushed. Runs nightly and on manual dispatch, where the models can be chosen.
+  vector:
+    name: Test Vector Container Image
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    if: github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
+    env:
+      VECTOR_MODELS: ${{ inputs.vector_models }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 1
+      - name: Set up JDK 21
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Make BuildKit default
+        uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069  # v4.4.1
+      - uses: ./.github/actions/maven-cache
+      - uses: ./.github/actions/maven-github-settings
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Cache vector models
+        uses: actions/cache@v5
+        with:
+          path: ~/.m2/onnx-models
+          key: onnx-models-${{ hashFiles('exist-distribution/pom.xml') }}-${{ inputs.vector_models }}
+          restore-keys: onnx-models-
+      - name: Install bats
+        run: sudo apt-get install bats
+      - name: Build distribution and local vector image
+        timeout-minutes: 35
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          args=()
+          if [[ -n "${VECTOR_MODELS// }" ]]; then
+            args+=("-Dvector.models=${VECTOR_MODELS}")
+          fi
+          mvn -V -B --no-transfer-progress \
+            -Pdocker,vector,skip-build-dist-archives \
+            -DskipTests \
+            "${args[@]}" \
+            clean package
+      - name: Start exist-ci container
+        run: |
+          docker image ls existdb/existdb
+          docker tag existdb/existdb:latest-vector existdb/existdb:ci
+          docker run -dit -p 8080:8080 --name exist-ci --rm existdb/existdb:ci
+          sleep 35s
+      - name: Run tests
+        run: bats --tap exist-docker/src/test/bats/*.bats exist-docker/src/test/bats-vector/*.bats
+      - name: Capture container logs on failure
+        if: failure()
+        run: docker logs exist-ci > exist.log 2>&1 || true
+      - name: Upload logs artifact
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: exist-vector-failed-log
+          path: exist.log

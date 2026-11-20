@@ -181,6 +181,15 @@
              generating an additional conf.xml (needed for modules with non-standard output
              paths, e.g. expathrepo, or modules that manage their own full execution set). -->
         <skip.conf.fixture.profile>false</skip.conf.fixture.profile>
+
+        <!-- vector embeddings, switched on by the `vector` profile (shared by exist-distribution and exist-docker).
+             vector.models: whitespace-separated `id|dimension|baseUrl` specs; baseUrl must serve model.onnx and
+             tokenizer.json. Downloads are cached in vector.cache.dir/<id>.
+             vector.java.opts: JVM options for the Lucene SIMD vector paths, set in launch scripts and the image. -->
+        <vector.skip>true</vector.skip>
+        <vector.models>all-MiniLM-L6-v2|384|https://huggingface.co/onnx-models/all-MiniLM-L6-v2-onnx/resolve/main</vector.models>
+        <vector.cache.dir>${user.home}/.m2/onnx-models</vector.cache.dir>
+        <vector.java.opts/>
     </properties>
 
     <dependencyManagement>
@@ -1739,7 +1748,11 @@
         </profile>
 
         <profile>
-            <id>onnx-model</id>
+            <id>vector</id>
+            <properties>
+                <vector.skip>false</vector.skip>
+                <vector.java.opts>--add-modules=jdk.incubator.vector --enable-native-access=ALL-UNNAMED</vector.java.opts>
+            </properties>
             <build>
                 <plugins>
                     <plugin>
