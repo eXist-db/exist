@@ -31,6 +31,7 @@ COPY etc /exist/etc
 COPY lib /exist/lib
 COPY logs /exist/logs
 COPY schema /exist/schema
+${docker.vector.copy}
 
 # Build-time metadata as defined by OCI
 # https://github.com/opencontainers/image-spec/blob/main/annotations.md
@@ -56,10 +57,10 @@ ARG JVM_JDWP_SUSPEND
 ENV EXIST_HOME=/exist
 ENV CLASSPATH=/exist/lib/${exist.uber.jar.filename}
 
-# FIXME: For vector search SIMD acceleration, add --add-modules jdk.incubator.vector
-#        and --enable-native-access=ALL-UNNAMED to JAVA_TOOL_OPTIONS.
-# Omitted by default because it can cause "Unrecognized option" in some environments; build a custom image or pass at run time if needed.
+# Vector search SIMD (--add-modules=jdk.incubator.vector --enable-native-access=ALL-UNNAMED)
+# is set only in the `vector` profile image (vector.java.opts); empty otherwise.
 ENV JAVA_TOOL_OPTIONS="\
+  ${vector.java.opts} \
   -Dfile.encoding=UTF8 \
   -Dsun.jnu.encoding=UTF-8 \
   -Djava.awt.headless=true \

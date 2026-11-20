@@ -103,7 +103,7 @@ if NOT "%CLASSPATH_PREFIX%" == "" set CLASSPATH=%CLASSPATH_PREFIX%;%CLASSPATH%
 set "CLASSPATH=%BASEDIR%\etc;%REPO%\*"
 if NOT "%CLASSPATH_PREFIX%" == "" set "CLASSPATH=%CLASSPATH_PREFIX%;%CLASSPATH%"
 
-%JAVACMD% %JAVA_OPTS% -Xms128m -XX:+UseNUMA -XX:+UseZGC -XX:+UseStringDeduplication ^
+%JAVACMD% %JAVA_OPTS% @VECTOR_JAVA_OPTS@ -Xms128m -XX:+UseNUMA -XX:+UseZGC -XX:+UseStringDeduplication ^
     -Dexist.autodeploy.dir="%BASEDIR%\autodeploy" ^
     -Dexist.configurationFile="%BASEDIR%\etc\conf.xml" ^
     -Dexist.home="%BASEDIR%" ^
