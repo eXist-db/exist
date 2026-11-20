@@ -898,6 +898,345 @@ function ser:serialize-html-5-needs-escape-elements() {
     => serialize($ser:opt-map-html5)
 };
 
+(: test for https://github.com/eXist-db/exist/issues/6587 :)
+declare
+    %test:assertEquals('<!DOCTYPE html><html><head n="1"><meta charset="UTF-8"></head><body></body></html>')
+function ser:serialize-html-5-head-attribute() {
+    <html><head n="1"/><body/></html>
+    => serialize($ser:opt-map-html5)
+};
+
+(: test for https://github.com/eXist-db/exist/issues/6587 :)
+declare
+    %test:assertEquals('<!DOCTYPE html><html><head n="1"><meta charset="UTF-8"></head><body></body></html>')
+function ser:serialize-html-version-5-head-attribute() {
+    (: in the element form html-version is absent, so version selects the HTML version;
+       in the map form html-version defaults to 5 and version has no effect :)
+    <html><head n="1"/><body/></html>
+    => serialize(
+        <output:serialization-parameters>
+            <output:method value="html"/>
+            <output:version value="5.0"/>
+        </output:serialization-parameters>)
+};
+
+(: test for https://github.com/eXist-db/exist/issues/6587 :)
+declare
+    %test:assertEquals('<!DOCTYPE html><html><head data-template="test:getHead" n="2"><meta charset="UTF-8"><title>t</title></head><body></body></html>')
+function ser:serialize-html-5-head-attributes-and-content() {
+    <html><head data-template="test:getHead" n="2"><title>t</title></head><body/></html>
+    => serialize($ser:opt-map-html5)
+};
+
+(: test for https://github.com/eXist-db/exist/issues/6587 :)
+declare
+    %test:assertEquals('<!DOCTYPE html><html><head n="1"><meta charset="UTF-8"><link rel="icon" href="i.png"><title>t</title></head><body></body></html>')
+function ser:serialize-html-5-head-attribute-duplicate-meta-after-void() {
+    (: the meta follows a void element, which HTML5 ends without an end tag :)
+    <html>
+        <head n="1"><link rel="icon" href="i.png"/><meta http-equiv="Content-Type" content="text/html; charset=utf-8"/><title>t</title></head>
+        <body/>
+    </html>
+    => serialize($ser:opt-map-html5)
+};
+
+(: test for https://github.com/eXist-db/exist/issues/6587 :)
+declare
+    %test:assertEquals('<!DOCTYPE html><html><head n="1"><meta charset="UTF-8"><noscript><meta http-equiv="Content-Type" content="text/html; charset=utf-8"></noscript></head><body></body></html>')
+function ser:serialize-html-5-head-nested-meta-kept() {
+    (: only a meta child of the head is replaced by the generated meta, see Serialization 3.1, 7.4.13 :)
+    <html>
+        <head n="1"><noscript><meta http-equiv="Content-Type" content="text/html; charset=utf-8"/></noscript></head>
+        <body/>
+    </html>
+    => serialize($ser:opt-map-html5)
+};
+
+(: test for https://github.com/eXist-db/exist/issues/6587 :)
+declare
+    %test:assertEquals('<!DOCTYPE html><html><head n="1"><meta charset="UTF-8"><meta name="viewport" content="w"><title>t</title></head><body></body></html>')
+function ser:serialize-html-5-head-attribute-duplicate-meta() {
+    <html>
+        <head n="1"><meta charset="UTF-8"/><meta name="viewport" content="w"/><title>t</title></head>
+        <body/>
+    </html>
+    => serialize($ser:opt-map-html5)
+};
+
+(: test for https://github.com/eXist-db/exist/issues/6587 :)
+declare
+    %test:assertEquals('<!DOCTYPE html><html><head n="1"></head><body></body></html>')
+function ser:serialize-html-5-head-attribute-no-content-type() {
+    <html><head n="1"/><body/></html>
+    => serialize(map:merge(($ser:opt-map-html5, map { "include-content-type": false() })))
+};
+
+(: the meta is written when the start tag of the head is closed, so it comes before any first child :)
+declare
+    %test:assertEquals('<!DOCTYPE html><html><head><meta charset="UTF-8"><!-- c --><title>t</title></head><body></body></html>')
+function ser:serialize-html-5-head-comment-first() {
+    <html><head><!-- c --><title>t</title></head><body/></html>
+    => serialize($ser:opt-map-html5)
+};
+
+declare
+    %test:assertEquals('<!DOCTYPE html><html><head><meta charset="UTF-8"><!--?pi x?--><title>t</title></head><body></body></html>')
+function ser:serialize-html-5-head-processing-instruction-first() {
+    (: HTML5 has no processing instructions, they are written as comments :)
+    <html><head><?pi x?><title>t</title></head><body/></html>
+    => serialize($ser:opt-map-html5)
+};
+
+declare
+    %test:assertEquals('<!DOCTYPE html><html><head><meta charset="UTF-8">t</head><body></body></html>')
+function ser:serialize-html-5-head-text-first() {
+    <html><head>t</head><body/></html>
+    => serialize($ser:opt-map-html5)
+};
+
+declare
+    %test:assertEquals('<!DOCTYPE html><html><head xmlns:x="urn:x"><meta charset="UTF-8"><title>t</title></head><body></body></html>')
+function ser:serialize-html-5-head-namespace-declaration() {
+    <html><head xmlns:x="urn:x"><title>t</title></head><body/></html>
+    => serialize($ser:opt-map-html5)
+};
+
+declare
+    %test:assertEquals('<!DOCTYPE html><html><head xmlns:x="urn:x" x:a="1"><meta charset="UTF-8"><title>t</title></head><body></body></html>')
+function ser:serialize-html-5-head-prefixed-attribute() {
+    <html><head xmlns:x="urn:x" x:a="1"><title>t</title></head><body/></html>
+    => serialize($ser:opt-map-html5)
+};
+
+(: a void element before a duplicate charset meta: the meta is still a child of the head and dropped :)
+declare
+    %test:assertEquals('<!DOCTYPE html><html><head><meta charset="UTF-8"><link rel="icon" href="i.png"><title>t</title></head><body></body></html>')
+function ser:serialize-html-5-head-charset-meta-after-void() {
+    <html><head><link rel="icon" href="i.png"/><meta charset="utf-8"/><title>t</title></head><body/></html>
+    => serialize($ser:opt-map-html5)
+};
+
+declare
+    %test:assertEquals('<!DOCTYPE html><html><head><meta charset="UTF-8" /><link rel="icon" href="i.png" /><title>t</title></head><body></body></html>')
+function ser:serialize-xhtml-5-head-charset-meta-after-void() {
+    <html><head><link rel="icon" href="i.png"/><meta charset="utf-8"/><title>t</title></head><body/></html>
+    => serialize(map { "method": "xhtml" })
+};
+
+declare
+    %test:assertEquals('<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><link rel="icon" href="i.png"><title>t</title></head><body></body></html>')
+function ser:serialize-html-4-head-charset-meta-after-void() {
+    <html><head><link rel="icon" href="i.png"/><meta charset="utf-8"/><title>t</title></head><body/></html>
+    => serialize(map { "method": "html", "html-version": 4.01 })
+};
+
+(: the generated meta is written right after the start tag of the head, it is not indented :)
+declare
+    %test:assertEquals('<!DOCTYPE html>&#10;<html>&#10;    <head><meta charset="UTF-8"></head>&#10;    <body></body>&#10;</html>')
+function ser:serialize-html-5-empty-head-indent() {
+    <html><head/><body/></html>
+    => serialize(map:merge(($ser:opt-map-html5, map { "indent": true() })))
+};
+
+declare
+    %test:assertEquals('<!DOCTYPE html>&#10;<html>&#10;    <head><meta charset="UTF-8">&#10;        <title>t</title>&#10;    </head>&#10;    <body></body>&#10;</html>')
+function ser:serialize-html-5-head-indent() {
+    <html><head><title>t</title></head><body/></html>
+    => serialize(map:merge(($ser:opt-map-html5, map { "indent": true() })))
+};
+
+(: only a head in no namespace or the XHTML namespace is an HTML head, see Serialization 3.1, 6 and 7.1,
+   and only the head of a page gets the meta: the first head child of an html element, or a head on its own :)
+declare
+    %test:assertEquals('<TEI xmlns="http://www.tei-c.org/ns/1.0"><text><body><div><head>One</head></div><div><head>Two</head></div></body></text></TEI>')
+function ser:serialize-html-5-tei-head-no-meta() {
+    <TEI xmlns="http://www.tei-c.org/ns/1.0"><text><body><div><head>One</head></div><div><head>Two</head></div></body></text></TEI>
+    => serialize($ser:opt-map-html5)
+};
+
+declare
+    %test:assertEquals('<TEI xmlns="http://www.tei-c.org/ns/1.0"><text><body><div><head>One</head></div></body></text></TEI>')
+function ser:serialize-xhtml-5-tei-head-no-meta() {
+    <TEI xmlns="http://www.tei-c.org/ns/1.0"><text><body><div><head>One</head></div></body></text></TEI>
+    => serialize(map { "method": "xhtml" })
+};
+
+declare
+    %test:assertEquals('<!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml"><head><meta charset="UTF-8" /></head><body></body></html>')
+function ser:serialize-xhtml-5-xhtml-namespace-head() {
+    <html xmlns="http://www.w3.org/1999/xhtml"><head/><body/></html>
+    => serialize(map { "method": "xhtml" })
+};
+
+declare
+    %test:assertEquals('<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body><svg xmlns="http://www.w3.org/2000/svg"><head/></svg></body></html>')
+function ser:serialize-html-5-foreign-head-no-meta() {
+    <html><head/><body><svg xmlns="http://www.w3.org/2000/svg"><head/></svg></body></html>
+    => serialize($ser:opt-map-html5)
+};
+
+declare
+    %test:assertEquals('<doc><section><head>A</head></section></doc>')
+function ser:serialize-html-5-section-head-no-meta() {
+    <doc><section><head>A</head></section></doc>
+    => serialize($ser:opt-map-html5)
+};
+
+(: only the first two levels are checked: an html that is not the outermost element is not a page :)
+declare
+    %test:assertEquals('<div><html><head></head></html></div>')
+function ser:serialize-html-5-nested-html-no-meta() {
+    <div><html><head/></html></div>
+    => serialize($ser:opt-map-html5)
+};
+
+(: a head on its own is the head of an HTML fragment :)
+declare
+    %test:assertEquals('<head><meta charset="UTF-8"><title>t</title></head>')
+function ser:serialize-html-5-head-fragment() {
+    <head><title>t</title></head>
+    => serialize($ser:opt-map-html5)
+};
+
+declare
+    %test:assertEquals('<head><meta charset="UTF-8" /><title>t</title></head>')
+function ser:serialize-xhtml-5-head-fragment() {
+    <head><title>t</title></head>
+    => serialize(map { "method": "xhtml" })
+};
+
+declare
+    %test:assertEquals('<head><meta charset="UTF-8"></head> <head><meta charset="UTF-8"></head>')
+function ser:serialize-html-5-head-fragments() {
+    (<head/>, <head/>)
+    => serialize($ser:opt-map-html5)
+};
+
+declare
+    %test:assertEquals('<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body><div><head>A</head></div></body></html>')
+function ser:serialize-html-5-head-in-body-no-meta() {
+    <html><head/><body><div><head>A</head></div></body></html>
+    => serialize($ser:opt-map-html5)
+};
+
+declare
+    %test:assertEquals('<!DOCTYPE html><html><head><meta charset="UTF-8"></head><head n="2"><meta charset="utf-8"></head><body></body></html>')
+function ser:serialize-html-5-second-head-no-meta() {
+    (: a second head is invalid HTML, it is written as it is :)
+    <html><head/><head n="2"><meta charset="utf-8"/></head><body/></html>
+    => serialize($ser:opt-map-html5)
+};
+
+declare
+    %test:assertEquals('<!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml"><head><meta charset="UTF-8" /></head><body><div><head>A</head></div></body></html>')
+function ser:serialize-xhtml-5-head-in-body-no-meta() {
+    <html xmlns="http://www.w3.org/1999/xhtml"><head/><body><div><head>A</head></div></body></html>
+    => serialize(map { "method": "xhtml" })
+};
+
+(: test for https://github.com/eXist-db/exist/issues/6587 :)
+declare
+    %test:assertEquals('<html><head n="1"><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>t</title></head><body></body></html>')
+function ser:serialize-html-4-head-attribute() {
+    <html><head n="1"><title>t</title></head><body/></html>
+    => serialize(map { "method": "html", "html-version": 4.01 })
+};
+
+(: test for https://github.com/eXist-db/exist/issues/6587 :)
+declare
+    %test:assertEquals('<!DOCTYPE html><html><head n="1"><meta charset="UTF-8" /><title>t</title></head><body></body></html>')
+function ser:serialize-xhtml-5-head-attribute() {
+    <html><head n="1"><title>t</title></head><body/></html>
+    => serialize(map { "method": "xhtml" })
+};
+
+(: with HTML5, the xhtml method also writes the charset form of the meta, and drops an http-equiv one,
+   see Serialization 4.0 draft, 6.1.18 :)
+declare
+    %test:assertEquals('<!DOCTYPE html><html><head><meta charset="UTF-8" /><title>t</title></head><body></body></html>')
+function ser:serialize-xhtml-5-replaces-http-equiv-meta() {
+    <html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"/><title>t</title></head><body/></html>
+    => serialize(map { "method": "xhtml" })
+};
+
+(: test for https://github.com/eXist-db/exist/issues/6587 :)
+declare
+    %test:assertEquals('<html><head n="1"><meta http-equiv="Content-Type" content="application/xhtml+xml; charset=UTF-8" /><title>t</title></head><body></body></html>')
+function ser:serialize-xhtml-1-head-attribute() {
+    <html><head n="1"><title>t</title></head><body/></html>
+    => serialize(map { "method": "xhtml", "html-version": 1.0 })
+};
+
+(: for the xhtml method, version is the XML version, and the HTML version stays 5.0, see Serialization 3.1, 6.1.1 :)
+declare
+    %test:assertEquals('<!DOCTYPE html><html><head><meta charset="UTF-8" /></head><body><br /></body></html>')
+function ser:serialize-xhtml-version-is-xml-version() {
+    <html><head/><body><br/></body></html>
+    => serialize(
+        <output:serialization-parameters>
+            <output:method value="xhtml"/>
+            <output:version value="1.0"/>
+        </output:serialization-parameters>)
+};
+
+(: for the html method, version is the HTML version if html-version is absent, see Serialization 3.1, 7.4.1 :)
+declare
+    %test:assertEquals('<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"></head><body><br></body></html>')
+function ser:serialize-html-version-is-html-version() {
+    <html><head/><body><br/></body></html>
+    => serialize(
+        <output:serialization-parameters>
+            <output:method value="html"/>
+            <output:version value="4.0"/>
+        </output:serialization-parameters>)
+};
+
+(: html-version is an xs:decimal (Serialization 3.1, 3), the map form rejects other values by type :)
+declare
+    %test:assertError("SEPM0016")
+function ser:serialize-html-version-not-a-decimal() {
+    <html><head/></html>
+    => serialize(
+        <output:serialization-parameters>
+            <output:method value="html"/>
+            <output:html-version value="abc"/>
+        </output:serialization-parameters>)
+};
+
+declare
+    %test:assertEquals('<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"></head></html>')
+function ser:serialize-html-version-decimal-with-whitespace() {
+    <html><head/></html>
+    => serialize(
+        <output:serialization-parameters>
+            <output:method value="html"/>
+            <output:html-version value=" 4.01 "/>
+        </output:serialization-parameters>)
+};
+
+(: a media-type of only semicolons has no charset to drop :)
+declare
+    %test:assertEquals('<html><head><meta http-equiv="Content-Type" content=";; charset=UTF-8"></head></html>')
+function ser:serialize-html-4-media-type-only-semicolons() {
+    <html><head/></html>
+    => serialize(map { "method": "html", "html-version": 4.01, "media-type": ";" })
+};
+
+(: the media-type parameter must not contain a charset (Serialization 3.1, 3); one given anyway is not written twice :)
+declare
+    %test:assertEquals('<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"></head></html>')
+function ser:serialize-html-4-media-type-with-charset() {
+    <html><head/></html>
+    => serialize(map { "method": "html", "html-version": 4.01, "media-type": "text/html; charset=UTF-8" })
+};
+
+declare
+    %test:assertEquals('<html><head><meta http-equiv="Content-Type" content="text/html; level=1; charset=UTF-8"></head></html>')
+function ser:serialize-html-4-media-type-with-charset-and-parameter() {
+    <html><head/></html>
+    => serialize(map { "method": "html", "html-version": 4.01, "media-type": "text/html; CHARSET=utf-8; level=1" })
+};
+
 (: test for https://github.com/eXist-db/exist/issues/4736 :)
 declare
     %test:assertEquals('<!DOCTYPE html><html><body><p>hi</p></body></html>')
