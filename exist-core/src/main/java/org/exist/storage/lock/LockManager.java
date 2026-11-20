@@ -273,7 +273,7 @@ public class LockManager {
     public LockGroup acquirePathReadLock(final LockType lockType, final XmldbURI path) throws LockException {
         final XmldbURI[] segments = path.getPathSegments();
 
-        final long groupId = System.nanoTime();
+        final long groupId = lockTable.newGroupId();
 
         String pathStr = "";
         final LockedPath[] locked = new LockedPath[segments.length];
@@ -422,7 +422,7 @@ public class LockManager {
             final boolean lockParent) throws LockException {
         final XmldbURI[] segments = path.getPathSegments();
 
-        final long groupId = System.nanoTime();
+        final long groupId = lockTable.newGroupId();
 
         String pathStr = "";
         final LockedPath[] locked = new LockedPath[segments.length];
@@ -530,7 +530,7 @@ public class LockManager {
             final LockGroup lockGroup = acquirePathReadLock(LockType.DOCUMENT, documentPath);
             return new ManagedLockGroupDocumentLock(documentPath, lockGroup, lockTable);
         } else {
-            final long groupId = System.nanoTime();
+            final long groupId = lockTable.newGroupId();
             final String path = documentPath.toString();
 
             final MultiLock lock = getDocumentLock(path);
@@ -562,7 +562,7 @@ public class LockManager {
             final LockGroup lockGroup = acquirePathWriteLock(LockType.DOCUMENT, documentPath, false);
             return new ManagedLockGroupDocumentLock(documentPath, lockGroup, lockTable);
         } else {
-            final long groupId = System.nanoTime();
+            final long groupId = lockTable.newGroupId();
             final String path = documentPath.toString();
 
             final MultiLock lock = getDocumentLock(path);
@@ -805,7 +805,7 @@ public class LockManager {
      * @throws LockException if the lock could not be acquired
      */
     public ManagedLock<ReentrantLock> acquireBtreeReadLock(final String btreeFileName) throws LockException {
-        final long groupId = System.nanoTime();
+        final long groupId = lockTable.newGroupId();
 
         final ReentrantLock lock = getBTreeLock(btreeFileName);
         try {
@@ -835,7 +835,7 @@ public class LockManager {
      * @throws LockException if the lock could not be acquired
      */
     public ManagedLock<ReentrantLock> acquireBtreeWriteLock(final String btreeFileName) throws LockException {
-        final long groupId = System.nanoTime();
+        final long groupId = lockTable.newGroupId();
 
         final ReentrantLock lock = getBTreeLock(btreeFileName);
         try {
