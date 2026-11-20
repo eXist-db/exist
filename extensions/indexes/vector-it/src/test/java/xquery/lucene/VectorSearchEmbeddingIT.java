@@ -47,13 +47,13 @@ import static org.junit.jupiter.api.Assertions.fail;
 /**
  * Integration test with ONNX model: full Lucene vector indexing + query using vector:embed.
  * <p>
- * Skipped without the model, unless the onnx-model profile is active, where a missing model fails (see {@link RequiresOnnxModel}). Run with:
+ * Skipped without the model, unless the vector profile is active, where a missing model fails (see {@link RequiresOnnxModel}). Run with:
  * <pre>
- *   mvn verify -pl extensions/indexes/vector-it -Ponnx-model
+ *   mvn verify -pl extensions/indexes/vector-it -Pvector
  * </pre>
  * With dependencies built in reactor (like CI):
  * <pre>
- *   mvn verify -pl extensions/indexes/vector-it -am -Ponnx-model -DskipUnitTests=true
+ *   mvn verify -pl extensions/indexes/vector-it -am -Pvector -DskipUnitTests=true
  * </pre>
  */
 @RequiresOnnxModel

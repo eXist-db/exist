@@ -1739,7 +1739,7 @@
         </profile>
 
         <profile>
-            <id>onnx-model</id>
+            <id>vector</id>
             <build>
                 <plugins>
                     <plugin>

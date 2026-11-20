@@ -923,10 +923,10 @@
 
     <profiles>
         <profile>
-            <!-- Shares the `onnx-model` id with exist-parent's profile so that a single
-                 `-Ponnx-model` activates the model download (in parent) AND adds the
+            <!-- Shares the `vector` id with exist-parent's profile so that a single
+                 `-Pvector` activates the model download (in parent) AND adds the
                  exist-vector runtime dependency (here). Keep ids in sync. -->
-            <id>onnx-model</id>
+            <id>vector</id>
             <dependencies>
                 <dependency>
                     <groupId>${project.groupId}</groupId>

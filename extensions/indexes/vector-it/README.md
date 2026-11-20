@@ -5,10 +5,10 @@ Integration tests for Lucene vector search and ONNX embedding models.
 ## Running
 
 ```bash
-mvn verify -pl extensions/indexes/vector-it -am -Ponnx-model -DskipUnitTests=true
+mvn verify -pl extensions/indexes/vector-it -am -Pvector -DskipUnitTests=true
 ```
 
-The `-Ponnx-model` profile downloads the all-MiniLM-L6-v2 model from HuggingFace on first run.
+The `-Pvector` profile downloads the all-MiniLM-L6-v2 model from HuggingFace on first run.
 
 Tests that need the model carry `@RequiresOnnxModel`. Without the profile and without a model they are skipped; with the profile a model that cannot be found fails them, so they cannot go green by skipping.
 
