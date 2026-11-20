@@ -205,6 +205,30 @@ public class LocationStep extends Step {
     }
 
     /**
+     * Forgets the nodes {@link #setPreloadedData(DocumentSet, NodeSet)} gave, so the step evaluates against its
+     * context again. A step nothing was preloaded into keeps what it has.
+     */
+    public void clearPreloadedData() {
+        if (preloadedData) {
+            this.preloadedData = false;
+            this.currentDocs = null;
+            this.currentSet = null;
+            this.optimized = false;
+        }
+    }
+
+    /**
+     * {@link #clearPreloadedData()} for an expression that may have no step to clear.
+     *
+     * @param step the step, or null
+     */
+    public static void forgetPreloadedData(@Nullable final LocationStep step) {
+        if (step != null) {
+            step.clearPreloadedData();
+        }
+    }
+
+    /**
      * The method <code>applyPredicate</code>
      *
      * @param outerSequence   a <code>Sequence</code> value
@@ -1429,9 +1453,8 @@ public class LocationStep extends Step {
     public void resetState(final boolean postOptimization) {
         super.resetState(postOptimization);
         if (!postOptimization) {
-            // TODO : preloadedData = false ?
-            // No : introduces a regression in testMatchCount
-            // TODO : Investigate...
+            // preloadedData stays: resetting it here introduces a regression in testMatchCount.
+            // The optimize pragma forgets it itself, in the finally of its evaluation (clearPreloadedData).
             currentSet = null;
             currentDocs = null;
             optimized = false;

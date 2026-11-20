@@ -439,5 +439,10 @@ public class Query extends Function implements Optimizable {
         }
         return false;
     }
-}
 
+    @Override
+    public void clearPreSelection() {
+        preselectResult = null;
+        LocationStep.forgetPreloadedData(contextStep);
+    }
+}
