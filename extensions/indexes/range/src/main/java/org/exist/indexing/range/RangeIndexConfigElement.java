@@ -21,6 +21,7 @@
  */
 package org.exist.indexing.range;
 
+import com.ibm.icu.text.Collator;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.*;
 import org.apache.lucene.util.BytesRef;
@@ -30,6 +31,7 @@ import org.exist.dom.QName;
 import org.exist.indexing.lucene.LuceneIndexConfig;
 import org.exist.indexing.range.conversion.TypeConverter;
 import org.exist.storage.NodePath;
+import org.exist.util.Collations;
 import org.exist.util.Configuration;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.XMLString;
@@ -38,6 +40,7 @@ import org.exist.xquery.value.*;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
+import javax.annotation.Nullable;
 import javax.xml.datatype.XMLGregorianCalendar;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -59,6 +62,8 @@ public class RangeIndexConfigElement {
     protected boolean includeNested = false;
     protected boolean caseSensitive = true;
     protected boolean usesCollation = false;
+    @Nullable protected String collation = null;
+    @Nullable protected Collator collator = null;
     protected int wsTreatment = XMLString.SUPPRESS_NONE;
     private TypeConverter typeConverter = null;
 
@@ -93,6 +98,8 @@ public class RangeIndexConfigElement {
         if (!collation.isEmpty()) {
             analyzer.addCollation(collation);
             usesCollation = true;
+            this.collation = collation;
+            this.collator = collatorFor(collation);
         }
         includeNested = Configuration.parseBooleanAttribute(node, "nested", true);
 
@@ -310,6 +317,42 @@ public class RangeIndexConfigElement {
 
     public boolean usesCollation() {
         return usesCollation;
+    }
+
+    /**
+     * The collation the index compares with, as configured.
+     *
+     * @return the collation URI, or null if the index compares by codepoint (or case-insensitively, with
+     *     {@code case="no"})
+     */
+    public @Nullable String getCollation() {
+        return collation;
+    }
+
+    /**
+     * Builds the index's collator once, frozen, so that comparing it with a query's collation costs nothing per
+     * evaluation.
+     *
+     * @param collation the configured collation URI
+     * @return the collator, or null for the codepoint collation
+     * @throws DatabaseConfigurationException if the collation is unknown
+     */
+    private static @Nullable Collator collatorFor(final String collation) throws DatabaseConfigurationException {
+        try {
+            return Collations.getCollationFromURI(collation);
+        } catch (final XPathException e) {
+            throw new DatabaseConfigurationException("Invalid collation for range index: " + collation, e);
+        }
+    }
+
+    /**
+     * The collator the index compares with.
+     *
+     * @return the collator, built from {@link #getCollation()} and frozen, or null if the index compares by codepoint
+     *     (or case-insensitively, with {@code case="no"})
+     */
+    public @Nullable Collator getCollator() {
+        return collator;
     }
 
     public boolean isComplex() {

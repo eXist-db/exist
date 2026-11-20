@@ -206,7 +206,7 @@ public class OptimizeFieldPragma extends AbstractPragma {
 
                     if (rice != null && rice.getNodePath().match(contextPath)) {
                         // check for a matching sub-path and retrieve field information
-                        final RangeIndexConfigField field = rice.getField(path);
+                        final RangeIndexConfigField field = answeringField(rice, path, innerExpr, contextSequence);
                         // fn:matches has no key to compare with a field, and keeps its own flags and regex syntax
                         @Nullable final Expression keyArg = getKeyArg(innerExpr);
                         if (field != null && keyArg != null) {
@@ -281,6 +281,33 @@ public class OptimizeFieldPragma extends AbstractPragma {
                 return optimizedExpr;
             }
         }
+        return null;
+    }
+
+    /**
+     * The field of a configuration that matches a predicate's path and can answer its comparison. A field compares in
+     * the collation of its configuration (one analyzer serves them all), by codepoint if it has none, or
+     * case-insensitively with {@code case="no"}; a comparison naming another collation is left to a lookup, which
+     * evaluates it as written.
+     *
+     * @param config the configuration matching the context path
+     * @param path the predicate's path
+     * @param expression the predicate's expression
+     * @param contextSequence the context, to evaluate a collation argument against
+     * @return the field, or null if no field matches or the matching one cannot answer
+     */
+    private @Nullable RangeIndexConfigField answeringField(final ComplexRangeIndexConfigElement config,
+            final NodePath path, final Expression expression, final Sequence contextSequence) {
+        final RangeIndexConfigField field = config.getField(path);
+        if (field == null) {
+            return null;
+        }
+        final GeneralComparison comparison = IndexCollation.namingCollation(expression);
+        if (comparison == null || IndexCollation.answers(comparison, contextSequence, config.getCollator(), field.isCaseSensitive(),
+                RangeQueryRewriter.getOperator(expression))) {
+            return field;
+        }
+        IndexCollation.reportDeclined(expression, "Range index field " + field.getName());
         return null;
     }
 
