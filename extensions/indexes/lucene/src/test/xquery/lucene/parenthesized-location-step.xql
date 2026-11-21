@@ -208,7 +208,6 @@ function plst:attribute-parenthesized-preceding-self() {
  : [attribute retrieval] parenthesized final location step.
  :)
 declare
-    %test:pending("previously ignored; attribute retrieval parenthesized")
     %test:assertTrue
 function plst:attribute-retrieval-parenthesized() {
     let $result := for $a in collection($plst:COLLECTION)//level1//(@att1) return <result>{ $a }</result>
@@ -229,7 +228,6 @@ function plst:attribute-retrieval-non-parenthesized() {
  : [attribute retrieval] parenthesized attribute context causes bleed-through when name equals element name.
  :)
 declare
-    %test:pending("previously ignored; bleed-through behaviour")
     %test:assertEmpty
 function plst:attribute-retrieval-parenthesized-bleed-through() {
     for $a in collection($plst:COLLECTION)//level1//(@el1) return <result>{ $a }</result>

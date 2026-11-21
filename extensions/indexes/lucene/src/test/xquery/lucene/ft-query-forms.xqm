@@ -208,11 +208,9 @@ function qrys:term-range-query-xml() {
 };
 
 (:~
- : PENDING: [eins TO zwei] fails in Lucene 10 (TermRangeQuery + filterByIndexType); upper bound "zwei" triggers the bug.
- : Passes when fixed.
+ : A bracketed term range whose upper bound, zwei, is a term of the text.
  :)
 declare
-    %test:pending("[eins TO zwei] fails in Lucene 10, see lucene10-failure-analysis.md")
     %test:assertTrue
 function qrys:term-range-eins-TO-zwei-brackets() {
     let $result := doc($qrys:COLLECTION || "/text1.xml")//p[ft:query(., '[eins TO zwei]')]
@@ -220,11 +218,9 @@ function qrys:term-range-eins-TO-zwei-brackets() {
 };
 
 (:~
- : PENDING: Reproduces original term-range-query test – eins TO zwei (no brackets) with deep-equal.
- : Likely will not pass even after bracket form is fixed: unbracketed may not parse as a range.
+ : The original term-range-query test: eins TO zwei without brackets, with deep-equal.
  :)
 declare
-    %test:pending("Original form; eins TO zwei without [] may not parse as range, likely stays failing")
     %test:assertTrue
 function qrys:term-range-eins-TO-zwei-old() {
     let $result := doc($qrys:COLLECTION || "/text1.xml")//p[ft:query(., 'eins TO zwei')]

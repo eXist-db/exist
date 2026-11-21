@@ -356,7 +356,6 @@ function pctx:query-qname-direct-desc-paren-attr() {
     collection($pctx:COLLECTION)//test/qname//(@att.qname)[ft:query(., 'test')]/string()
 };
 declare
-    %test:pending("previously ignored")
     %test:assertEquals("test")
 function pctx:query-qname-indirect-desc-paren-attr() {
     let $a := collection($pctx:COLLECTION)//test/qname//(@att.qname) return $a[ft:query(., 'test')]/string()
@@ -424,7 +423,6 @@ function pctx:index-qname-child-paren-attr() {
     let $a := collection($pctx:COLLECTION)//test/qname/(@att.qname) return deep-equal(util:index-keys($a,'', util:function(xs:QName('pctx:term-callback'), 2), 100, 'lucene-index'), $pctx:EXPECTED_TERM_ATTR)
 };
 declare
-    %test:pending("previously ignored")
     %test:assertTrue
 function pctx:index-qname-desc-paren-attr() {
     let $a := collection($pctx:COLLECTION)//test/qname//(@att.qname) return deep-equal(util:index-keys($a,'', util:function(xs:QName('pctx:term-callback'), 2), 100, 'lucene-index'), $pctx:EXPECTED_TERM_ATTR)
@@ -435,7 +433,6 @@ function pctx:index-path-child-paren-attr() {
     let $a := collection($pctx:COLLECTION)//test/path/(@att.path) return deep-equal(util:index-keys($a,'', util:function(xs:QName('pctx:term-callback'), 2), 100, 'lucene-index'), $pctx:EXPECTED_TERM_ATTR)
 };
 declare
-    %test:pending("previously ignored")
     %test:assertTrue
 function pctx:index-path-desc-paren-attr() {
     let $a := collection($pctx:COLLECTION)//test/path//(@att.path) return deep-equal(util:index-keys($a,'', util:function(xs:QName('pctx:term-callback'), 2), 100, 'lucene-index'), $pctx:EXPECTED_TERM_ATTR)
