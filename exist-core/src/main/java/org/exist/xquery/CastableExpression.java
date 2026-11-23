@@ -27,13 +27,14 @@ import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
+import java.util.function.Consumer;
 
 /**
  * Implements the "castable as" XQuery expression.
  * 
  * @author wolf
  */
-public class CastableExpression extends AbstractExpression {
+public class CastableExpression extends AbstractExpression implements Operands {
 
 	private final Expression expression;
 	private final Cardinality requiredCardinality;
@@ -68,8 +69,14 @@ public class CastableExpression extends AbstractExpression {
 		return Cardinality.EXACTLY_ONE;
 	}
 	
-	public int getDependencies() {
-		return Dependency.CONTEXT_SET + Dependency.CONTEXT_ITEM;
+	@Override
+	public void forEachOperand(final Consumer<Expression> action) {
+		Operands.each(action, expression);
+	}
+
+	@Override
+	protected int ownDependencies() {
+		return Dependency.CONTEXT_SET | Dependency.CONTEXT_ITEM;
 	}
 	
 	/* (non-Javadoc)

@@ -30,6 +30,7 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.Type;
 import org.xml.sax.SAXException;
+import java.util.function.Consumer;
 
 /**
  * Implements a dynamic document constructor. Creates a new
@@ -37,7 +38,7 @@ import org.xml.sax.SAXException;
  * 
  * @author wolf
  */
-public class DocumentConstructor extends NodeConstructor {
+public class DocumentConstructor extends NodeConstructor implements Operands {
 
     private final Expression content;
 
@@ -156,6 +157,11 @@ public class DocumentConstructor extends NodeConstructor {
     public String toString() {
         //TODO : is this the required syntax ?
         return "document {" +  content.toString() + "} ";
+    }
+
+    @Override
+    public void forEachOperand(final Consumer<Expression> action) {
+        Operands.each(action, content);
     }
 
     public void resetState(boolean postOptimization) {

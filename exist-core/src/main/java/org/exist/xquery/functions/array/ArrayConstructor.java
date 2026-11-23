@@ -29,11 +29,12 @@ import org.exist.xquery.value.Type;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 /**
  * A literal array constructor (XQuery 3.1)
  */
-public class ArrayConstructor extends AbstractExpression {
+public class ArrayConstructor extends AbstractExpression implements Operands {
 
     public enum ConstructorType { SQUARE_ARRAY, CURLY_ARRAY }
 
@@ -96,6 +97,11 @@ public class ArrayConstructor extends AbstractExpression {
     public void dump(ExpressionDumper dumper) {
         dumper.display("array {");
         dumper.display('}');
+    }
+
+    @Override
+    public void forEachOperand(final Consumer<Expression> action) {
+        Operands.each(action, arguments);
     }
 
     @Override

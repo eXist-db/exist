@@ -63,7 +63,7 @@ public abstract class NodeConstructor extends AbstractExpression {
     }
 
     @Override
-    public int getDependencies() {
+    protected int ownDependencies() {
         // if this is a top-level node constructor, it must depend on the context item, so
         // an expression like //foo/<x/> will generate one <x> for every foo. However, if the
         // constructor appears inside another constructor, we don't want it to be called once

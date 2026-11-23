@@ -28,13 +28,14 @@ import org.exist.dom.persistent.*;
 import org.exist.numbering.NodeId;
 import org.exist.storage.UpdateListener;
 import org.exist.xquery.value.*;
+import java.util.function.Consumer;
 
 /**
  * Abstract superclass for the variable binding expressions "for", "let", and "count".
  * 
  * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
  */
-public abstract class BindingExpression extends AbstractFLWORClause implements RewritableExpression {
+public abstract class BindingExpression extends AbstractFLWORClause implements RewritableExpression, Operands {
 
 	protected final static Logger LOG =
 		LogManager.getLogger(BindingExpression.class);
@@ -91,6 +92,11 @@ public abstract class BindingExpression extends AbstractFLWORClause implements R
 
 	public DocumentSet preselect(final DocumentSet docs) throws XPathException {
 		return docs;
+	}
+
+	@Override
+	public void forEachOperand(final Consumer<Expression> action) {
+		Operands.each(action, inputSequence, returnExpr);
 	}
 
 	@Override

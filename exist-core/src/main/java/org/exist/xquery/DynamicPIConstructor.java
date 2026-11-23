@@ -29,6 +29,7 @@ import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.Type;
+import java.util.function.Consumer;
 
 
 /**
@@ -36,7 +37,7 @@ import org.exist.xquery.value.Type;
  * 
  * @author wolf
  */
-public class DynamicPIConstructor extends NodeConstructor {
+public class DynamicPIConstructor extends NodeConstructor implements Operands {
 
     private Expression name;
     private Expression content;
@@ -146,6 +147,11 @@ public class DynamicPIConstructor extends NodeConstructor {
 
     public String toString() {
         return "processing-instruction {" + name.toString() + "} {" + content.toString() + "} ";
+    }
+
+    @Override
+    public void forEachOperand(final Consumer<Expression> action) {
+        Operands.each(action, name, content);
     }
 
     public void resetState(boolean postOptimization) {

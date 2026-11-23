@@ -87,6 +87,13 @@ public class Dependency {
 	 * The default dependencies: just CONTEXT_SET is set.
 	 */
 	public final static int DEFAULT_DEPENDENCIES = CONTEXT_SET;
+
+	/**
+	 * What an expression reports that does not say what it reads: the default, and the focus, the position and the size, as
+	 * if it read them. An expression kind that is missing from the table of the dependency test costs an index lookup in a
+	 * shape that is rare, and never a wrong answer.
+	 */
+	public final static int CONSERVATIVE_DEPENDENCIES = DEFAULT_DEPENDENCIES | CONTEXT_FOCUS | CONTEXT_POSITION;
 	
 	private final static int[] NAMED_BITS = {
 		CONTEXT_SET, CONTEXT_ITEM, LOCAL_VARS, CONTEXT_VARS, CONTEXT_POSITION, CONTEXT_FOCUS
@@ -115,6 +122,43 @@ public class Dependency {
 		return result.append("]").toString();
 	}
     
+    /**
+     * The part of an operand's dependencies that its parent hands on: whether the operand reads the focus, the position
+     * or the size. An expression that holds operands reports this for each of them, next to the bits it reports for itself.
+     *
+     * @param expression an operand, or null
+     * @return {@link #CONTEXT_FOCUS} and {@link #CONTEXT_POSITION} as far as the operand has them
+     */
+    public final static int focusOf(final Expression expression) {
+        return expression == null ? NO_DEPENDENCY : expression.getDependencies() & (CONTEXT_FOCUS | CONTEXT_POSITION);
+    }
+
+    /**
+     * @param expressions operands, some of which may be null
+     * @return what {@link #focusOf(Expression)} gives for all of them together
+     */
+    public final static int focusOf(final Expression... expressions) {
+        int deps = NO_DEPENDENCY;
+        for (final Expression expression : expressions) {
+            deps |= focusOf(expression);
+        }
+        return deps;
+    }
+
+    /**
+     * @param expressions operands, or null
+     * @return what {@link #focusOf(Expression)} gives for all of them together
+     */
+    public final static int focusOf(final Iterable<? extends Expression> expressions) {
+        int deps = NO_DEPENDENCY;
+        if (expressions != null) {
+            for (final Expression expression : expressions) {
+                deps |= focusOf(expression);
+            }
+        }
+        return deps;
+    }
+
     public final static boolean dependsOn(Expression expr, int dependency) {
         return ((expr.getDependencies()& dependency) == dependency);
     }

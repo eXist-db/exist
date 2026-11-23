@@ -26,6 +26,7 @@ import org.exist.dom.persistent.NodeSet;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.MemoryNodeSet;
+import java.util.function.Consumer;
 
 /**
  * Represents a primary expression in a simple path step like
@@ -34,7 +35,7 @@ import org.exist.xquery.value.MemoryNodeSet;
  * 
  * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
  */
-public class SimpleStep extends Step {
+public class SimpleStep extends Step implements Operands {
 
 	private final Expression expression;
 
@@ -113,6 +114,11 @@ public class SimpleStep extends Step {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.Step#resetState()
 	 */
+	@Override
+	public void forEachOperand(final Consumer<Expression> action) {
+		Operands.each(action, expression);
+	}
+
 	public void resetState(boolean postOptimization) {
 		super.resetState(postOptimization);
 		expression.resetState(postOptimization);

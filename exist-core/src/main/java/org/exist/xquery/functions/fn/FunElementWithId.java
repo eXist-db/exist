@@ -178,6 +178,6 @@ public class FunElementWithId extends BasicFunction {
 
     @Override
     public int getDependencies() {
-        return getArgument(0).getDependencies();
+        return getArgument(0).getDependencies() | focusDependencies();
     }
 }

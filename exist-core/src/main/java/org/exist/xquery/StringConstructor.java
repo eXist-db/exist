@@ -27,11 +27,12 @@ import org.exist.xquery.value.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 /**
  * XQuery 3.1 string constructor.
  */
-public class StringConstructor extends AbstractExpression {
+public class StringConstructor extends AbstractExpression implements Operands {
 
     protected List<StringConstructorPart> content = new ArrayList<>(13);
 
@@ -90,6 +91,15 @@ public class StringConstructor extends AbstractExpression {
         dumper.display("``[");
         content.forEach(p -> p.dump(dumper));
         dumper.display("``]");
+    }
+
+    @Override
+    public void forEachOperand(final Consumer<Expression> action) {
+        for (final StringConstructorPart part : content) {
+            if (part instanceof final StringConstructorInterpolation interpolation) {
+                action.accept(interpolation.expression);
+            }
+        }
     }
 
     @Override

@@ -31,6 +31,7 @@ import org.exist.xquery.value.*;
 import org.w3c.dom.DOMException;
 
 import javax.xml.XMLConstants;
+import java.util.function.Consumer;
 
 /**
  * Represents a dynamic attribute constructor. The implementation differs from
@@ -40,7 +41,7 @@ import javax.xml.XMLConstants;
  *  
  * @author wolf
  */
-public class DynamicAttributeConstructor extends NodeConstructor {
+public class DynamicAttributeConstructor extends NodeConstructor implements Operands {
 
     private Expression qnameExpr;
     private Expression valueExpr;
@@ -221,6 +222,11 @@ public class DynamicAttributeConstructor extends NodeConstructor {
         return "attribute " + "{" + qnameExpr.toString() + "} {" + valueExpr.toString() + "} ";
     } 
     
+    @Override
+    public void forEachOperand(final Consumer<Expression> action) {
+        Operands.each(action, qnameExpr, valueExpr);
+    }
+
     public void resetState(boolean postOptimization) {
         super.resetState(postOptimization);
         qnameExpr.resetState(postOptimization);

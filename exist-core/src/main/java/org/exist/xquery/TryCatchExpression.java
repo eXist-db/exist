@@ -38,6 +38,7 @@ import org.exist.xquery.ErrorCodes.ErrorCode;
 import org.exist.xquery.ErrorCodes.JavaErrorCode;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.*;
+import java.util.function.Consumer;
 
 /**
  * XQuery 3.0 try {...} catch{...} expression.
@@ -46,7 +47,7 @@ import org.exist.xquery.value.*;
  * @author <a href="mailto:ljo@exist-db.org">Leif-Jöran Olsson</a>
  * @author <a href="mailto:dannes@exist-db.org">Dannes Wessels</a>
  */
-public class TryCatchExpression extends AbstractExpression {
+public class TryCatchExpression extends AbstractExpression implements Operands {
 
     private static final Logger LOG = LogManager.getLogger(TryCatchExpression.class);
 
@@ -89,7 +90,15 @@ public class TryCatchExpression extends AbstractExpression {
     }
 
     @Override
-    public int getDependencies() {
+    public void forEachOperand(final Consumer<Expression> action) {
+        Operands.each(action, tryTargetExpr);
+        for (final CatchClause catchClause : catchClauses) {
+            Operands.each(action, (Expression) catchClause.getCatchExpr());
+        }
+    }
+
+    @Override
+    protected int ownDependencies() {
         return Dependency.CONTEXT_SET | Dependency.CONTEXT_ITEM;
     }
 

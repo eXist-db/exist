@@ -32,6 +32,7 @@ import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.*;
 
 import java.util.*;
+import java.util.function.Consumer;
 
 /**
  * Implements a "group by" clause inside a FLWOR.
@@ -39,7 +40,7 @@ import java.util.*;
  * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  * @author wolf
  */
-public class GroupByClause extends AbstractFLWORClause {
+public class GroupByClause extends AbstractFLWORClause implements Operands {
 
     protected FLWORClause rootClause = null;
     private GroupSpec[] groupSpecs;
@@ -262,6 +263,13 @@ public class GroupByClause extends AbstractFLWORClause {
                 dumper.display("$").display(groupSpecs[i].getKeyVarName());
             }
             dumper.nl();
+        }
+    }
+
+    @Override
+    public void forEachOperand(final Consumer<Expression> action) {
+        for (final GroupSpec groupSpec : groupSpecs) {
+            Operands.each(action, groupSpec.getGroupExpression());
         }
     }
 

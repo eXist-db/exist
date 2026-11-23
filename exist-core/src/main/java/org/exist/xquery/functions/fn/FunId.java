@@ -213,6 +213,6 @@ public class FunId extends Function {
     public int getDependencies() {
         // fn:id can operate on the entire context sequence at once - unless the
         // argument depends on the context item
-        return getArgument(0).getDependencies();
+        return getArgument(0).getDependencies() | focusDependencies();
     }
 }

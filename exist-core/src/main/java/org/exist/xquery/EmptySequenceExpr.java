@@ -36,6 +36,11 @@ public class EmptySequenceExpr extends AbstractExpression {
     }
 
     @Override
+    public int getDependencies() {
+        return Dependency.DEFAULT_DEPENDENCIES;
+    }
+
+    @Override
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
     }
 

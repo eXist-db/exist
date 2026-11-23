@@ -293,14 +293,16 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
 
         // variable dependencies should be reported to caller, so remember them here
         final int deps = left.getDependencies() & Dependency.VARS;
+        // what the operands read of the focus is handed on, whatever strategy this comparison is evaluated with
+        final int focus = Dependency.focusOf(left, getRight());
 
         // left expression returns node set
         if( Type.subTypeOf( left.returnsType(), Type.NODE ) &&
                 //  and does not depend on the context item
                 !Dependency.dependsOn( left, Dependency.CONTEXT_ITEM ) && ( !inWhereClause || !Dependency.dependsOn( left, Dependency.CONTEXT_VARS ) ) ) {
-            return( deps + Dependency.CONTEXT_SET );
+            return( deps | Dependency.CONTEXT_SET | focus );
         } else {
-            return ( deps + Dependency.CONTEXT_SET + Dependency.CONTEXT_ITEM );
+            return ( deps | Dependency.CONTEXT_SET | Dependency.CONTEXT_ITEM | focus );
         }
     }
 

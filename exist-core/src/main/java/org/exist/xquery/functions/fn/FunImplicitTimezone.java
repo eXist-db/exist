@@ -59,6 +59,12 @@ public class FunImplicitTimezone extends Function {
         return true;
     }
 
+    @Override
+    public boolean readsFocus() {
+        // the implicit timezone is part of the dynamic context, not of the focus
+        return false;
+    }
+
 	public Sequence eval(Sequence contextSequence, Item contextItem)
         throws XPathException {
         if (context.getProfiler().isEnabled()) {

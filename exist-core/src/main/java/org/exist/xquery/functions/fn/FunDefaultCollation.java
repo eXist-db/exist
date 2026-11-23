@@ -60,6 +60,12 @@ public class FunDefaultCollation extends BasicFunction {
         return true;
     }
 
+    @Override
+    public boolean readsFocus() {
+        // the default collation is part of the static context, not of the focus
+        return false;
+    }
+
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
         if (context.getProfiler().isEnabled()) {
             context.getProfiler().start(this);

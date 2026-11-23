@@ -26,6 +26,7 @@ import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
+import java.util.function.Consumer;
 
 /**
  * Implements a dynamic comment constructor. Contrary to {@link org.exist.xquery.CommentConstructor},
@@ -33,7 +34,7 @@ import org.exist.xquery.value.SequenceIterator;
  * 
  * @author wolf
  */
-public class DynamicCommentConstructor extends NodeConstructor {
+public class DynamicCommentConstructor extends NodeConstructor implements Operands {
 
     final private Expression content;
 
@@ -115,6 +116,11 @@ public class DynamicCommentConstructor extends NodeConstructor {
 
     public String toString() {
         return "comment {" + content.toString() + "} ";
+    }
+
+    @Override
+    public void forEachOperand(final Consumer<Expression> action) {
+        Operands.each(action, content);
     }
 
     public void resetState(boolean postOptimization) {

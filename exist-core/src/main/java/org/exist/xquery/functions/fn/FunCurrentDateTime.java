@@ -87,6 +87,12 @@ public class FunCurrentDateTime extends Function {
         return true;
     }
 
+    @Override
+    public boolean readsFocus() {
+        // the clock is part of the dynamic context, not of the focus
+        return false;
+    }
+
     public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
         if (context.getProfiler().isEnabled()) {
             context.getProfiler().start(this);

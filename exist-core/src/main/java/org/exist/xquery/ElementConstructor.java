@@ -39,6 +39,7 @@ import org.xml.sax.helpers.AttributesImpl;
 
 import javax.xml.XMLConstants;
 import java.util.Iterator;
+import java.util.function.Consumer;
 
 /**
  * Constructor for element nodes. This class handles both, direct and dynamic
@@ -46,7 +47,7 @@ import java.util.Iterator;
  * 
  * @author wolf
  */
-public class ElementConstructor extends NodeConstructor {
+public class ElementConstructor extends NodeConstructor implements Operands {
 
 	private Expression qnameExpr;
 	private PathExpr content = null;
@@ -448,6 +449,14 @@ public class ElementConstructor extends NodeConstructor {
                 next.resetState(postOptimization);
             }
 	}
+
+    @Override
+    public void forEachOperand(final Consumer<Expression> action) {
+        Operands.each(action, qnameExpr, content);
+        if (attributes != null) {
+            Operands.each(action, attributes);
+        }
+    }
 
 	@Override
     public void accept(final ExpressionVisitor visitor) {
