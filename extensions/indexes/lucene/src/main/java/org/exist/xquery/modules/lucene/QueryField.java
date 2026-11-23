@@ -180,7 +180,10 @@ public class QueryField extends Query implements Optimizable {
 
     @Override
     public int getDependencies() {
-        return Dependency.CONTEXT_SET;
+        // a query that reads the focus has a value for each item
+        return keyReadsFocus()
+                ? Dependency.CONTEXT_SET | Dependency.CONTEXT_ITEM | focusDependencies()
+                : Dependency.CONTEXT_SET | focusDependencies();
     }
 
     @Override

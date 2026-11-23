@@ -622,10 +622,11 @@ public class Lookup extends Function implements Optimizable, IndexUseReporter {
     @Override
     public int getDependencies() {
         final Expression stringArg = getArgument(0);
-        if (!Dependency.dependsOn(stringArg, Dependency.CONTEXT_ITEM)) {
-            return Dependency.CONTEXT_SET;
+        // a key that reads the focus has a value for each item
+        if (!Dependency.dependsOn(stringArg, Dependency.CONTEXT_ITEM) && !keyReadsFocus()) {
+            return Dependency.CONTEXT_SET | focusDependencies();
         } else {
-            return Dependency.CONTEXT_SET + Dependency.CONTEXT_ITEM;
+            return Dependency.CONTEXT_SET | Dependency.CONTEXT_ITEM | focusDependencies();
         }
     }
 

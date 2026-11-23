@@ -34,6 +34,7 @@ module namespace krf="http://exist-db.org/xquery/range/key-reads-focus/test";
 
 declare namespace test="http://exist-db.org/xquery/xqsuite";
 declare namespace stats="http://exist-db.org/xquery/profiling";
+declare namespace range="http://exist-db.org/xquery/range";
 
 declare variable $krf:COLLECTION_NAME := "test-range-key-reads-focus";
 declare variable $krf:COLLECTION := "/db/" || $krf:COLLECTION_NAME;
@@ -45,6 +46,7 @@ declare variable $krf:XCONF :=
             <range>
                 <create qname="@a" type="xs:string"/>
                 <create qname="@n" type="xs:string"/>
+                <create qname="item"><field name="krf-a" match="@a" type="xs:string"/></create>
             </range>
         </index>
     </collection>;
@@ -117,6 +119,44 @@ declare
     %test:assertEquals("1 10 11 12 13 14 15 16 17 18 19 2 20 3 4 5 6 7 8 9")
 function krf:key-is-a-function-of-the-item() {
     krf:answer(collection($krf:COLLECTION)/wrap/item[@a = string(@a)])
+};
+
+(: the index functions evaluate their key for each item of the step, whether the optimizer pre-selects or not :)
+declare
+    %test:assertEquals("1 10 2 3 4 5 6 7 8 9")
+function krf:eq-last-in-an-if() {
+    krf:answer(collection($krf:COLLECTION)/wrap/item[range:eq(@a, (if (last() = 2) then 'hit' else 'miss'))])
+};
+
+declare
+    %test:assertEquals("1 10 11 12 13 14 15 16 17 18 19 2 20 3 4 5 6 7 8 9")
+function krf:eq-position-in-an-if() {
+    krf:answer(collection($krf:COLLECTION)/wrap/item[range:eq(@a, (if (position() = 1) then 'hit' else 'miss'))])
+};
+
+declare
+    %test:assertEquals("1 11 12 13 14 15 16 17 18 19 20")
+function krf:eq-key-depends-on-the-item() {
+    krf:answer(collection($krf:COLLECTION)/wrap/item[range:eq(@a, (if (@n = '1') then 'hit' else 'miss'))])
+};
+
+declare
+    %test:assertEquals("1 11 12 13 14 15 16 17 18 19 20")
+function krf:eq-key-depends-on-the-item-of-a-variable() {
+    let $items := collection($krf:COLLECTION)/wrap/item
+    return krf:answer($items[range:eq(@a, (if (@n = '1') then 'hit' else 'miss'))])
+};
+
+declare
+    %test:assertEquals("1 11 12 13 14 15 16 17 18 19 20")
+function krf:matches-pattern-depends-on-the-item() {
+    krf:answer(collection($krf:COLLECTION)/wrap/item[range:matches(@a, (if (@n = '1') then '^hit$' else '^miss$'))])
+};
+
+declare
+    %test:assertEquals("1 11 12 13 14 15 16 17 18 19 20")
+function krf:field-eq-key-depends-on-the-item() {
+    krf:answer(collection($krf:COLLECTION)/wrap/item[range:field-eq("krf-a", (if (@n = '1') then 'hit' else 'miss'))])
 };
 
 (: the keys that do not read the focus are looked up in the index :)

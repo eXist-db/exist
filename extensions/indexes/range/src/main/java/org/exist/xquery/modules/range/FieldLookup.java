@@ -271,7 +271,7 @@ public class FieldLookup extends Function implements Optimizable, IndexUseReport
             RangeIndex.Operator[] operators = null;
             int j = 1;
             if (isCalledAs("field")) {
-                Sequence operatorSeq = getArgument(1).eval(contextSequence, null);
+                Sequence operatorSeq = getArgument(1).eval(effectiveContextSequence, null);
                 operators = new RangeIndex.Operator[operatorSeq.getItemCount()];
                 int i = 0;
                 for (SequenceIterator si = operatorSeq.iterate(); si.hasNext(); i++) {
@@ -289,7 +289,7 @@ public class FieldLookup extends Function implements Optimizable, IndexUseReport
             Sequence[] keys = new Sequence[getArgumentCount() - j];
             SequenceIterator fieldIter = fields.unorderedIterator();
             for (int i = j; i < getArgumentCount(); i++) {
-                keys[i - j] = getArgument(i).eval(contextSequence, null);
+                keys[i - j] = getArgument(i).eval(effectiveContextSequence, null);
                 int targetType = Type.ITEM;
                 if (fieldIter.hasNext()) {
                     String field = fieldIter.nextItem().getStringValue();
@@ -410,10 +410,11 @@ public class FieldLookup extends Function implements Optimizable, IndexUseReport
     @Override
     public int getDependencies() {
         final Expression stringArg = getArgument(0);
-        if (!Dependency.dependsOn(stringArg, Dependency.CONTEXT_ITEM)) {
-            return Dependency.CONTEXT_SET;
+        // a key that reads the focus has a value for each item
+        if (!Dependency.dependsOn(stringArg, Dependency.CONTEXT_ITEM) && !keyReadsFocus()) {
+            return Dependency.CONTEXT_SET | focusDependencies();
         } else {
-            return Dependency.CONTEXT_SET + Dependency.CONTEXT_ITEM;
+            return Dependency.CONTEXT_SET | Dependency.CONTEXT_ITEM | focusDependencies();
         }
     }
 

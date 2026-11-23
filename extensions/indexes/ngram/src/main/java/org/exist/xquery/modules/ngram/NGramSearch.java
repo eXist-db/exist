@@ -592,12 +592,14 @@ public class NGramSearch extends Function implements Optimizable {
 	public int getDependencies() {
         final Expression stringArg = getArgument(0);
         // a query computed in a predicate has a value for each item, evaluated with that item as the context
+        // a query that reads the focus has a value for each item as well
         if (Type.subTypeOf(stringArg.returnsType(), Type.NODE)
             && !Dependency.dependsOn(stringArg, Dependency.CONTEXT_ITEM)
-            && !Dependency.dependsOn(getArgument(1), Dependency.CONTEXT_ITEM)) {
-            return Dependency.CONTEXT_SET;
+            && !Dependency.dependsOn(getArgument(1), Dependency.CONTEXT_ITEM)
+            && !keyReadsFocus()) {
+            return Dependency.CONTEXT_SET | focusDependencies();
         } else {
-            return Dependency.CONTEXT_SET + Dependency.CONTEXT_ITEM;
+            return Dependency.CONTEXT_SET | Dependency.CONTEXT_ITEM | focusDependencies();
         }
     }
 
