@@ -641,4 +641,10 @@ public class NGramSearch extends Function implements Optimizable {
         }
         return n;
     }
+
+    @Override
+    public void clearPreSelection() {
+        preselectResult = null;
+        LocationStep.forgetPreloadedData(contextStep);
+    }
 }

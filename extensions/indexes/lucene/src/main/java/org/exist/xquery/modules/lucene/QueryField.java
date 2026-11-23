@@ -190,5 +190,10 @@ public class QueryField extends Query implements Optimizable {
             preselectResult = null;
         }
     }
-}
 
+    @Override
+    public void clearPreSelection() {
+        super.clearPreSelection();
+        preselectResult = null;
+    }
+}

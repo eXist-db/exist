@@ -637,4 +637,13 @@ public class Lookup extends Function implements Optimizable, IndexUseReporter {
     public boolean hasUsedIndex() {
         return true; // Lookup is only used when range index optimization was applied
     }
+
+    @Override
+    public void clearPreSelection() {
+        preselectResult = null;
+        LocationStep.forgetPreloadedData(contextStep);
+        if (fallback instanceof final Optimizable optimizableFallback) {
+            optimizableFallback.clearPreSelection();
+        }
+    }
 }
