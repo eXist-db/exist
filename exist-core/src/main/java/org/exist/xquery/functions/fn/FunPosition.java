@@ -59,7 +59,7 @@ public class FunPosition extends Function {
 	 */
 	public int getDependencies() {
 		return Dependency.CONTEXT_SET + Dependency.CONTEXT_ITEM +
-		Dependency.CONTEXT_POSITION;
+		Dependency.CONTEXT_POSITION + Dependency.CONTEXT_FOCUS;
 	}
 
     @Override

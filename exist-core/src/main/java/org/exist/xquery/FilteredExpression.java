@@ -253,7 +253,8 @@ public class FilteredExpression extends AbstractExpression {
         int deps = Dependency.CONTEXT_SET;
         deps |= expression.getDependencies();
         for (final Predicate pred : predicates) {
-            deps |= pred.getDependencies();
+            // the focus of a predicate is the filtered items, not the focus of the expression around the filter
+            deps |= pred.getDependencies() & ~Dependency.CONTEXT_FOCUS;
         }
         return deps;
     }
