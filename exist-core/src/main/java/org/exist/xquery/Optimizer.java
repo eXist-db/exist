@@ -703,6 +703,12 @@ public class Optimizer extends DefaultExpressionVisitor {
                 return;
             }
 
+            // [a and b] is [a][b] only if neither operand asks for the position or the size of the context:
+            // the second predicate would count the nodes the first one kept, not those of the step
+            if (Dependency.dependsOn(and, Dependency.CONTEXT_POSITION)) {
+                return;
+            }
+
             if (LOG.isTraceEnabled()) {
                 LOG.trace("Rewriting boolean expression: {}", ExpressionDumper.dump(and));
             }

@@ -138,6 +138,34 @@ function fk:key-last-after-union() {
     fk:all("ROOT/wrap/(item | other)[@n = string(last())]")
 };
 
+(: [a and b] is not [a][b] when b asks for the size: last() is 2 :)
+declare
+    %test:assertEquals("2|2|2|2")
+function fk:and-split-last() {
+    fk:all("ROOT/wrap/item[@a = 'hit' and @n = string(last())]")
+};
+
+(: the positional operand first :)
+declare
+    %test:assertEquals("2|2|2|2")
+function fk:and-split-last-first() {
+    fk:all("ROOT/wrap/item[@n = string(last()) and @a = 'hit']")
+};
+
+(: position() in a key, second operand :)
+declare
+    %test:assertEquals("12|12|12|12")
+function fk:and-split-position-in-key() {
+    fk:all("ROOT/wrap/item[@a = 'miss' and @n = string(position() + 10)]")
+};
+
+(: a direct position() comparison as an operand :)
+declare
+    %test:assertEquals("11 12 13 14 15 16 17 18 19 20|11 12 13 14 15 16 17 18 19 20|11 12 13 14 15 16 17 18 19 20|11 12 13 14 15 16 17 18 19 20")
+function fk:and-split-direct-position() {
+    fk:all("ROOT/wrap/item[@a = 'miss' and position() = 2]")
+};
+
 (: control: a literal key :)
 declare
     %test:assertEquals("1 10 2 3 4 5 6 7 8 9|1 10 2 3 4 5 6 7 8 9|1 10 2 3 4 5 6 7 8 9|1 10 2 3 4 5 6 7 8 9")
