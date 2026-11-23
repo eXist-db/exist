@@ -151,23 +151,13 @@ public class RangeQueryRewriter extends QueryRewriter {
     /**
      * Whether the key of a comparison, or the pattern or the flags of a match, reads the focus: the context item, its position or the
      * size of the context. Such a key has a value for each item of the step, and a lookup has one for all of them.
+     * What the key is, is for the expression to say: {@link Optimizable#getKeyOperands()}.
      *
      * @param expression the expression of a predicate
      * @return true if the expression has an operand that reads the focus
      */
     private static boolean keyReadsFocus(final Expression expression) {
-        if (expression instanceof final GeneralComparison comparison) {
-            return Dependency.dependsOn(comparison.getRight(), Dependency.CONTEXT_FOCUS);
-        }
-        if (expression instanceof final InternalFunctionCall fcall
-                && fcall.getFunction() instanceof final org.exist.xquery.functions.fn.FunMatches funMatches) {
-            for (int i = 1; i < funMatches.getArgumentCount(); i++) {
-                if (Dependency.dependsOn(funMatches.getArgument(i), Dependency.CONTEXT_FOCUS)) {
-                    return true;
-                }
-            }
-        }
-        return false;
+        return Optimizer.unwrapOperand(expression) instanceof final Optimizable optimizable && optimizable.keyReadsFocus();
     }
 
     protected static @Nullable Lookup rewrite(final Expression expression, final NodePath path) throws XPathException {

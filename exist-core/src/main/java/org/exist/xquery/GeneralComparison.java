@@ -287,6 +287,11 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
     /* (non-Javadoc)
      * @see org.exist.xquery.AbstractExpression#getDependencies()
      */
+    public Expression[] getKeyOperands() {
+        return new Expression[] { getRight() };
+    }
+
+    @Override
     public int getDependencies()
     {
         final Expression left = getLeft();

@@ -806,6 +806,10 @@ public class Optimizer extends DefaultExpressionVisitor {
         }
 
         for (final Optimizable optimizable : list) {
+            // the key is computed once for all the nodes of the step: not for a key that has a value for each node
+            if (optimizable.keyReadsFocus()) {
+                return false;
+            }
             final int axis = optimizable.getOptimizeAxis();
             if (!(axis == Constants.CHILD_AXIS || axis == Constants.DESCENDANT_AXIS ||
                     axis == Constants.DESCENDANT_SELF_AXIS || axis == Constants.ATTRIBUTE_AXIS ||
