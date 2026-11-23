@@ -57,6 +57,8 @@ import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -1680,6 +1682,53 @@ try {
                 values.add(m.group(1));
             }
             assertEquals("3 4 5 6 7", values.toString(), "Unexpected page in: " + response);
+        } finally {
+            connect.disconnect();
+        }
+    }
+
+    /**
+     * An empty start or max attribute of a POSTed query document is ignored and the default applies.
+     */
+    @ParameterizedTest
+    @ValueSource(strings = {"start", "max"})
+    void postQueryIgnoresEmptyStartOrMax(final String attribute) throws IOException {
+        final String query = """
+                <query xmlns="http://exist.sourceforge.net/NS/exist" %s="">
+                    <text>1 to 20</text>
+                </query>""".formatted(attribute);
+        final HttpURLConnection connect = preparePost(query, getCollectionUri());
+        try {
+            connect.connect();
+            final int r = connect.getResponseCode();
+            assertEquals(HttpStatus.OK_200, r, "Server returned response code " + r);
+            final String response = readResponse(connect.getInputStream());
+            assertTrue(response.contains("exist:hits=\"20\""), "Expected 20 hits in: " + response);
+            assertTrue(response.contains("exist:start=\"1\""), "Expected start 1 in: " + response);
+            assertTrue(response.contains("exist:count=\"10\""), "Expected count 10 in: " + response);
+        } finally {
+            connect.disconnect();
+        }
+    }
+
+    /**
+     * A start or max attribute of a POSTed query document that is not an int is a bad request.
+     */
+    @ParameterizedTest
+    @ValueSource(strings = {"start", "max"})
+    void postQueryRejectsNonIntStartOrMax(final String attribute) throws IOException {
+        final String query = """
+                <query xmlns="http://exist.sourceforge.net/NS/exist" %s="abc">
+                    <text>1 to 20</text>
+                </query>""".formatted(attribute);
+        final HttpURLConnection connect = preparePost(query, getCollectionUri());
+        try {
+            connect.connect();
+            final int r = connect.getResponseCode();
+            assertEquals(HttpStatus.BAD_REQUEST_400, r, "Server returned response code " + r);
+            final String response = readResponse(connect.getErrorStream());
+            assertTrue(response.contains("Attribute " + attribute + " should be an int"),
+                    "Expected error message in: " + response);
         } finally {
             connect.disconnect();
         }
