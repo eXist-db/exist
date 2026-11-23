@@ -299,7 +299,11 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
         // left expression returns node set
         if( Type.subTypeOf( left.returnsType(), Type.NODE ) &&
                 //  and does not depend on the context item
-                !Dependency.dependsOn( left, Dependency.CONTEXT_ITEM ) && ( !inWhereClause || !Dependency.dependsOn( left, Dependency.CONTEXT_VARS ) ) ) {
+                !Dependency.dependsOn( left, Dependency.CONTEXT_ITEM ) && ( !inWhereClause || !Dependency.dependsOn( left, Dependency.CONTEXT_VARS ) ) &&
+                //  and the key does not ask for the position or the size of the context: evaluated for the whole context
+                //  set at once, nothing sets the focus of each item for it (a key that is a relative path is evaluated
+                //  for each item anyway)
+                !Dependency.dependsOn( getRight(), Dependency.CONTEXT_POSITION ) ) {
             return( deps | Dependency.CONTEXT_SET | focus );
         } else {
             return ( deps | Dependency.CONTEXT_SET | Dependency.CONTEXT_ITEM | focus );
