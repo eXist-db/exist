@@ -35,7 +35,11 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
+import java.util.Random;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.exist.util.PropertiesBuilder.propertiesBuilder;
@@ -98,6 +102,41 @@ class DtdGrammarCacheTest {
             final Sequence result = TestTools.executeQuery(existEmbeddedServer.getBrokerPool(),
                     "string(doc('" + COLLECTION + "/" + name + "')/*)");
             assertEquals(isA ? "from-A" : "from-B", result.getStringValue(), "stored as " + name + " (" + order[i] + ")");
+        }
+    }
+
+    /**
+     * The report of #1757: documents of the same set stored in another order were stored differently. Every one of
+     * 600 documents that alternate between two DTDs must be stored with the entities of its own DTD, and the number of
+     * documents stored must be the same, in whichever order they are sent.
+     */
+    @Test
+    void manyDocumentsAreStoredTheSameInAnyOrder() throws Exception {
+        final int count = 600;
+        final List<Integer> forward = new ArrayList<>();
+        for (int i = 0; i < count; i++) {
+            forward.add(i);
+        }
+        final List<Integer> reverse = new ArrayList<>(forward);
+        Collections.reverse(reverse);
+        final List<Integer> shuffled = new ArrayList<>(forward);
+        Collections.shuffle(shuffled, new Random(1757));
+
+        final String[] orders = {"forward", "reverse", "shuffled"};
+        final List<List<Integer>> sequences = List.of(forward, reverse, shuffled);
+        for (int o = 0; o < orders.length; o++) {
+            final String prefix = "many-" + orders[o] + "-";
+            for (final int i : sequences.get(o)) {
+                // even numbers use the first DTD, odd numbers the second
+                store(prefix + i + ".xml", i % 2 == 0 ? DOC_A : DOC_B);
+            }
+
+            assertEquals(String.valueOf(count), query("count(collection('" + COLLECTION + "')[starts-with(util:document-name(.), '" + prefix + "')])"),
+                    "documents stored in the order " + orders[o]);
+            assertEquals(String.valueOf(count / 2), query("count(collection('" + COLLECTION + "')[starts-with(util:document-name(.), '" + prefix + "')]/a[. = 'from-A'])"),
+                    "documents of the first DTD, order " + orders[o]);
+            assertEquals(String.valueOf(count / 2), query("count(collection('" + COLLECTION + "')[starts-with(util:document-name(.), '" + prefix + "')]/b[. = 'from-B'])"),
+                    "documents of the second DTD, order " + orders[o]);
         }
     }
 
