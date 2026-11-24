@@ -789,6 +789,16 @@ public class XQueryContext implements BinaryValueManager, Context {
         evalQueries.put(source, compiled);
     }
 
+    /**
+     * Gets the number of compiled codes this context keeps for {@code util:eval}, see
+     * {@link #returnEvalQuery(Source, CompiledXQuery)}.
+     *
+     * @return the number of compiled codes kept, 0 if none
+     */
+    public int getEvalQueryCount() {
+        return evalQueries == null ? 0 : evalQueries.size();
+    }
+
     @Override
     public XQueryContext copyContext() {
         final XQueryContext ctx = new XQueryContext(this);

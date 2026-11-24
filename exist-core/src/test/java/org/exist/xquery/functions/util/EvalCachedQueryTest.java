@@ -27,18 +27,23 @@ import org.exist.dom.persistent.LockedDocument;
 import org.exist.security.PermissionDeniedException;
 import org.exist.source.DBSource;
 import org.exist.source.Source;
+import org.exist.source.StringSource;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock.LockMode;
 import org.exist.test.ExistEmbeddedServer;
 import org.exist.test.Util;
 import org.exist.xmldb.XmldbURI;
+import org.exist.xquery.CompiledXQuery;
+import org.exist.xquery.ExternalModule;
 import org.exist.xquery.XPathException;
+import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Sequence;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -50,6 +55,8 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 
 /**
  * A stored query whose library module evaluates code with {@code util:eval($code, true())}, which keeps the compiled
@@ -61,6 +68,7 @@ public class EvalCachedQueryTest {
     private static final String COLLECTION = "/db/eval-cached-query";
     private static final XmldbURI MAIN = XmldbURI.create(COLLECTION + "/main.xq");
     private static final XmldbURI MAIN_WITHOUT_IMPORT = XmldbURI.create(COLLECTION + "/main-without-import.xq");
+    private static final String LIBRARY_NAMESPACE = "http://exist-db.org/test/eval-cached-query/lib";
     private static final int THREADS = 8;
     private static final int ITERATIONS = 100;
 
@@ -165,6 +173,62 @@ public class EvalCachedQueryTest {
         storeLibrary();
         for (int i = 0; i < 3; i++) {
             assertEquals(EXPECTED, runMain(MAIN_WITHOUT_IMPORT));
+        }
+    }
+
+    @Test
+    void theLibraryKeepsTheCompiledCodeForReuse() throws Exception {
+        final CompiledXQuery first = keptCode(MAIN);
+        final CompiledXQuery second = keptCode(MAIN);
+        assertNotNull(first);
+        assertSame(first, second);
+    }
+
+    /**
+     * The same code evaluated from two library modules, where its prefix binds the namespace of each module.
+     */
+    @Test
+    void sameCodeFromTwoModules() throws EXistException, PermissionDeniedException, XPathException {
+        storeModule("m1.xqm", "urn:m1", 1);
+        storeModule("m2.xqm", "urn:m2", 2);
+        final String imports = """
+                import module namespace a = 'urn:m1' at 'xmldb:exist:///db/eval-cached-query/m1.xqm';
+                import module namespace b = 'urn:m2' at 'xmldb:exist:///db/eval-cached-query/m2.xqm';
+                """;
+        assertEquals("1 2", execute(imports + "string-join((a:g(), b:g()) ! string(), ' ')").getStringValue());
+        assertEquals("2 1", execute(imports + "string-join((b:g(), a:g()) ! string(), ' ')").getStringValue());
+    }
+
+    private void storeModule(final String name, final String namespace, final int value)
+            throws EXistException, PermissionDeniedException, XPathException {
+        execute("xmldb:store('" + COLLECTION + "', '" + name + "', ``[" + """
+                module namespace x = '%s';
+                declare function x:f() { %d };
+                declare function x:g() { util:eval('x:f()', true()) };
+                """.formatted(namespace, value) + "]``, 'application/xquery')");
+    }
+
+    /**
+     * Runs the stored main query, and gets the compiled code its library module keeps afterwards.
+     */
+    private @Nullable CompiledXQuery keptCode(final XmldbURI main)
+            throws EXistException, PermissionDeniedException, XPathException, IOException {
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
+        try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
+                final LockedDocument mainDocument = broker.getXMLResource(main, LockMode.READ_LOCK)) {
+            final Source source = new DBSource(pool, (BinaryDocument) mainDocument.getDocument(), true);
+            return Util.withCompiledQuery(broker, source, compiled -> {
+                final Sequence result = pool.getXQueryService().execute(broker, compiled, null);
+                assertEquals(EXPECTED, result.itemAt(0).toJavaObject(Integer.class));
+                final XQueryContext library = ((ExternalModule) compiled.getContext().getModules(LIBRARY_NAMESPACE)[0]).getContext();
+                assertEquals(1, library.getEvalQueryCount());
+                final Source code = new StringSource(CODE);
+                final CompiledXQuery kept = library.borrowEvalQuery(code);
+                if (kept != null) {
+                    library.returnEvalQuery(code, kept);
+                }
+                return kept;
+            });
         }
     }
 
