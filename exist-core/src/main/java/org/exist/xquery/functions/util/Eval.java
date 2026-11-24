@@ -490,7 +490,7 @@ public class Eval extends BasicFunction {
             if (!cache) {
                 compiled = null;
             } else if (caller != null) {
-                compiled = caller.borrowEvalQuery(querySource);
+                compiled = caller.borrowEvalQuery(broker, querySource);
             } else {
                 compiled = pool.borrowCompiledXQuery(broker, querySource);
             }

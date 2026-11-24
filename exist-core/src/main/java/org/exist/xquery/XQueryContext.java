@@ -85,6 +85,7 @@ import org.exist.stax.ExtendedXMLStreamReader;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.UpdateListener;
+import org.exist.storage.XQueryPool;
 import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.lock.LockedDocumentMap;
 import org.exist.storage.txn.Txn;
@@ -746,19 +747,40 @@ public class XQueryContext implements BinaryValueManager, Context {
 
     /**
      * Takes the compiled form of code that {@code util:eval} compiled in a copy of this context, and which this
-     * context keeps for reuse, if it is still valid. See {@link #returnEvalQuery(Source, CompiledXQuery)}.
+     * context keeps for reuse, if it is still valid and the caller may use it. See
+     * {@link #returnEvalQuery(Source, CompiledXQuery)}.
      *
+     * This query may run as another user than the one the code was compiled for, so the gates of the XQuery pool
+     * apply: EXECUTE on the code, checked before the kept code is touched, and READ on every module it imports
+     * ({@link XQueryPool#callerMayUseModulesOf(DBBroker, CompiledXQuery)}). Code the caller may not use is left
+     * in place, and the caller compiles the code itself, failing as it would if nothing were kept.
+     *
+     * @param broker the broker of the caller
      * @param source the code
-     * @return the compiled code, or null if this context keeps none, or it is no longer valid
+     * @return the compiled code, or null if this context keeps none, it is no longer valid, or the caller may not
+     *     read a module it imports
+     * @throws PermissionDeniedException if the caller may not execute the code
      */
-    public @Nullable CompiledXQuery borrowEvalQuery(final Source source) {
+    public @Nullable CompiledXQuery borrowEvalQuery(final DBBroker broker, final Source source)
+            throws PermissionDeniedException {
         if (evalQueries == null) {
             return null;
         }
-        final CompiledXQuery compiled = evalQueries.remove(source);
-        if (compiled == null || source.isValid() == Source.Validity.INVALID || !compiled.isValid()) {
+        if (source instanceof DBSource dbSource) {
+            dbSource.validate(Permission.EXECUTE);
+        }
+        final CompiledXQuery compiled = evalQueries.get(source);
+        if (compiled == null) {
             return null;
         }
+        if (source.isValid() == Source.Validity.INVALID || !compiled.isValid()) {
+            evalQueries.remove(source);
+            return null;
+        }
+        if (!XQueryPool.callerMayUseModulesOf(broker, compiled)) {
+            return null;
+        }
+        evalQueries.remove(source);
         return compiled;
     }
 

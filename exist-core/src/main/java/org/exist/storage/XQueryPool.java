@@ -210,12 +210,13 @@ public class XQueryPool implements BrokerPoolService {
     }
 
     /**
-     * Determines whether the caller could have resolved every module imported by a pooled compiled
-     * XQuery, had it compiled the query itself.
+     * Determines whether the caller could have resolved every module imported by a compiled XQuery
+     * kept for reuse, here or by {@link XQueryContext#borrowEvalQuery(DBBroker, Source)}, had it
+     * compiled the query itself.
      *
      * A cold compile resolves each imported module through
      * {@link org.exist.source.SourceFactory#getSource(DBBroker, String, String, boolean)}, which
-     * requires READ on the module. The same gate is applied here, so that borrowing from the pool
+     * requires READ on the module. The same gate is applied to kept queries, so that reusing one
      * grants no access which compiling would not.
      *
      * @param broker the database broker
@@ -223,7 +224,7 @@ public class XQueryPool implements BrokerPoolService {
      *
      * @return true if the caller may read every imported module, false otherwise.
      */
-    private static boolean callerMayUseModulesOf(final DBBroker broker, final CompiledXQuery compiledXQuery) {
+    public static boolean callerMayUseModulesOf(final DBBroker broker, final CompiledXQuery compiledXQuery) {
         final XQueryContext context = compiledXQuery.getContext();
         if (context == null) {
             return true;

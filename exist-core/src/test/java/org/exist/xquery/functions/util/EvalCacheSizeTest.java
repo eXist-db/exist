@@ -88,10 +88,13 @@ public class EvalCacheSizeTest {
         void discardsTheLeastRecentlyUsed() throws Exception {
             final XQueryContext library = runMain(existEmbeddedServer);
             assertEquals(2, library.getEvalQueryCount());
-            // '2' was used least recently: '1' was used again after it
-            assertNull(library.borrowEvalQuery(new StringSource("2")));
-            assertNotNull(library.borrowEvalQuery(new StringSource("1")));
-            assertNotNull(library.borrowEvalQuery(new StringSource("3")));
+            final BrokerPool pool = existEmbeddedServer.getBrokerPool();
+            try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
+                // '2' was used least recently: '1' was used again after it
+                assertNull(library.borrowEvalQuery(broker, new StringSource("2")));
+                assertNotNull(library.borrowEvalQuery(broker, new StringSource("1")));
+                assertNotNull(library.borrowEvalQuery(broker, new StringSource("3")));
+            }
         }
     }
 

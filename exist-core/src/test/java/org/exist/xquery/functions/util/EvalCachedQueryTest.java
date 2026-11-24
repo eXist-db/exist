@@ -233,7 +233,7 @@ public class EvalCachedQueryTest {
                 final XQueryContext library = ((ExternalModule) compiled.getContext().getModules(LIBRARY_NAMESPACE)[0]).getContext();
                 assertEquals(1, library.getEvalQueryCount());
                 final Source code = new StringSource(CODE);
-                final CompiledXQuery kept = library.borrowEvalQuery(code);
+                final CompiledXQuery kept = library.borrowEvalQuery(broker, code);
                 if (kept != null) {
                     library.returnEvalQuery(code, kept);
                 }
