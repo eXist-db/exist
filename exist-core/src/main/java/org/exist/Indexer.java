@@ -104,7 +104,6 @@ public class Indexer implements ContentHandler, LexicalHandler, DeclHandler, Err
     private StreamListener indexListener;
 
     private XMLString charBuf = new XMLString();
-    private boolean inCDATASection = false;
     private int currentLine = 0;
     private final NodePath2 currentPath = new NodePath2();
 
@@ -113,7 +112,6 @@ public class Indexer implements ContentHandler, LexicalHandler, DeclHandler, Err
 
     private boolean insideDTD = false;
     private boolean validate = false;
-    private int level = 0;
     private Locator locator = null;
     private int normalize = XMLString.SUPPRESS_BOTH;
     private final Map<String, String> nsMappings = new HashMap<>();
@@ -254,7 +252,6 @@ public class Indexer implements ContentHandler, LexicalHandler, DeclHandler, Err
             indexSpec = collectionConfig.getIndexConfiguration();
         }
         // reset internal fields
-        level = 0;
         currentPath.reset();
         stack.clear();
         docSize = 0;
@@ -348,7 +345,6 @@ public class Indexer implements ContentHandler, LexicalHandler, DeclHandler, Err
                 charBuf.reset();
             }
         }
-        inCDATASection = false;
     }
 
     @Override
@@ -496,7 +492,6 @@ public class Indexer implements ContentHandler, LexicalHandler, DeclHandler, Err
             }
             currentPath.removeLastNode();
             setPrevious(last);
-            level--;
         } finally {
             if (elemContent != null) {
                 elemContent.reset();
@@ -578,7 +573,6 @@ public class Indexer implements ContentHandler, LexicalHandler, DeclHandler, Err
         if (!stack.isEmpty()) {
             processText(stack.peek(), ProcessTextParent.CDATA_START);
         }
-        inCDATASection = true;
     }
 
     // Methods of interface LexicalHandler
@@ -747,7 +741,6 @@ public class Indexer implements ContentHandler, LexicalHandler, DeclHandler, Err
             }
             document.appendChild((NodeHandle)node);
         }
-        level++;
 
         for (int i = 0; i < attributes.getLength(); i++) {
             final String attrNS = attributes.getURI(i);

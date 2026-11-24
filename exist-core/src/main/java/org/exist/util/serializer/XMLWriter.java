@@ -265,6 +265,7 @@ public class XMLWriter implements SerializerWriter {
     }
 
     public void endDocument() throws TransformerException {
+        // nothing is written at the end of a document
     }
 
     public void startElement(final String namespaceUri, final String localName, final String qname) throws TransformerException {
@@ -869,7 +870,8 @@ public class XMLWriter implements SerializerWriter {
         final boolean checkSpecials = needsEscaping(inAttribute);
         char ch = 0;
         final int len = text.length();
-        int pos = 0, i;
+        int pos = 0;
+        int i;
         while(pos < len) {
             i = pos;
             while(i < len) {
@@ -994,7 +996,7 @@ public class XMLWriter implements SerializerWriter {
     @Nullable
     private static java.text.Normalizer.Form parseNormalizationForm(final String value) {
         if (value == null) return null;
-        return switch (value.trim().toUpperCase(java.util.Locale.ROOT)) {
+        return switch (value.trim().toUpperCase(Locale.ROOT)) {
             case "NFC" -> java.text.Normalizer.Form.NFC;
             case "NFD" -> java.text.Normalizer.Form.NFD;
             case "NFKC" -> java.text.Normalizer.Form.NFKC;

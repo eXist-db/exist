@@ -27,7 +27,6 @@ import org.exist.storage.io.VariableByteOutputStream;
 import org.exist.xquery.Expression;
 import org.w3c.dom.DocumentType;
 import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
@@ -58,7 +57,7 @@ public class DocumentTypeImpl extends StoredNode implements DocumentType {
      */
     public DocumentTypeImpl(final Expression expression, final String name, final String publicId, final String systemId,
             @Nullable final String internalSubset) {
-        super(expression, Node.DOCUMENT_TYPE_NODE);
+        super(expression, DOCUMENT_TYPE_NODE);
         this.name = name;
         this.publicId = publicId;
         this.systemId = systemId;

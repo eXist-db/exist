@@ -123,11 +123,9 @@ public class NativeSerializer extends Serializer {
             receiver.declaration(xmlDecl.getVersion(), xmlDecl.getEncoding(), xmlDecl.getStandalone());
         }
 
-        if (doc.getDoctype() != null) {
-            if ("yes".equals(getProperty(EXistOutputKeys.OUTPUT_DOCTYPE, "no"))) {
-                final DocumentTypeImpl docType = (DocumentTypeImpl)doc.getDoctype();
-                serializeToReceiver(docType, null, docType.getOwnerDocument(), true, null, new TreeSet<>());
-            }
+        if (doc.getDoctype() != null && "yes".equals(getProperty(EXistOutputKeys.OUTPUT_DOCTYPE, "no"))) {
+            final DocumentTypeImpl docType = (DocumentTypeImpl)doc.getDoctype();
+            serializeToReceiver(docType, null, docType.getOwnerDocument(), true, null, new TreeSet<>());
         }
 
         // iterate through children
@@ -168,7 +166,8 @@ public class NativeSerializer extends Serializer {
         	String defaultNS = null;
 	        if (((ElementImpl) node).declaresNamespacePrefixes()) {
 	        	// declare namespaces used by this element
-	        	String prefix, uri;
+	        	String prefix;
+	        	String uri;
 	        	for (final Iterator<String> i = ((ElementImpl) node).getPrefixes(); i.hasNext();) {
 	        		prefix = i.next();
 	        		if (prefix.isEmpty()) {
