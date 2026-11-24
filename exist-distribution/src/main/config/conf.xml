@@ -300,6 +300,10 @@
                     number of compiled codes evaluated by util:eval with its cache
                     flag that each module calling it keeps for reuse, the least
                     recently used being discarded first. Value "0" disables keeping them.
+                    Only codes actually evaluated are kept, in every pooled copy of the
+                    calling query. Raise it if a module evaluates more distinct codes
+                    over and over; lower it, or drop the cache flag, if the codes rarely
+                    repeat. See the configuration documentation for sizing.
             -->
         <query-pool max-stack-size="64" size="128" eval-cache-size="256"/>
 
