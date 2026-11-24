@@ -194,15 +194,12 @@ public class Indexer implements ContentHandler, LexicalHandler, DeclHandler, Err
             .getProperty(PROPERTY_SUPPRESS_WHITESPACE);
         if (suppressWS != null) {
             switch (suppressWS) {
-                case "leading":
-                    normalize = XMLString.SUPPRESS_LEADING_WS;
-                    break;
-                case "trailing":
-                    normalize = XMLString.SUPPRESS_TRAILING_WS;
-                    break;
-                case "none":
-                    normalize = 0;
-                    break;
+                case "leading" -> normalize = XMLString.SUPPRESS_LEADING_WS;
+                case "trailing" -> normalize = XMLString.SUPPRESS_TRAILING_WS;
+                case "none" -> normalize = 0;
+                default -> {
+                    // an unknown value keeps the default: suppress leading and trailing whitespace
+                }
             }
         }
         Boolean temp;
@@ -939,18 +936,17 @@ public class Indexer implements ContentHandler, LexicalHandler, DeclHandler, Err
     private void setPrevious(final StoredNode previous) {
         if (prevNode != null) {
             switch (prevNode.getNodeType()) {
-            case Node.ATTRIBUTE_NODE:
-                prevNode.release();
-                break;
-            case Node.ELEMENT_NODE:
-                if (prevNode != rootNode) {
-                    prevNode.clear();
-                    usedElements.push((ElementImpl) prevNode);
+                case Node.ATTRIBUTE_NODE -> prevNode.release();
+                case Node.ELEMENT_NODE -> {
+                    if (prevNode != rootNode) {
+                        prevNode.clear();
+                        usedElements.push((ElementImpl) prevNode);
+                    }
                 }
-                break;
-            case Node.TEXT_NODE:
-                prevNode.clear();
-                break;
+                case Node.TEXT_NODE -> prevNode.clear();
+                default -> {
+                    // the other kinds of node need no clean-up
+                }
             }
         }
         prevNode = previous;

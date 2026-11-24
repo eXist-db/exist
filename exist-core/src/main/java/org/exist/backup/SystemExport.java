@@ -167,14 +167,16 @@ public class SystemExport {
      * @param errorList   a list of {@link ErrorReport} objects as returned by methods in {@link ConsistencyCheck}.
      * @return the path to the created backup file or directory, or {@code null} if an error occurred.
      */
-    public Path export(final String targetDir, boolean incremental, final int maxInc, final boolean zip, final List<ErrorReport> errorList) {
+    public Path export(final String targetDir, final boolean incremental, final int maxInc, final boolean zip, final List<ErrorReport> errorList) {
         Path backupFile = null;
+        // a full backup is made, whatever was asked for, when the sequence of incremental backups is complete
+        boolean incrementalBackup = incremental;
 
         try {
             final BackupDirectory directory = new BackupDirectory(targetDir);
             BackupDescriptor prevBackup = null;
 
-            if (incremental) {
+            if (incrementalBackup) {
                 prevBackup = directory.lastBackupFile();
                 LOG.info("Creating incremental backup. Prev backup: {}", (prevBackup == null) ? "none" : prevBackup.getSymbolicPath());
             }
@@ -182,7 +184,7 @@ public class SystemExport {
             final Properties properties = new Properties();
             int seqNr = 1;
 
-            if (incremental) {
+            if (incrementalBackup) {
                 properties.setProperty(BackupDescriptor.PREVIOUS_PROP_NAME, (prevBackup == null) ? "" : prevBackup.getName());
 
                 if (prevBackup != null) {
@@ -196,7 +198,7 @@ public class SystemExport {
 
                             if (seqNr == maxInc) {
                                 seqNr = 1;
-                                incremental = false;
+                                incrementalBackup = false;
                                 prevBackup = null;
                             } else {
                                 ++seqNr;
@@ -208,14 +210,14 @@ public class SystemExport {
                 }
             }
             properties.setProperty(BackupDescriptor.NUMBER_IN_SEQUENCE_PROP_NAME, Integer.toString(seqNr));
-            properties.setProperty(BackupDescriptor.INCREMENTAL_PROP_NAME, incremental ? "yes" : "no");
+            properties.setProperty(BackupDescriptor.INCREMENTAL_PROP_NAME, incrementalBackup ? "yes" : "no");
 
             try {
                 properties.setProperty(BackupDescriptor.DATE_PROP_NAME, new DateTimeValue(new Date()).getStringValue());
             } catch (final XPathException e) {
             }
 
-            backupFile = directory.createBackup(incremental && (prevBackup != null), zip);
+            backupFile = directory.createBackup(incrementalBackup && (prevBackup != null), zip);
 
             final FunctionE<Path, BackupWriter, IOException> fWriter;
             if (zip) {
@@ -235,7 +237,7 @@ public class SystemExport {
                 final CollectionCallback cb = new CollectionCallback(output, date, prevBackup, errorList, true);
                 broker.getCollectionsFailsafe(transaction, cb);
 
-                exportOrphans(output, cb.getDocs(), errorList);
+                exportOrphans(output, cb.getDocs());
             }
 
             return backupFile;
@@ -333,9 +335,8 @@ public class SystemExport {
      *
      * @param output    the backup writer
      * @param docs      a document set containing all the documents which were exported regularily. the method will ignore those.
-     * @param errorList a list of {@link org.exist.backup.ErrorReport} objects as returned by methods in {@link ConsistencyCheck}
      */
-    private void exportOrphans(final BackupWriter output, final DocumentSet docs, final List<ErrorReport> errorList) throws IOException {
+    private void exportOrphans(final BackupWriter output, final DocumentSet docs) throws IOException {
         output.newCollection("/db/__lost_and_found__");
 
         final SAXSerializer serializer = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
