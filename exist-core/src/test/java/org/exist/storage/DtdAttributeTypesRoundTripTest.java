@@ -99,7 +99,7 @@ public class DtdAttributeTypesRoundTripTest {
         assertTrue(xml.contains("<!ATTLIST c id ID #IMPLIED>"), xml);
         assertTrue(xml.contains("<!ATTLIST c ref IDREF #IMPLIED>"), xml);
         assertTrue(xml.contains("<!ATTLIST c refs IDREFS #IMPLIED>"), xml);
-        assertTrue(!xml.contains("NMTOKEN"), "only the types the database keeps: " + xml);
+        assertTrue(!xml.contains("NMTOKEN") && !xml.contains("CDATA"), "only the types the database keeps, and no override without an external DTD: " + xml);
     }
 
     @Test

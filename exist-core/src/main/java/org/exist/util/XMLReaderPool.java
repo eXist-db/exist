@@ -22,12 +22,16 @@
 package org.exist.util;
 
 import net.jcip.annotations.ThreadSafe;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.commons.pool2.PooledObjectFactory;
 import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.BrokerPoolService;
 import org.exist.storage.DBBroker;
+import org.exist.validation.ReaderGrammarPool;
+import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 
 /**
@@ -37,6 +41,8 @@ import org.xml.sax.XMLReader;
  */
 @ThreadSafe
 public class XMLReaderPool extends GenericObjectPool<XMLReader> implements BrokerPoolService {
+
+    private static final Logger LOG = LogManager.getLogger(XMLReaderPool.class);
 
     /**
      * Constructs an XML Reader Pool.
@@ -95,11 +101,27 @@ public class XMLReaderPool extends GenericObjectPool<XMLReader> implements Broke
     }
 
     public void returnXMLReader(final XMLReader reader) {
+        seedDtdGrammar(reader);
         try {
             super.returnObject(reader);
 
         } catch (final Exception e) {
             throw new IllegalStateException("Error while returning: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Builds the grammar of the external DTD that the reader was asked for one, while the reader is idle and has the
+     * configuration the document was parsed with, see {@link ReaderGrammarPool#seed(XMLReader)}.
+     */
+    private static void seedDtdGrammar(final XMLReader reader) {
+        try {
+            if (reader.getProperty(XMLReaderObjectFactory.APACHE_PROPERTIES_INTERNAL_GRAMMARPOOL) instanceof final ReaderGrammarPool readerGrammarPool) {
+                readerGrammarPool.seed(reader);
+            }
+        } catch (final SAXException | RuntimeException e) {
+            // the reader goes back to its pool whatever happens, a DTD that is not cached is parsed each time
+            LOG.debug("The grammar of a DTD was not built: {}", e.getMessage());
         }
     }
 

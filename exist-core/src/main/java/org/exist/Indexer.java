@@ -57,6 +57,7 @@ import org.w3c.dom.DOMException;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.exist.validation.DtdEntityRestorer;
+import org.exist.validation.ReaderGrammarPool;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.ErrorHandler;
@@ -162,6 +163,8 @@ public class Indexer implements ContentHandler, LexicalHandler, DeclHandler, Err
     @Nullable private String dtdSystemId = null;
     @Nullable private String dtdBaseSystemId = null;
     @Nullable private String dtdName = null;
+    /** Asked for the grammar of the external DTD of the document, when it is not cached, see {@link #endDTD()}. */
+    @Nullable private ReaderGrammarPool readerGrammarPool = null;
 
     /**
      * The attribute types the internal subset of the DOCTYPE declares. They are kept with the document type, and they
@@ -209,6 +212,15 @@ public class Indexer implements ContentHandler, LexicalHandler, DeclHandler, Err
 	     .getProperty(PROPERTY_PRESERVE_WS_MIXED_CONTENT)) != null) {
             preserveWSmixed = temp;
 	}
+    }
+
+    /**
+     * Set the grammar pool of the reader, which is asked for the grammar of the external DTD of a document.
+     *
+     * @param readerGrammarPool the pool
+     */
+    public void setReaderGrammarPool(@Nullable final ReaderGrammarPool readerGrammarPool) {
+        this.readerGrammarPool = readerGrammarPool;
     }
 
     /**
@@ -345,7 +357,7 @@ public class Indexer implements ContentHandler, LexicalHandler, DeclHandler, Err
         insideExternalSubset = false;
 
         // keep the declarations of the internal subset with the document type, to write them out again
-        final String internalSubset = internalAttributeTypes.toInternalSubset();
+        final String internalSubset = internalAttributeTypes.toInternalSubset(dtdPublicId != null || dtdSystemId != null);
         if (internalSubset != null && dtdName != null) {
             document.setDocumentType(new DocumentTypeImpl(null, dtdName, dtdPublicId, dtdSystemId, internalSubset));
         }
@@ -354,7 +366,11 @@ public class Indexer implements ContentHandler, LexicalHandler, DeclHandler, Err
         // internal subset, which takes precedence, has been seen
         if (dtdEntityRestorer != null && dtdSystemId != null) {
             try {
-                dtdEntityRestorer.restore(dtdPublicId, dtdSystemId, dtdBaseSystemId);
+                if (!dtdEntityRestorer.restore(dtdPublicId, dtdSystemId, dtdBaseSystemId) && readerGrammarPool != null && dtdName != null) {
+                    // the grammar that the parser builds for this document holds its internal subset, so it is not cached:
+                    // the DTD alone is parsed once the reader is idle
+                    readerGrammarPool.requestSeed(dtdPublicId, dtdSystemId, dtdBaseSystemId, dtdName);
+                }
             } catch (final IOException e) {
                 throw new SAXException(e.getMessage(), e);
             }
@@ -624,16 +640,17 @@ public class Indexer implements ContentHandler, LexicalHandler, DeclHandler, Err
      * The parser takes the types from the DTD it holds for the system id of the DOCTYPE, which can be that of another
      * document with the same external DTD and another internal subset, whose declarations come first in XML.
      *
-     * @param element the name of the element, as it is written in the document
+     * @param declared the type the internal subset declares for the attribute, see {@link DtdAttributeTypes#typeOf}
      * @param attributes the attributes of the element
      * @param index the index of the attribute
      * @return the type, as the parser reports types: {@code ID}, {@code IDREF}, {@code IDREFS}, {@code CDATA}, ...
      */
-    private String attributeType(final String element, final Attributes attributes, final int index) {
-        return switch (internalAttributeTypes.typeOf(element, attributes.getQName(index))) {
+    private static String attributeType(final int declared, final Attributes attributes, final int index) {
+        return switch (declared) {
             case AttrImpl.ID -> ATTR_ID_TYPE;
             case AttrImpl.IDREF -> ATTR_IDREF_TYPE;
             case AttrImpl.IDREFS -> ATTR_IDREFS_TYPE;
+            case AttrImpl.CDATA -> ATTR_CDATA_TYPE;
             default -> attributes.getType(index);
         };
     }
@@ -641,11 +658,14 @@ public class Indexer implements ContentHandler, LexicalHandler, DeclHandler, Err
     /**
      * The value of an attribute. A parser that did not know the attribute as an ID, IDREF or IDREFS has not normalised
      * its value, which {@link #attributeType} declares it to be.
+     *
+     * <p>The other way round, an attribute that the internal subset declares as CDATA over an ID in the external DTD
+     * keeps the value the parser normalised for the ID, if it used that declaration: SAX does not give the value as it
+     * was written.</p>
      */
-    private String attributeValue(final String element, final Attributes attributes, final int index) {
-        final String value = attributes.getValue(index);
-        return internalAttributeTypes.typeOf(element, attributes.getQName(index)) == DtdAttributeTypes.NOT_DECLARED
-                ? value : StringValue.trimWhitespace(StringValue.collapseWhitespace(value));
+    private static String attributeValue(final int declared, final String value) {
+        return declared == AttrImpl.ID || declared == AttrImpl.IDREF || declared == AttrImpl.IDREFS
+                ? StringValue.trimWhitespace(StringValue.collapseWhitespace(value)) : value;
     }
 
     @Override
@@ -746,9 +766,10 @@ public class Indexer implements ContentHandler, LexicalHandler, DeclHandler, Err
                 } catch (final DOMException e) {
                     throw new SAXException(e.getMessage(), e);
                 }
-                attr.setValue(attributeValue(qname, attributes, i));
+                final int declaredType = internalAttributeTypes.typeOf(qname, attrQName);
+                attr.setValue(attributeValue(declaredType, attributes.getValue(i)));
                 attr.setOwnerDocument(document);
-                final String attrType = attributeType(qname, attributes, i);
+                final String attrType = attributeType(declaredType, attributes, i);
                 if (attrType.equals(ATTR_ID_TYPE)) {
                     attr.setType(AttrImpl.ID);
                 } else if (attrType.equals(ATTR_IDREF_TYPE)) {
@@ -892,9 +913,13 @@ public class Indexer implements ContentHandler, LexicalHandler, DeclHandler, Err
     @Override
     public void attributeDecl(final String eName, final String aName, final String type, final String mode, final String value) {
         // the external subset is the business of its DTD, which the system id of the DOCTYPE names
-        if (insideDTD && !insideExternalSubset) {
+        if (insideInternalSubset()) {
             internalAttributeTypes.declare(eName, aName, type);
         }
+    }
+
+    private boolean insideInternalSubset() {
+        return insideDTD && !insideExternalSubset;
     }
 
     @Override

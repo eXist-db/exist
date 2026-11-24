@@ -32,6 +32,7 @@ import org.apache.xerces.xni.grammars.Grammar;
 import org.apache.xerces.xni.grammars.XMLGrammarDescription;
 import org.apache.xerces.xni.grammars.XMLGrammarPool;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -57,6 +58,13 @@ public class GrammarPool implements XMLGrammarPool {
 
     private final Cache<GrammarKey, Grammar> grammarCache;
 
+    /**
+     * The external DTDs that were read and found not reusable, see {@link #isReusableDtd}: nothing is kept of them,
+     * only that they are not worth asking a grammar for again. It has the size and lifetime of the grammar cache and
+     * is cleared with it.
+     */
+    private final Cache<GrammarKey, Boolean> notReusableDtds;
+
     /** Schemas registered on purpose, to be found by namespace alone (see {@link #preloadGrammars}). */
     private final Set<GrammarKey> preloaded = ConcurrentHashMap.newKeySet();
     private boolean isLocked = false;
@@ -76,15 +84,7 @@ public class GrammarPool implements XMLGrammarPool {
      */
     public GrammarPool(final long maxSize, final long seconds) {
 
-        Caffeine<Object, Object> cafeineBuilder = Caffeine.newBuilder();
-
-        if (maxSize > 0) {
-            cafeineBuilder = cafeineBuilder.maximumSize(maxSize);
-        }
-
-        if (seconds > 0L) {
-            cafeineBuilder.expireAfterAccess(seconds, TimeUnit.SECONDS);
-        }
+        Caffeine<Object, Object> cafeineBuilder = cacheBuilder(maxSize, seconds);
 
         final String sizeTxt =maxSize > 0 ? String.valueOf(maxSize) : "unlimited";
         final String expireTxt = seconds > 0L ? seconds + " seconds" : "infinite";
@@ -96,6 +96,18 @@ public class GrammarPool implements XMLGrammarPool {
         cafeineBuilder = cafeineBuilder.evictionListener((key, value, cause) -> preloaded.remove(key));
 
         grammarCache = cafeineBuilder.build();
+        notReusableDtds = cacheBuilder(maxSize, seconds).build();
+    }
+
+    private static Caffeine<Object, Object> cacheBuilder(final long maxSize, final long seconds) {
+        final Caffeine<Object, Object> builder = Caffeine.newBuilder();
+        if (maxSize > 0) {
+            builder.maximumSize(maxSize);
+        }
+        if (seconds > 0L) {
+            builder.expireAfterAccess(seconds, TimeUnit.SECONDS);
+        }
+        return builder;
     }
 
     @Override
@@ -149,6 +161,9 @@ public class GrammarPool implements XMLGrammarPool {
             final XMLGrammarDescription desc = grammar.getGrammarDescription();
 
             if (XMLGrammarDescription.XML_DTD.equals(desc.getGrammarType()) && !isReusableDtd(grammar)) {
+                if (desc.getExpandedSystemId() != null || desc.getLiteralSystemId() != null) {
+                    notReusableDtds.put(new GrammarKey(desc), Boolean.TRUE);
+                }
                 return;
             }
 
@@ -213,6 +228,17 @@ public class GrammarPool implements XMLGrammarPool {
         return grammarCache.asMap().size();
     }
 
+    /**
+     * Was the external DTD read before, and found not reusable?
+     *
+     * @param publicId the public id of the DOCTYPE, or null
+     * @param expandedSystemId the system id of the DOCTYPE, expanded against the document
+     * @return true if a grammar of the DTD would not be cached
+     */
+    public boolean isKnownNotReusableDtd(@Nullable final String publicId, final String expandedSystemId) {
+        return notReusableDtds.getIfPresent(GrammarKey.ofDtd(publicId, expandedSystemId)) != null;
+    }
+
     @Override
     public void lockPool() {
         isLocked = true;
@@ -228,6 +254,7 @@ public class GrammarPool implements XMLGrammarPool {
         if (isLocked) return;
 
         grammarCache.invalidateAll();
+        notReusableDtds.invalidateAll();
         preloaded.clear();
     }
 
@@ -251,6 +278,17 @@ public class GrammarPool implements XMLGrammarPool {
             this.systemId = desc.getExpandedSystemId() != null ? desc.getExpandedSystemId() : desc.getLiteralSystemId();
             // A DTD has no target namespace either, so its public id takes part in identifying it.
             this.publicId = XMLGrammarDescription.XML_DTD.equals(grammarType) ? desc.getPublicId() : null;
+        }
+
+        private GrammarKey(final String grammarType, final String publicId, final String systemId) {
+            this.grammarType = grammarType;
+            this.targetNamespace = null;
+            this.publicId = publicId;
+            this.systemId = systemId;
+        }
+
+        static GrammarKey ofDtd(@Nullable final String publicId, final String expandedSystemId) {
+            return new GrammarKey(XMLGrammarDescription.XML_DTD, publicId, expandedSystemId);
         }
 
         @Override

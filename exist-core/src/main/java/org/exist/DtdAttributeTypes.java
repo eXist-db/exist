@@ -24,38 +24,46 @@ package org.exist;
 import org.exist.dom.persistent.AttrImpl;
 
 import javax.annotation.Nullable;
-import java.util.LinkedHashMap;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
- * The attribute types of {@code ID}, {@code IDREF} and {@code IDREFS} that the internal subset of a DOCTYPE declares.
+ * The attribute types that the internal subset of a DOCTYPE declares.
  *
  * <p>A stored attribute keeps its type, but the declaration that gave it is not stored, so a document that is parsed
  * again, after an export or a restore, has no way to give the type back. These declarations are what is kept with the
- * document type so that it can be written out again as the internal subset. Only the three types are kept, as they
- * are the only ones an attribute node stores. A default is not kept: the attribute values that a default gave are
- * part of the stored document.</p>
+ * document type so that it can be written out again as the internal subset. Only {@code ID}, {@code IDREF} and
+ * {@code IDREFS} are written, as they are the only types an attribute node stores. A default is not kept: the attribute
+ * values that a default gave are part of the stored document.</p>
  *
  * <p>The first declaration of an attribute wins, as it does in XML. The internal subset is read before the external
- * one, so the declarations here take precedence over those of an external DTD.</p>
+ * one, so the declarations here take precedence over those of an external DTD. That includes a declaration of another
+ * type for an attribute that the external DTD declares as an ID: it is kept, as {@code CDATA}, but only when the
+ * DOCTYPE names an external DTD, as it has no other purpose.</p>
  */
 final class DtdAttributeTypes {
 
     /** The result of {@link #typeOf(String, String)} for an attribute the internal subset does not declare. */
     static final int NOT_DECLARED = -1;
 
+    private static final String CDATA = "CDATA";
     private static final String ID = "ID";
     private static final String IDREF = "IDREF";
     private static final String IDREFS = "IDREFS";
 
-    /** The declarations in the order they were made, by element and attribute name as written. */
-    private final Map<String, Declaration> declarations = new LinkedHashMap<>();
+    /** The declarations by element and attribute name as written, to find the one of an attribute of the document. */
+    private final Map<String, Map<String, Declaration>> byElement = new HashMap<>();
+
+    /** The same declarations in the order they were made, for the internal subset to write. */
+    private final List<Declaration> inOrder = new ArrayList<>();
 
     private record Declaration(String element, String attribute, String type, int attrType) {
     }
 
     /**
-     * Records the declaration of an attribute, if it is one of the three types.
+     * Records the declaration of an attribute. A type other than the three is recorded as {@code CDATA}.
      *
      * @param element the name of the element, as written in the declaration
      * @param attribute the name of the attribute, as written in the declaration
@@ -63,10 +71,10 @@ final class DtdAttributeTypes {
      */
     void declare(final String element, final String attribute, final String type) {
         final int attrType = attrType(type);
-        if (attrType == NOT_DECLARED) {
-            return;
+        final Declaration declaration = new Declaration(element, attribute, attrType == AttrImpl.CDATA ? CDATA : type, attrType);
+        if (byElement.computeIfAbsent(element, name -> new HashMap<>()).putIfAbsent(attribute, declaration) == null) {
+            inOrder.add(declaration);
         }
-        declarations.putIfAbsent(element + ' ' + attribute, new Declaration(element, attribute, type, attrType));
     }
 
     /**
@@ -74,38 +82,37 @@ final class DtdAttributeTypes {
      *
      * @param element the name of the element, as it is written in the document
      * @param attribute the name of the attribute, as it is written in the document
-     * @return {@link AttrImpl#ID}, {@link AttrImpl#IDREF} or {@link AttrImpl#IDREFS}, or {@link #NOT_DECLARED}
+     * @return {@link AttrImpl#ID}, {@link AttrImpl#IDREF}, {@link AttrImpl#IDREFS} or, for any other declared type,
+     *     {@link AttrImpl#CDATA}; or {@link #NOT_DECLARED}
      */
     int typeOf(final String element, final String attribute) {
-        if (declarations.isEmpty()) {
+        if (inOrder.isEmpty()) {
             return NOT_DECLARED;
         }
-        final Declaration declaration = declarations.get(element + ' ' + attribute);
+        final Map<String, Declaration> ofElement = byElement.get(element);
+        final Declaration declaration = ofElement == null ? null : ofElement.get(attribute);
         return declaration == null ? NOT_DECLARED : declaration.attrType;
     }
 
-    boolean isEmpty() {
-        return declarations.isEmpty();
-    }
-
     /**
-     * The declarations as the internal subset of a DOCTYPE, to be written between {@code [} and {@code ]}.
-     * An attribute is always {@code #IMPLIED}: the stored document has the attribute values, and a restore must not
-     * fail where an element does not have an attribute that was declared as required.
+     * The declarations to keep with the document type, as the internal subset of a DOCTYPE to be written between
+     * {@code [} and {@code ]}. An attribute is always {@code #IMPLIED}: the stored document has the attribute values,
+     * and a restore must not fail where an element does not have an attribute that was declared as required.
      *
-     * @return the declarations, or null if there are none
+     * @param hasExternalSubset true if the DOCTYPE names an external DTD, whose declarations of an attribute as an ID
+     *     are overridden by a declaration of another type here
+     * @return the declarations, or null if there are none to keep
      */
     @Nullable
-    String toInternalSubset() {
-        if (declarations.isEmpty()) {
-            return null;
-        }
+    String toInternalSubset(final boolean hasExternalSubset) {
         final StringBuilder subset = new StringBuilder();
-        for (final Declaration declaration : declarations.values()) {
-            subset.append("<!ATTLIST ").append(declaration.element).append(' ').append(declaration.attribute)
-                    .append(' ').append(declaration.type).append(" #IMPLIED>");
+        for (final Declaration declaration : inOrder) {
+            if (declaration.attrType != AttrImpl.CDATA || hasExternalSubset) {
+                subset.append("<!ATTLIST ").append(declaration.element).append(' ').append(declaration.attribute)
+                        .append(' ').append(declaration.type).append(" #IMPLIED>");
+            }
         }
-        return subset.toString();
+        return subset.isEmpty() ? null : subset.toString();
     }
 
     private static int attrType(final String type) {
@@ -113,7 +120,7 @@ final class DtdAttributeTypes {
             case ID -> AttrImpl.ID;
             case IDREF -> AttrImpl.IDREF;
             case IDREFS -> AttrImpl.IDREFS;
-            default -> NOT_DECLARED;
+            default -> AttrImpl.CDATA;
         };
     }
 }

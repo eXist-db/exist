@@ -56,6 +56,7 @@ import org.exist.util.ExistSAXParserFactory;
 import org.exist.util.XMLReaderObjectFactory;
 import org.exist.util.io.TemporaryFileManager;
 import org.exist.validation.GrammarPool;
+import org.exist.validation.ReaderGrammarPool;
 import org.exist.validation.ValidationContentHandler;
 import org.exist.validation.ValidationReport;
 import org.exist.validation.Xsd11SchemaDetection;
@@ -232,7 +233,8 @@ public class Jaxp extends BasicFunction {
             final boolean useCache = ((BooleanValue) args[1].itemAt(0)).getValue();
             if (useCache) {
                 LOG.debug("Grammar caching enabled.");
-                xmlReader.setProperty(XMLReaderObjectFactory.APACHE_PROPERTIES_INTERNAL_GRAMMARPOOL, getGrammarPool());
+                // a view of the shared pool, which does not cache the DTD grammars of the documents it parses
+                xmlReader.setProperty(XMLReaderObjectFactory.APACHE_PROPERTIES_INTERNAL_GRAMMARPOOL, new ReaderGrammarPool(getGrammarPool()));
             }
 
             /* The bundled Xerces XSD 1.1 support is only wired into the JAXP

@@ -62,24 +62,26 @@ public class DtdEntityRestorer {
      * @param systemId the system id of the DOCTYPE as written in the document
      * @param baseSystemId the system id of the document, used to expand a relative system id
      *
+     * @return true if the DTD is cached, false if it is not and so its entities were not registered
+     *
      * @throws IOException if an entity cannot be registered
      */
-    public void restore(@Nullable final String publicId, @Nullable final String systemId,
+    public boolean restore(@Nullable final String publicId, @Nullable final String systemId,
             @Nullable final String baseSystemId) throws IOException {
         if (systemId == null) {
-            return;
+            return false;
         }
 
         final String expandedSystemId;
         try {
             expandedSystemId = XMLEntityManager.expandSystemId(systemId, baseSystemId, false);
         } catch (final URI.MalformedURIException e) {
-            return;
+            return false;
         }
 
         final DTDGrammar dtd = findGrammar(publicId, expandedSystemId);
         if (dtd == null) {
-            return;
+            return false;
         }
 
         // a cached grammar only has internal general entities, see GrammarPool#isReusableDtd
@@ -89,6 +91,7 @@ public class DtdEntityRestorer {
                 entityManager.addInternalEntity(decl.name, decl.value);
             }
         }
+        return true;
     }
 
     @Nullable
