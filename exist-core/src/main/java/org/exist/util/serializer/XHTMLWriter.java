@@ -175,19 +175,19 @@ public class XHTMLWriter extends IndentingXMLWriter {
 
     protected String currentTag;
     // The level below the open `<head>`: 0 outside of a head, 1 for the head itself, 2 for its children.
-    private int headDepth = 0;
+    private int headDepth;
 
     // Only the head of a page gets the content-type meta: a `<head>` that is the outermost element, or
     // the first `<head>` child of an outermost `<html>`. So only the first two levels of elements are
     // checked, see {@link #afterStartElement(String, String)}.
-    private int elementDepth = 0;
-    private boolean outermostIsHtml = false;
-    private boolean htmlHasHead = false;
+    private int elementDepth;
+    private boolean outermostIsHtml;
+    private boolean htmlHasHead;
 
     // The content-type meta of a `<head>` is written when its start tag is closed, not when the tag
     // is opened: the attributes and namespaces of the head arrive after startElement, and closing the
     // tag early would write them as text.
-    private boolean contentTypeMetaPending = false;
+    private boolean contentTypeMetaPending;
 
     // Meta-tag dedup state: when a `<meta>` child of a `<head>` that has
     // been given the content-type meta is encountered, its bytes are
