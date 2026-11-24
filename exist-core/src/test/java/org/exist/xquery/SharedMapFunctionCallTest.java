@@ -41,6 +41,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -59,6 +61,43 @@ public class SharedMapFunctionCallTest {
     void mapCalledAsAFunctionConcurrently() throws Exception {
         final Sequence map = execute("map:merge(for $i in 1 to 200 return map { $i: $i })", null);
         callConcurrently(map, "every $k in map:keys($shared) satisfies $shared($k) eq $k");
+    }
+
+    @Test
+    void mapCalledWithAMissingKey() throws Exception {
+        final Sequence map = execute("map { 1: 1 }", null);
+        assertTrue(execute("declare variable $shared external; $shared(2)", map).isEmpty());
+    }
+
+    @Test
+    void mapCalledWithTwoArguments() throws Exception {
+        final Sequence map = execute("map { 1: 1 }", null);
+        assertCallFails(ErrorCodes.XPTY0004, map, "$shared(1, 2)");
+    }
+
+    @Test
+    void mapCalledWithTwoKeys() throws Exception {
+        final Sequence map = execute("map { 1: 1 }", null);
+        assertCallFails(ErrorCodes.XPTY0004, map, "$shared((1, 2))");
+    }
+
+    @Test
+    void arrayCalledWithANonIntegerKey() throws Exception {
+        final Sequence array = execute("array { 1, 2 }", null);
+        assertCallFails(ErrorCodes.XPTY0004, array, "$shared('x')");
+    }
+
+    @Test
+    void arrayCalledWithAnUntypedKey() throws Exception {
+        final Sequence array = execute("array { 10, 20 }", null);
+        assertEquals(20, execute("declare variable $shared external; $shared(xs:untypedAtomic('2'))", array)
+                .itemAt(0).toJavaObject(Integer.class));
+    }
+
+    @Test
+    void arrayCalledWithAKeyOutOfBounds() throws Exception {
+        final Sequence array = execute("array { 1, 2 }", null);
+        assertCallFails(ErrorCodes.FOAY0001, array, "$shared(3)");
     }
 
     @Test
@@ -88,6 +127,12 @@ public class SharedMapFunctionCallTest {
         } finally {
             executor.shutdownNow();
         }
+    }
+
+    private static void assertCallFails(final ErrorCodes.ErrorCode expected, final Sequence shared, final String call) {
+        final XPathException e = assertThrows(XPathException.class,
+                () -> execute("declare variable $shared external; " + call, shared));
+        assertEquals(expected, e.getErrorCode());
     }
 
     private static Sequence execute(final String query, final Sequence shared) throws EXistException, PermissionDeniedException, XPathException, IOException {
