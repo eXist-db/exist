@@ -126,9 +126,16 @@ public class Txn implements Transaction {
      *
      * Holding it means that no other transaction can write the Document before this one has ended, so recovery
      * never has to undo a write of this transaction that another, committed, transaction wrote after. Set it
-     * only for a transaction which stores or removes one Document and then ends, and which requests no
-     * Collection lock after the store or remove: a Collection lock requested while a Document lock is held can
-     * deadlock.
+     * only for a transaction which stores or removes one Document and then ends.
+     *
+     * Locks are taken in the order Collection before Document, and the held Document lock must not break it:
+     * once the transaction has released the lock on the Document's Collection, it must request no Collection
+     * lock until it ends, since another thread may then hold a Collection lock and wait for the Document. Nor
+     * may it release the Document lock early to take a Collection lock back, as another transaction could then
+     * write the Document before this one ends. While the transaction still holds the lock on the Document's
+     * Collection, as the callers of a store or remove do while its triggers run, it may request other Collection
+     * locks as it could without holding the Document lock: every other thread locks that Collection before the
+     * Document.
      *
      * @param holdDocumentLocksUntilEnd true to hold Document locks until the transaction ends
      */
