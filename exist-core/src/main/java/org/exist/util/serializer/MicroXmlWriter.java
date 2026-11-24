@@ -165,4 +165,9 @@ public class MicroXmlWriter extends IndentingXMLWriter {
         properties.setProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
         super.setOutputProperties(properties);
     }
+
+    @Override
+    protected boolean writesInternalSubset() {
+        return false;
+    }
 }

@@ -351,7 +351,7 @@ public class NativeSerializer extends Serializer {
 			final String systemId = ((DocumentTypeImpl) node).getSystemId();
 			final String publicId =  ((DocumentTypeImpl) node).getPublicId();
 			final String name = ((DocumentTypeImpl) node).getName();
-			receiver.documentType(name, publicId, systemId);
+			receiver.documentType(name, publicId, systemId, ((DocumentTypeImpl) node).getInternalSubset());
 			break;
         case Node.PROCESSING_INSTRUCTION_NODE:
             receiver.processingInstruction(

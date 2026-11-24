@@ -694,6 +694,33 @@ public class XMLWriter implements SerializerWriter {
         endDocumentType();
     }
 
+    @Override
+    public void documentType(final String name, final String publicId, final String systemId, final String internalSubset) throws TransformerException {
+        if (internalSubset == null || !writesInternalSubset()) {
+            documentType(name, publicId, systemId);
+            return;
+        }
+        startDocumentType(name, publicId, systemId);
+        try {
+            writer.write(" [");
+            writer.write(internalSubset);
+            writer.write("]");
+        } catch (final IOException ioe) {
+            throw new TransformerException(ioe.getMessage(), ioe);
+        }
+        endDocumentType();
+    }
+
+    /**
+     * Whether this writer writes the declarations of an internal subset behind the DOCTYPE. The writers of the other
+     * output methods, which have no use for them, say no.
+     *
+     * @return true if the declarations are written
+     */
+    protected boolean writesInternalSubset() {
+        return true;
+    }
+
     protected void closeStartTag(final boolean isEmpty) throws TransformerException {
         try {
             if (tagIsOpen) {

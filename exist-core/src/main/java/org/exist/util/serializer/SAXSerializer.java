@@ -437,6 +437,15 @@ public class SAXSerializer extends AbstractSerializer implements ContentHandler,
     }
 
     @Override
+    public void documentType(final String name, final String publicId, final String systemId, final String internalSubset) throws SAXException {
+        try {
+            receiver.documentType(name, publicId, systemId, internalSubset);
+        } catch (final TransformerException e) {
+            throw new SAXException(e.getMessage(), e);
+        }
+    }
+
+    @Override
     public void highlightText(final CharSequence seq) {
         // not supported with this receiver
     }

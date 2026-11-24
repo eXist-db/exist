@@ -81,5 +81,19 @@ public interface SerializerWriter {
 
     void documentType(final String name, final String publicId, final String systemId) throws TransformerException;
 
+    /**
+     * The document type with the declarations of its internal subset. A writer that has no use for them ignores them.
+     *
+     * @param name the name of the document element
+     * @param publicId the public id, or null
+     * @param systemId the system id, or null
+     * @param internalSubset the declarations to write between <code>[</code> and <code>]</code>, or null
+     * @throws TransformerException if the document type cannot be written
+     */
+    default void documentType(final String name, final String publicId, final String systemId, final String internalSubset)
+            throws TransformerException {
+        documentType(name, publicId, systemId);
+    }
+
     void reset();
 }

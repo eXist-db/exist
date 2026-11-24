@@ -715,7 +715,7 @@ public class SystemExport {
 
         final DocumentType docType = doc.getDoctype();
         if (docType != null) {
-            receiver.documentType(docType.getName(), docType.getPublicId(), docType.getSystemId());
+            receiver.documentType(docType.getName(), docType.getPublicId(), docType.getSystemId(), docType.getInternalSubset());
         }
     }
 

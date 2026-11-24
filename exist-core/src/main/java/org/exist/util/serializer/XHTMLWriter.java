@@ -921,4 +921,9 @@ public class XHTMLWriter extends IndentingXMLWriter {
         }
         return result.toString();
     }
+
+    @Override
+    protected boolean writesInternalSubset() {
+        return false;
+    }
 }

@@ -169,6 +169,17 @@ public class ReceiverToSAX implements Receiver {
     }
 
     @Override
+    public void documentType(final String name, final String publicId, final String systemId, final String internalSubset)
+            throws SAXException {
+        // SAX has no event for the text of an internal subset: a lexical handler that is a receiver is given it directly
+        if (internalSubset != null && lexicalHandler instanceof final Receiver<?> receiver) {
+            receiver.documentType(name, publicId, systemId, internalSubset);
+        } else {
+            documentType(name, publicId, systemId);
+        }
+    }
+
+    @Override
     public void highlightText(final CharSequence seq) {
         // not supported with this receiver
     }

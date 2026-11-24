@@ -184,12 +184,7 @@ public class BinaryDocument extends DocumentImpl {
         ostream.writeInt(pool.getSymbols().getMimeTypeId(mimeType));
         ostream.writeInt(pageCount);
         ostream.writeInt(userLock);
-        if (docType != null) {
-            ostream.writeByte(HAS_DOCTYPE);
-            ((DocumentTypeImpl) docType).write(ostream);
-        } else {
-            ostream.writeByte(NO_DOCTYPE);
-        }
+        writeDocType(ostream, docType);
         if (lockToken != null) {
             ostream.writeByte(HAS_LOCKTOKEN);
             lockToken.write(ostream);
@@ -227,12 +222,7 @@ public class BinaryDocument extends DocumentImpl {
         final String mimeType = pool.getSymbols().getMimeType(mimeTypeSymbolsIndex);
         final int pageCount = istream.readInt();
         final int userLock = istream.readInt();
-        final DocumentTypeImpl docType;
-        if (istream.readByte() == HAS_DOCTYPE) {
-            docType = DocumentTypeImpl.read(istream);
-        } else {
-            docType = null;
-        }
+        final DocumentTypeImpl docType = readDocType(istream);
         final LockToken lockToken;
         if (istream.readByte() == HAS_LOCKTOKEN) {
             lockToken = LockToken.read(istream);
