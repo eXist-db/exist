@@ -345,17 +345,17 @@ public class RESTServer {
      * of a REST Server query request.
      */
     private static class QueryRequestOptions {
-        String query = null;
-        List<Namespace> namespaces = null;
-        ElementImpl variables = null;
+        String query;
+        List<Namespace> namespaces;
+        ElementImpl variables;
         int howmany = 10;
         int start = 1;
-        boolean typed = false;
+        boolean typed;
         boolean wrap = true;
-        boolean source = false;
-        boolean cache = false;
-        String stylesheet = null;
-        String encoding = null;
+        boolean source;
+        boolean cache;
+        String stylesheet;
+        String encoding;
     }
 
     /**

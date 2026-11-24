@@ -195,12 +195,12 @@ public class XHTMLWriter extends IndentingXMLWriter {
     // we observe a {@code charset} or {@code http-equiv="Content-Type"}
     // attribute, the buffered meta is dropped (the auto-meta replaces it);
     // otherwise the buffer is flushed verbatim at endElement time.
-    private Writer metaSuspendedWriter = null;
-    private java.io.StringWriter metaScratch = null;
-    private boolean metaIsContentTypeOrCharset = false;
+    private Writer metaSuspendedWriter;
+    private java.io.StringWriter metaScratch;
+    private boolean metaIsContentTypeOrCharset;
 
-    boolean haveCollapsedXhtmlPrefix = false;
-    private String collapsedForeignNs = null;  // SVG or MathML ns being normalized
+    boolean haveCollapsedXhtmlPrefix;
+    private String collapsedForeignNs;  // SVG or MathML ns being normalized
 
     /**
      *
