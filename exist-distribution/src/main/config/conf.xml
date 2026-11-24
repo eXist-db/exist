@@ -58,7 +58,7 @@
         - http://exist-db.org/exist/apps/doc/documentation.xml
 
 -->
-<exist xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../schema/conf.xsd" schemaVersion="2.10.0">
+<exist xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../schema/conf.xsd" schemaVersion="2.11.0">
 
     <!-- 
         Configures the database backend.

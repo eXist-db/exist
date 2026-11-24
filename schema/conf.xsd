@@ -8,7 +8,7 @@
 
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
            xmlns:vc="http://www.w3.org/2007/XMLSchema-versioning" vc:minVersion="1.1"
-           version="2.10.0">
+           version="2.11.0">
 
     <xs:include schemaLocation="schema-version-type.xsd"/>
 
@@ -163,7 +163,7 @@
                                             </xs:documentation>
                                         </xs:annotation>
                                     </xs:attribute>
-                                    <xs:attribute name="eval-cache-size" type="xs:integer" default="256">
+                                    <xs:attribute name="eval-cache-size" type="xs:nonNegativeInteger" default="256">
                                         <xs:annotation>
                                             <xs:documentation>
                                                 Number of compiled codes evaluated by util:eval with its cache flag
