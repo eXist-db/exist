@@ -438,7 +438,7 @@ public class XQueryContext implements BinaryValueManager, Context {
     private boolean isShared = false;
 
     /**
-     * Code that {@code util:eval} compiled in a copy of this query's context, kept for reuse by this query, in
+     * Code that {@code util:eval} compiled in a copy of this context, kept for reuse by calls from this context, in
      * least recently used order.
      */
     @Nullable private Map<Source, CompiledXQuery> evalQueries = null;
@@ -745,11 +745,11 @@ public class XQueryContext implements BinaryValueManager, Context {
     }
 
     /**
-     * Takes the compiled form of code that {@code util:eval} compiled in a copy of this query's context, and which
-     * this query keeps for reuse, if it is still valid. See {@link #returnEvalQuery(Source, CompiledXQuery)}.
+     * Takes the compiled form of code that {@code util:eval} compiled in a copy of this context, and which this
+     * context keeps for reuse, if it is still valid. See {@link #returnEvalQuery(Source, CompiledXQuery)}.
      *
      * @param source the code
-     * @return the compiled code, or null if this query keeps none, or it is no longer valid
+     * @return the compiled code, or null if this context keeps none, or it is no longer valid
      */
     public @Nullable CompiledXQuery borrowEvalQuery(final Source source) {
         if (evalQueries == null) {
@@ -763,11 +763,12 @@ public class XQueryContext implements BinaryValueManager, Context {
     }
 
     /**
-     * Keeps the compiled form of code that {@code util:eval} compiled in a copy of this query's context, for reuse
-     * by this query. Such code uses this query's instances of the modules it imports, so it must only be used by
-     * this query, which is only ever used by one thread at a time; it is discarded with this query. At most the
-     * query pool's {@code eval-cache-size} codes are kept (see {@link org.exist.storage.XQueryPool#getEvalCacheSize()}), the least
-     * recently used being discarded first.
+     * Keeps the compiled form of code that {@code util:eval} compiled in a copy of this context, for reuse by calls
+     * from this context. Such code uses this query's instances of the modules it imports, and this module's
+     * namespaces and functions, so it must only be used by calls from this context, which belongs to one query that
+     * is only ever used by one thread at a time; it is discarded with this query. At most the query pool's
+     * {@code eval-cache-size} codes are kept per context (see
+     * {@link org.exist.storage.XQueryPool#getEvalCacheSize()}), the least recently used being discarded first.
      *
      * @param source the code
      * @param compiled its compiled form

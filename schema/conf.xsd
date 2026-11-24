@@ -167,8 +167,8 @@
                                         <xs:annotation>
                                             <xs:documentation>
                                                 Number of compiled codes evaluated by util:eval with its cache flag
-                                                that each query keeps for reuse, the least recently used being
-                                                discarded first. Value "0" disables keeping them.
+                                                that each module calling it keeps for reuse, the least recently used
+                                                being discarded first. Value "0" disables keeping them.
                                             </xs:documentation>
                                         </xs:annotation>
                                     </xs:attribute>

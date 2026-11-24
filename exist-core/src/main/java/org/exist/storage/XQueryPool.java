@@ -111,10 +111,10 @@ public class XQueryPool implements BrokerPoolService {
     }
 
     /**
-     * Gets the number of compiled forms of code evaluated by {@code util:eval} with its cache flag that each query
-     * keeps for reuse, see {@link org.exist.xquery.XQueryContext#returnEvalQuery(Source, CompiledXQuery)}.
+     * Gets the number of compiled forms of code evaluated by {@code util:eval} with its cache flag that each module
+     * calling it keeps for reuse, see {@link org.exist.xquery.XQueryContext#returnEvalQuery(Source, CompiledXQuery)}.
      *
-     * @return the number of compiled codes each query keeps; 0 if none is kept
+     * @return the number of compiled codes each calling module keeps; 0 if none is kept
      */
     public int getEvalCacheSize() {
         return evalCacheSize;

@@ -291,8 +291,8 @@ public class Eval extends BasicFunction {
         final XQuery xqueryService = evalContext.getBroker().getBrokerPool().getXQueryService();
         final XQueryContext innerContext;
         final Sequence initContextSequence;
-        // the query whose context the code is compiled in a copy of, and which keeps the compiled code, see #execute
-        @Nullable final XQueryContext caller = contextInit == null ? evalContext.getRootContext() : null;
+        // the context the code is compiled in a copy of, and which keeps the compiled code, see #execute
+        @Nullable final XQueryContext caller = contextInit == null ? evalContext : null;
         if (contextInit != null) {
             // eval-with-context: initialize a new context
             innerContext = new XQueryContext(context.getBroker().getBrokerPool());
@@ -470,13 +470,14 @@ public class Eval extends BasicFunction {
     /**
      * Compiles, or reuses, and executes the code.
      *
-     * Code compiled in a copy of the calling query's context uses that query's instances of the modules it
-     * imports, whose variables are that query's. So its compiled form is kept by the calling query, which is only
-     * ever used by one thread at a time, rather than in the XQuery pool, from which another thread could borrow it
-     * while the calling query runs, and it is discarded with the calling query when that is recompiled. Code compiled
-     * in a context of its own is kept in the XQuery pool.
+     * Code compiled in a copy of the calling context uses the calling query's instances of the modules it imports,
+     * whose variables are that query's, and the calling module's namespaces and functions. So its compiled form is
+     * kept by the calling context, which belongs to one query and is only ever used by one thread at a time, rather
+     * than in the XQuery pool, from which another thread could borrow it while the calling query runs, and it is
+     * discarded with the calling query when that is recompiled. The same code called from another module is
+     * compiled again in that module's context. Code compiled in a context of its own is kept in the XQuery pool.
      *
-     * @param caller the query whose context the code is compiled in a copy of, or null if it has a context of its own
+     * @param caller the context the code is compiled in a copy of, or null if it has a context of its own
      */
     private Sequence execute(final DBBroker broker, final XQuery xqueryService, final Source querySource,
             final XQueryContext innerContext, final Sequence exprContext, final boolean cache,
