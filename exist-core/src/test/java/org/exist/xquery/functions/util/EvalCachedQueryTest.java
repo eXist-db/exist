@@ -123,27 +123,37 @@ public class EvalCachedQueryTest {
 
     @Test
     void concurrentCallsOfAStoredQuery() throws Exception {
-        runConcurrently(MAIN);
+        assertEquals(THREADS * ITERATIONS, runConcurrently(MAIN));
     }
 
-    private void runConcurrently(final XmldbURI main) throws Exception {
+    /**
+     * Runs the stored main query in several threads at once.
+     *
+     * @return the number of runs that returned the expected result
+     */
+    private int runConcurrently(final XmldbURI main) throws Exception {
         final ExecutorService executor = Executors.newFixedThreadPool(THREADS);
         try {
             final CountDownLatch start = new CountDownLatch(1);
-            final List<Future<Void>> threads = new ArrayList<>();
+            final List<Future<Integer>> threads = new ArrayList<>();
             for (int i = 0; i < THREADS; i++) {
                 threads.add(executor.submit(() -> {
                     start.await();
+                    int passed = 0;
                     for (int j = 0; j < ITERATIONS; j++) {
-                        assertEquals(EXPECTED, runMain(main));
+                        if (runMain(main) == EXPECTED) {
+                            passed++;
+                        }
                     }
-                    return null;
+                    return passed;
                 }));
             }
             start.countDown();
-            for (final Future<Void> thread : threads) {
-                thread.get(5, TimeUnit.MINUTES);
+            int passed = 0;
+            for (final Future<Integer> thread : threads) {
+                passed += thread.get(5, TimeUnit.MINUTES);
             }
+            return passed;
         } finally {
             executor.shutdownNow();
         }
@@ -151,7 +161,7 @@ public class EvalCachedQueryTest {
 
     @Test
     void concurrentCallsOfAStoredQueryWithoutImport() throws Exception {
-        runConcurrently(MAIN_WITHOUT_IMPORT);
+        assertEquals(THREADS * ITERATIONS, runConcurrently(MAIN_WITHOUT_IMPORT));
     }
 
     @Test

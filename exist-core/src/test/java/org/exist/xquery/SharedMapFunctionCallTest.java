@@ -60,7 +60,7 @@ public class SharedMapFunctionCallTest {
     @Test
     void mapCalledAsAFunctionConcurrently() throws Exception {
         final Sequence map = execute("map:merge(for $i in 1 to 200 return map { $i: $i })", null);
-        callConcurrently(map, "every $k in map:keys($shared) satisfies $shared($k) eq $k");
+        assertEquals(THREADS * ITERATIONS, callConcurrently(map, "every $k in map:keys($shared) satisfies $shared($k) eq $k"));
     }
 
     @Test
@@ -103,27 +103,37 @@ public class SharedMapFunctionCallTest {
     @Test
     void arrayCalledAsAFunctionConcurrently() throws Exception {
         final Sequence array = execute("array { 1 to 200 }", null);
-        callConcurrently(array, "every $i in 1 to array:size($shared) satisfies $shared($i) eq $i");
+        assertEquals(THREADS * ITERATIONS, callConcurrently(array, "every $i in 1 to array:size($shared) satisfies $shared($i) eq $i"));
     }
 
-    private static void callConcurrently(final Sequence shared, final String query) throws Exception {
+    /**
+     * Runs the query in several threads at once.
+     *
+     * @return the number of runs that returned true
+     */
+    private static int callConcurrently(final Sequence shared, final String query) throws Exception {
         final ExecutorService executor = Executors.newFixedThreadPool(THREADS);
         try {
             final CountDownLatch start = new CountDownLatch(1);
-            final List<Future<Void>> threads = new ArrayList<>();
+            final List<Future<Integer>> threads = new ArrayList<>();
             for (int i = 0; i < THREADS; i++) {
                 threads.add(executor.submit(() -> {
                     start.await();
+                    int passed = 0;
                     for (int j = 0; j < ITERATIONS; j++) {
-                        assertTrue(execute("declare variable $shared external; " + query, shared).effectiveBooleanValue());
+                        if (execute("declare variable $shared external; " + query, shared).effectiveBooleanValue()) {
+                            passed++;
+                        }
                     }
-                    return null;
+                    return passed;
                 }));
             }
             start.countDown();
-            for (final Future<Void> thread : threads) {
-                thread.get(5, TimeUnit.MINUTES);
+            int passed = 0;
+            for (final Future<Integer> thread : threads) {
+                passed += thread.get(5, TimeUnit.MINUTES);
             }
+            return passed;
         } finally {
             executor.shutdownNow();
         }
