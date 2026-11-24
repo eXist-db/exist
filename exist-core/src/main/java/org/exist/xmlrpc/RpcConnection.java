@@ -1450,6 +1450,8 @@ public class RpcConnection implements RpcAPI {
     private boolean parseLocal(final String localFile, final XmldbURI docUri, final int overwrite, final String mimeType, final Boolean isXML, final Date created, final Date modified)
             throws EXistException, PermissionDeniedException {
         return this.<Boolean>writeCollection(docUri.removeLastSegment()).apply((collection, broker, transaction) -> {
+            // the transaction stores this document only, so the document's lock can be held until it ends
+            transaction.setHoldDocumentLocksUntilEnd(true);
 
             try(final ManagedDocumentLock lockedDocument = broker.getBrokerPool().getLockManager().acquireDocumentWriteLock(docUri)) {
 
