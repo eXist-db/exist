@@ -35,7 +35,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class DLNBaseTest {
 
     @Test
-    void hashCode_matchesForEqualIds() {
+    void hashCodeMatchesForEqualIds() {
         final DLN id = new DLN("1.2.3");
         final DLN equalId = new DLN("1.2.3");
 
@@ -44,7 +44,7 @@ class DLNBaseTest {
     }
 
     @Test
-    void hashSet_findsParentId() {
+    void hashSetFindsParentId() {
         final NodeId parentId = new DLN("1.2.3");
         final NodeId returnedParentId = new DLN("1.2.3.4").getParentId();
         final Set<NodeId> ids = new HashSet<>();
