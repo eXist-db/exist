@@ -192,15 +192,9 @@ public class Jaxp extends BasicFunction {
     public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
         final ValidationReport report = new ValidationReport();
 
-        MemTreeBuilder instanceBuilder;
-        ContentHandler contenthandler;
-        if (isCalledAs("jaxp-parse")) {
-            instanceBuilder = context.getDocumentBuilder();
-            contenthandler = new DocumentBuilderReceiver(this, instanceBuilder, true); // (namespace?)
-        } else {
-            instanceBuilder = null;
-            contenthandler = new ValidationContentHandler();
-        }
+        final ParseTarget target = newParseTarget();
+        ContentHandler contenthandler = target.contenthandler();
+        MemTreeBuilder instanceBuilder = target.instanceBuilder();
 
         InputSource instance = null;
         LSResourceResolver catalogResolver = null;
@@ -428,6 +422,15 @@ public class Jaxp extends BasicFunction {
      *                        {@code null} for {@code jaxp}/{@code jaxp-report}.
      */
     private record ParseTarget(ContentHandler contenthandler, @Nullable MemTreeBuilder instanceBuilder) {
+    }
+
+    /** The handler the parse reports to: one that builds the instance for jaxp-parse, one that only validates otherwise. */
+    private ParseTarget newParseTarget() {
+        if (isCalledAs("jaxp-parse")) {
+            final MemTreeBuilder instanceBuilder = context.getDocumentBuilder();
+            return new ParseTarget(new DocumentBuilderReceiver(this, instanceBuilder, true), instanceBuilder); // (namespace?)
+        }
+        return new ParseTarget(new ValidationContentHandler(), null);
     }
 
     /**
