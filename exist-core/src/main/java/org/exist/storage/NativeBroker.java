@@ -1777,7 +1777,17 @@ public class NativeBroker implements DBBroker {
         // WRITE LOCK the collection's parent (as we will remove this collection from it)
         final XmldbURI parentCollectionUri = collection.getParentURI() == null ? XmldbURI.ROOT_COLLECTION_URI : collection.getParentURI();
         try(final ManagedCollectionLock parentCollectionLock = writeLockCollection(parentCollectionUri)) {
-            return _removeCollection(transaction, collection);
+
+            // check the permissions of the whole tree before locking any document, so that whoever may not remove the
+            // Collection is refused without waiting for its readers, and before removing anything
+            @Nullable final Collection parentCollection = collection.getParentURI() == null ? null : getCollection(collection.getParentURI());  // NOTE: we already have a WRITE lock on the parent of the Collection we set out to remove
+            checkPermissionsForRemove(parentCollection, collection);
+
+            // WRITE_LOCK every document to be removed: a reader holds only the document's lock once it has found
+            // the document, so without it the document could be removed while it is being read
+            try(final ManagedLocks<ManagedDocumentLock> documentLocks = new ManagedLocks<>(lockDescendantDocuments(collection, lockManager::acquireDocumentWriteLock))) {
+                return _removeCollection(transaction, collection);
+            }
         } catch(final LockException e) {
             LOG.error("Unable to lock Collection: {}", collection.getURI(), e);
             return false;
@@ -1936,6 +1946,36 @@ public class NativeBroker implements DBBroker {
     private void removeCollectionBinary(final Txn transaction, final BinaryDocument doc) throws IOException {
         final BlobStore blobStore = pool.getBlobStore();
         blobStore.remove(transaction, doc.getBlobId());
+    }
+
+    /**
+     * Checks all permissions in the tree to ensure that a remove operation
+     * will not fail due to a lack of rights
+     *
+     * NOTE: only the permissions of the Collections are involved, so no document locks are needed
+     *
+     * @param parentCollection The parent of the Collection to remove, or null if it is the root Collection
+     * @param collection The Collection to remove
+     *
+     * @throws PermissionDeniedException If the current user may not remove the Collection or one of its descendants
+     * @throws IOException If a sub-Collection cannot be found
+     */
+    private void checkPermissionsForRemove(
+            @Nullable @EnsureLocked(mode=LockMode.READ_LOCK) final Collection parentCollection,
+            @EnsureLocked(mode=LockMode.READ_LOCK) final Collection collection) throws PermissionDeniedException, IOException {
+        if(!checkRemoveCollectionPermissions(parentCollection, collection)) {
+            throw new PermissionDeniedException("Account '" + getCurrentSubject().getName() + "' is not allowed to remove collection '" + collection.getURI() + "'");
+        }
+
+        final XmldbURI collectionUri = collection.getURI();
+        for (final Iterator<XmldbURI> subCollectionName = collection.collectionIteratorNoLock(this); subCollectionName.hasNext(); ) {   // NOTE: we already have a lock on the Collection's parent, which implies the sub-tree
+            final XmldbURI subCollectionUri = collectionUri.append(subCollectionName.next());
+            final Collection subCollection = getCollection(subCollectionUri);
+            if(subCollection == null) {
+                throw new IOException("Child collection " + subCollectionUri + " not found");
+            }
+            checkPermissionsForRemove(collection, subCollection);
+        }
     }
 
     /**
