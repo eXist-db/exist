@@ -163,11 +163,10 @@ public class SAXSerializer extends AbstractSerializer implements ContentHandler,
             final String namespaceURI = xhtml ? Namespaces.XHTML_NS : declaredNamespaceURI;
             receiver.startElement(xhtml ? new QName(qname.getLocalPart(), namespaceURI, qname.getPrefix()) : qname);
             declareIfNew(prefix, namespaceURI);
-            final String lastPrefix = declareNamespacesOf(attribs, prefix);
+            declareNamespacesOf(attribs);
             writeNamespaceDeclarations(true);
             optionalNamespaceDecls.clear();
-            // the prefix of the last attribute that has one, if there is one, as it always was
-            cancelDefaultNamespace(lastPrefix, namespaceURI);
+            cancelDefaultNamespace(prefix, namespaceURI);
             writeAttributes(attribs);
         } catch (final TransformerException e) {
             throw new SAXException(e.getMessage(), e);
@@ -193,8 +192,13 @@ public class SAXSerializer extends AbstractSerializer implements ContentHandler,
         return enforceXHTML && !Namespaces.XHTML_NS.equals(declared) ? Namespaces.XHTML_NS : declared;
     }
 
+    /**
+     * Declares a prefix on the element unless it is declared already: in scope, or by the element itself. The second
+     * test is needed for the default namespace of an element without namespace, which the namespace support does not
+     * remember: without it, an attribute {@code xmlns} would declare a namespace that the element is not in.
+     */
     private void declareIfNew(final String prefix, final String namespaceURI) {
-        if (nsSupport.getURI(prefix) == null) {
+        if (nsSupport.getURI(prefix) == null && !namespaceDecls.containsKey(prefix)) {
             namespaceDecls.put(prefix, namespaceURI);
             nsSupport.declarePrefix(prefix, namespaceURI);
         }
@@ -218,15 +222,10 @@ public class SAXSerializer extends AbstractSerializer implements ContentHandler,
         }
     }
 
-    /**
-     * Declares the namespaces that the attributes of an element need.
-     *
-     * @return the prefix of the last attribute that has one, or the element's prefix if none has
-     */
-    private String declareNamespacesOf(@Nullable final AttrList attribs, final String elementPrefix) {
-        String lastPrefix = elementPrefix;
+    /** Declares the namespaces that the attributes of an element need: its own declarations and the prefixes it uses. */
+    private void declareNamespacesOf(@Nullable final AttrList attribs) {
         if (attribs == null) {
-            return lastPrefix;
+            return;
         }
         for (int i = 0; i < attribs.getLength(); i++) {
             final QName attrQName = attribs.getQName(i);
@@ -234,11 +233,9 @@ public class SAXSerializer extends AbstractSerializer implements ContentHandler,
             if (XMLConstants.XMLNS_ATTRIBUTE.equals(attrQName.getLocalPart())) {
                 declareIfNew(XMLConstants.DEFAULT_NS_PREFIX, defaultNamespace(attribs.getValue(i)));
             } else if (attrPrefix != null && !attrPrefix.isEmpty()) {
-                lastPrefix = attrPrefix;
                 declareIfNew(attrPrefix, attrQName.getNamespaceURI());
             }
         }
-        return lastPrefix;
     }
 
     /**

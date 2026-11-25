@@ -24,9 +24,13 @@ package org.exist.util.serializer;
 import org.exist.dom.QName;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.junit.jupiter.api.Test;
+import org.w3c.dom.Element;
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
+import javax.xml.parsers.DocumentBuilderFactory;
+import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.Properties;
 
@@ -82,6 +86,39 @@ public class SAXSerializerNamespacesTest {
         return out.toString();
     }
 
+    /** The namespace of the first child of the root of the output, read by a parser that knows namespaces ("" for none). */
+    private static String childNamespace(final String xml) throws Exception {
+        final DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        factory.setNamespaceAware(true);
+        final Element root = factory.newDocumentBuilder().parse(new InputSource(new StringReader(xml))).getDocumentElement();
+        final String namespace = ((Element) root.getFirstChild()).getNamespaceURI();
+        return namespace == null ? "" : namespace;
+    }
+
+    /** An element p in the default namespace urn:p that holds the element under test, with the QName overload. */
+    private static String qnameInDefaultNamespace(final QName name, final AttrList attribs) throws SAXException {
+        final StringWriter out = new StringWriter();
+        final SAXSerializer serializer = serializer(out, false);
+        final QName parent = new QName("p", "urn:p", "");
+        serializer.startElement(parent, new AttrList());
+        serializer.startElement(name, attribs);
+        serializer.endElement(name);
+        serializer.endElement(parent);
+        return out.toString();
+    }
+
+    /** The same with the SAX overload. */
+    private static String saxInDefaultNamespace(final String namespaceURI, final String localName, final String qname,
+            final AttributesImpl attribs) throws SAXException {
+        final StringWriter out = new StringWriter();
+        final SAXSerializer serializer = serializer(out, false);
+        serializer.startElement("urn:p", "p", "p", new AttributesImpl());
+        serializer.startElement(namespaceURI, localName, qname, attribs);
+        serializer.endElement(namespaceURI, localName, qname);
+        serializer.endElement("urn:p", "p", "p");
+        return out.toString();
+    }
+
     @Test
     void anElementWithAPrefixDeclaresItsNamespace() throws SAXException {
         assertEquals("<a><p:a xmlns:p=\"urn:x\"/></a>", sax(false, "urn:x", "a", "p:a", null));
@@ -114,13 +151,26 @@ public class SAXSerializerNamespacesTest {
         assertEquals("<a><p:a xmlns:p=\"urn:x\" xmlns:z=\"urn:z\" z:c=\"v\"/></a>", qname(false, new QName("a", "urn:x", "p"), attribs));
     }
 
-    /** The default namespace is cancelled by the prefix of the last attribute that has one, not by the element's own. */
+    /** An attribute xmlns does not change the namespace of an element that has none: the element decides. */
     @Test
-    void theLastPrefixedAttributeDecidesWhetherTheDefaultNamespaceIsCancelled() throws SAXException {
+    void anXmlnsAttributeDoesNotPutAnElementWithoutNamespaceIntoAnotherNamespace() throws SAXException {
         final AttrList attribs = new AttrList();
         attribs.addAttribute(new QName("xmlns", "", ""), XHTML);
         attribs.addAttribute(new QName("c", "urn:z", "z"), "v");
-        assertEquals("<a><a xmlns=\"http://www.w3.org/1999/xhtml\" xmlns:z=\"urn:z\" z:c=\"v\"/></a>", qname(false, new QName("a", "", ""), attribs));
+        assertEquals("<a><a xmlns:z=\"urn:z\" z:c=\"v\"/></a>", qname(false, new QName("a", "", ""), attribs));
+    }
+
+    @Test
+    void anXmlnsAttributeIsNotWrittenNextToTheNoNamespaceOfTheElement() throws SAXException {
+        assertEquals("<a><a id=\"1\"/></a>", sax(false, "", "a", "a", attributes("", "xmlns", "xmlns", "urn:d", "", "id", "id", "1")));
+    }
+
+    @Test
+    void anElementWithoutNamespaceStaysWithoutItInsideADefaultNamespaceWhenItHasAPrefixedAttribute() throws Exception {
+        final AttrList attribs = new AttrList();
+        attribs.addAttribute(new QName("c", "urn:z", "z"), "v");
+        assertEquals("", childNamespace(qnameInDefaultNamespace(new QName("a", "", ""), attribs)));
+        assertEquals("", childNamespace(saxInDefaultNamespace("", "a", "a", attributes("urn:z", "c", "z:c", "v"))));
     }
 
     @Test
