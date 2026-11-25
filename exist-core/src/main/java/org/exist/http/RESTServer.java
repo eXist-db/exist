@@ -345,17 +345,17 @@ public class RESTServer {
      * of a REST Server query request.
      */
     private static class QueryRequestOptions {
-        String query = null;
-        List<Namespace> namespaces = null;
-        ElementImpl variables = null;
+        String query;
+        List<Namespace> namespaces;
+        ElementImpl variables;
         int howmany = 10;
         int start = 1;
-        boolean typed = false;
+        boolean typed;
         boolean wrap = true;
-        boolean source = false;
-        boolean cache = false;
-        String stylesheet = null;
-        String encoding = null;
+        boolean source;
+        boolean cache;
+        String stylesheet;
+        String encoding;
     }
 
     /**
@@ -2500,7 +2500,8 @@ public class RESTServer {
             final String mimeType = resolveXmlContentType(resource, serializer, asMimeType, encoding, response);
             if (mimeType.equals(MimeType.HTML_TYPE.getName())) {
                 outputProperties.setProperty("method", "xhtml");
-                outputProperties.setProperty("media-type", "text/html; charset=" + encoding);
+                // the charset is not part of the media-type parameter (Serialization 3.1, 3); the encoding parameter sets it
+                outputProperties.setProperty("media-type", MimeType.HTML_TYPE.getName());
                 outputProperties.setProperty("indent", "yes");
                 outputProperties.setProperty("omit-xml-declaration", "no");
             }

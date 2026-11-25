@@ -23,6 +23,7 @@ package org.exist.util.serializer;
 
 import java.io.IOException;
 import java.io.Writer;
+import javax.annotation.Nullable;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.TransformerException;
 
@@ -173,21 +174,33 @@ public class XHTMLWriter extends IndentingXMLWriter {
     protected final ObjectSet<String> inlineTags;
 
     protected String currentTag;
-    protected boolean inHead = false;
-    protected boolean contentTypeMetaWritten = false;
+    // The level below the open `<head>`: 0 outside of a head, 1 for the head itself, 2 for its children.
+    private int headDepth;
 
-    // Meta-tag dedup state: when a `<meta>` element is encountered inside
-    // `<head>` AFTER the auto-generated content-type meta has been emitted,
-    // its bytes are diverted to {@link #metaScratch}. If, while buffering,
+    // Only the head of a page gets the content-type meta: a `<head>` that is the outermost element, or
+    // the first `<head>` child of an outermost `<html>`. So only the first two levels of elements are
+    // checked, see {@link #afterStartElement(String, String)}.
+    private int elementDepth;
+    private boolean outermostIsHtml;
+    private boolean htmlHasHead;
+
+    // The content-type meta of a `<head>` is written when its start tag is closed, not when the tag
+    // is opened: the attributes and namespaces of the head arrive after startElement, and closing the
+    // tag early would write them as text.
+    private boolean contentTypeMetaPending;
+
+    // Meta-tag dedup state: when a `<meta>` child of a `<head>` that has
+    // been given the content-type meta is encountered, its bytes are
+    // diverted to {@link #metaScratch}. If, while buffering,
     // we observe a {@code charset} or {@code http-equiv="Content-Type"}
     // attribute, the buffered meta is dropped (the auto-meta replaces it);
     // otherwise the buffer is flushed verbatim at endElement time.
-    private Writer metaSuspendedWriter = null;
-    private java.io.StringWriter metaScratch = null;
-    private boolean metaIsContentTypeOrCharset = false;
+    private Writer metaSuspendedWriter;
+    private java.io.StringWriter metaScratch;
+    private boolean metaIsContentTypeOrCharset;
 
-    boolean haveCollapsedXhtmlPrefix = false;
-    private String collapsedForeignNs = null;  // SVG or MathML ns being normalized
+    boolean haveCollapsedXhtmlPrefix;
+    private String collapsedForeignNs;  // SVG or MathML ns being normalized
 
     /**
      *
@@ -311,16 +324,81 @@ public class XHTMLWriter extends IndentingXMLWriter {
     @Override
     protected void resetObjectState() {
         super.resetObjectState();
-        inHead = false;
-        contentTypeMetaWritten = false;
+        headDepth = 0;
+        elementDepth = 0;
+        outermostIsHtml = false;
+        htmlHasHead = false;
+        contentTypeMetaPending = false;
         metaSuspendedWriter = null;
         metaScratch = null;
         metaIsContentTypeOrCharset = false;
     }
 
+    /**
+     * Whether a starting element is a meta child of a head that has been given the content-type meta,
+     * which is dropped if it also declares the content type.
+     */
     private boolean shouldBufferDuplicateMeta(final String localName) {
-        return inHead && contentTypeMetaWritten && metaSuspendedWriter == null
+        return headDepth == 1 && isIncludeContentType() && metaSuspendedWriter == null
                 && "meta".equalsIgnoreCase(localName);
+    }
+
+    /**
+     * Called before an element starts: writes the pending content-type meta of its parent head, and
+     * starts buffering a meta that may be a duplicate of it.
+     */
+    private void beforeStartElement(final String localName) throws TransformerException {
+        if (contentTypeMetaPending && tagIsOpen) {
+            closeStartTag(false);
+        }
+        if (shouldBufferDuplicateMeta(localName)) {
+            beginMetaBuffer();
+        }
+    }
+
+    /**
+     * Called after an element has started: a head gets the content-type meta when its start tag is
+     * closed.
+     */
+    private void afterStartElement(@Nullable final String namespaceURI, final String localName) {
+        elementDepth++;
+        if (headDepth > 0) {
+            headDepth++;
+            return;
+        }
+        // the head of a page and its html are on the first two levels, in no namespace or the XHTML
+        // namespace (Serialization 3.1, 6 and 7.1); no other element needs to be checked
+        if (elementDepth > 2 || !isHtmlNamespace(namespaceURI)) {
+            return;
+        }
+        if ("head".equalsIgnoreCase(localName)) {
+            if (elementDepth == 1 || (outermostIsHtml && !htmlHasHead)) {
+                htmlHasHead = true;
+                headDepth = 1;
+                contentTypeMetaPending = isIncludeContentType();
+            }
+        } else if (elementDepth == 1 && "html".equalsIgnoreCase(localName)) {
+            outermostIsHtml = true;
+        }
+    }
+
+    private static boolean isHtmlNamespace(@Nullable final String namespaceURI) {
+        return namespaceURI == null || namespaceURI.isEmpty() || Namespaces.XHTML_NS.equals(namespaceURI);
+    }
+
+    /**
+     * Called when an element ends, also by subclasses that do not call
+     * {@link #endElement(QName)} for void elements.
+     */
+    protected void afterEndElement() {
+        if (headDepth > 0) {
+            headDepth--;
+        }
+        if (elementDepth == 1) {
+            outermostIsHtml = false;
+            htmlHasHead = false;
+        }
+        elementDepth--;
     }
 
     /** True when the writer is currently diverting bytes for a candidate-duplicate meta. */
@@ -328,7 +406,9 @@ public class XHTMLWriter extends IndentingXMLWriter {
         return metaSuspendedWriter != null && "meta".equalsIgnoreCase(localName);
     }
 
-    private void beginMetaBuffer() {
+    private void beginMetaBuffer() throws TransformerException {
+        // the start tag of the parent belongs to the output, not to the meta that may be dropped
+        closeStartTag(false);
         metaSuspendedWriter = writer;
         metaScratch = new java.io.StringWriter();
         writer = metaScratch;
@@ -376,15 +456,10 @@ public class XHTMLWriter extends IndentingXMLWriter {
 
         final QName xhtmlQName = removeXhtmlPrefix(qname);
 
-        if (shouldBufferDuplicateMeta(xhtmlQName.getLocalPart())) {
-            beginMetaBuffer();
-        }
+        beforeStartElement(xhtmlQName.getLocalPart());
         super.startElement(xhtmlQName);
         currentTag = xhtmlQName.getStringValue();
-        if ("head".equalsIgnoreCase(xhtmlQName.getLocalPart())) {
-            inHead = true;
-            writeContentTypeMeta();
-        }
+        afterStartElement(xhtmlQName.getNamespaceURI(), xhtmlQName.getLocalPart());
     }
 
     @Override
@@ -392,9 +467,7 @@ public class XHTMLWriter extends IndentingXMLWriter {
         final QName xhtmlQName = removeXhtmlPrefix(qname);
         final boolean isMetaInHead = metaSuspendedWriter != null
                 && "meta".equalsIgnoreCase(xhtmlQName.getLocalPart());
-        if (inHead && "head".equalsIgnoreCase(xhtmlQName.getLocalPart())) {
-            inHead = false;
-        }
+        afterEndElement();
 
         super.endElement(xhtmlQName);
 
@@ -428,24 +501,17 @@ public class XHTMLWriter extends IndentingXMLWriter {
 
         final String xhtmlQName = removeXhtmlPrefix(namespaceURI, qname);
 
-        if (shouldBufferDuplicateMeta(localName)) {
-            beginMetaBuffer();
-        }
+        beforeStartElement(localName);
         super.startElement(namespaceURI, localName, xhtmlQName);
         currentTag = xhtmlQName;
-        if ("head".equalsIgnoreCase(localName)) {
-            inHead = true;
-            writeContentTypeMeta();
-        }
+        afterStartElement(namespaceURI, localName);
     }
 
     @Override
     public void endElement(final String namespaceURI, final String localName, final String qname) throws TransformerException {
         final boolean isMetaInHead = metaSuspendedWriter != null
                 && "meta".equalsIgnoreCase(localName);
-        if (inHead && "head".equalsIgnoreCase(localName)) {
-            inHead = false;
-        }
+        afterEndElement();
 
         final String xhtmlQName = removeXhtmlPrefix(namespaceURI, qname);
 
@@ -492,7 +558,34 @@ public class XHTMLWriter extends IndentingXMLWriter {
 
 
     @Override
-    protected void closeStartTag(final boolean isEmpty) throws TransformerException {
+    protected final void closeStartTag(final boolean isEmpty) throws TransformerException {
+        if (!tagIsOpen || !contentTypeMetaPending) {
+            writeStartTagEnd(isEmpty);
+            return;
+        }
+        // the open tag is the head: close it, and write the content-type meta as its first child
+        contentTypeMetaPending = false;
+        writeStartTagEnd(false);
+        writeContentTypeMeta();
+        if (isEmpty) {
+            try {
+                final Writer w = getWriter();
+                w.write("</");
+                w.write(currentTag);
+                w.write('>');
+            } catch (final IOException ioe) {
+                throw new TransformerException(ioe.getMessage(), ioe);
+            }
+        }
+    }
+
+    /**
+     * Writes the end of the open start tag.
+     *
+     * @param isEmpty true if the element has no content, so that the start tag also ends it
+     * @throws TransformerException if the tag cannot be written
+     */
+    protected void writeStartTagEnd(final boolean isEmpty) throws TransformerException {
         try {
             if (tagIsOpen) {
                 final Writer w = getWriter();
@@ -535,7 +628,8 @@ public class XHTMLWriter extends IndentingXMLWriter {
 
     /**
      * Returns true if the HTML version is 5.0 or higher.
-     * Checks html-version first, then falls back to version (per W3C spec for html method).
+     * Checks html-version first, then, for the html method only, falls back to version (per W3C spec;
+     * for the xhtml method, version is the XML version).
      */
     protected boolean isHtml5Version() {
         if (outputProperties == null) {
@@ -549,7 +643,7 @@ public class XHTMLWriter extends IndentingXMLWriter {
                 // fall through
             }
         }
-        final String version = outputProperties.getProperty(OutputKeys.VERSION);
+        final String version = isHtmlMethod() ? outputProperties.getProperty(OutputKeys.VERSION) : null;
         if (version != null) {
             try {
                 return Double.parseDouble(version) >= 5.0;
@@ -769,36 +863,36 @@ public class XHTMLWriter extends IndentingXMLWriter {
     }
 
     /**
-     * Write a meta content-type tag as the first child of head when
-     * include-content-type is enabled (the default per W3C Serialization 3.1).
+     * Whether a head gets a meta content-type tag as its first child: when include-content-type is
+     * enabled, the default per W3C Serialization 3.1.
+     */
+    private boolean isIncludeContentType() {
+        return outputProperties != null
+                && "yes".equals(outputProperties.getProperty("include-content-type", "yes"));
+    }
+
+    /**
+     * Write a meta content-type tag as the first child of head. The start tag of the head must
+     * already be closed.
      */
     protected void writeContentTypeMeta() throws TransformerException {
-        if (contentTypeMetaWritten || outputProperties == null) {
-            return;
-        }
-        final String includeContentType = outputProperties.getProperty("include-content-type", "yes");
-        if (!"yes".equals(includeContentType)) {
-            return;
-        }
-        contentTypeMetaWritten = true;
         try {
             final String encoding = outputProperties.getProperty(OutputKeys.ENCODING, "UTF-8");
-            closeStartTag(false);
             final Writer writer = getWriter();
 
-            // HTML5 method uses <meta charset="UTF-8">
-            // XHTML and HTML4 use <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+            // HTML5 uses <meta charset="UTF-8">, with the html and the xhtml method (Serialization 4.0 draft, 6.1.18 and 7.5.14)
+            // HTML4 and XHTML 1.x use <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
             // XHTML mode requires self-closing tags (/>)  for valid XML output —
             // the URL rewrite pipeline re-parses this as XML in the view step.
             final boolean selfClose = !isHtmlMethod();
-            if (isHtmlMethod() && isHtml5Version()) {
+            if (isHtml5Version()) {
                 writer.write("<meta charset=\"");
                 writer.write(encoding);
                 writer.write(selfClose ? "\" />" : "\">");
             } else {
                 final String mediaType = outputProperties.getProperty(OutputKeys.MEDIA_TYPE, "text/html");
                 writer.write("<meta http-equiv=\"Content-Type\" content=\"");
-                writer.write(mediaType);
+                writer.write(withoutCharset(mediaType));
                 writer.write("; charset=");
                 writer.write(encoding);
                 writer.write(selfClose ? "\" />" : "\">");
@@ -806,5 +900,25 @@ public class XHTMLWriter extends IndentingXMLWriter {
         } catch (IOException e) {
             throw new TransformerException(e.getMessage(), e);
         }
+    }
+
+    /**
+     * The media-type parameter must not contain a charset (Serialization 3.1, 3), as the meta
+     * adds the encoding. Drop one that is there anyway, so that the charset is not written twice.
+     */
+    private static String withoutCharset(final String mediaType) {
+        final String[] parts = mediaType.split(";");
+        if (parts.length == 0) {
+            // only semicolons, there is no charset to drop
+            return mediaType;
+        }
+        final StringBuilder result = new StringBuilder(parts[0].trim());
+        for (int i = 1; i < parts.length; i++) {
+            final String parameter = parts[i].trim();
+            if (!parameter.regionMatches(true, 0, "charset=", 0, 8)) {
+                result.append("; ").append(parameter);
+            }
+        }
+        return result.toString();
     }
 }
