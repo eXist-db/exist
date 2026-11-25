@@ -117,18 +117,35 @@ public class NativeSerializer extends Serializer {
             documentStarted = true;
         }
 
+        serializeDeclaration(doc);
+        serializeDoctype(doc);
+        serializeChildren(children);
+
+        if (generateDocEvent) {receiver.endDocument();}
+
+        if (LOG.isDebugEnabled())
+        {
+            LOG.debug("serializing document {} ({}) to SAX took {} msec", doc.getDocId(), doc.getURI(), System.currentTimeMillis() - start);}
+
+    }
+    
+    
+    private void serializeDeclaration(final DocumentImpl doc) throws SAXException {
         final XMLDeclarationImpl xmlDecl = doc.getXmlDeclaration();
         if (xmlDecl != null) {
             // whether the declaration is output is decided by the receiver according to omit-xml-declaration
             receiver.declaration(xmlDecl.getVersion(), xmlDecl.getEncoding(), xmlDecl.getStandalone());
         }
+    }
 
+    private void serializeDoctype(final DocumentImpl doc) throws SAXException {
         if (doc.getDoctype() != null && "yes".equals(getProperty(EXistOutputKeys.OUTPUT_DOCTYPE, "no"))) {
             final DocumentTypeImpl docType = (DocumentTypeImpl)doc.getDoctype();
             serializeToReceiver(docType, null, docType.getOwnerDocument(), true, null, new TreeSet<>());
         }
+    }
 
-        // iterate through children
+    private void serializeChildren(final NodeList children) throws SAXException {
         for (int i = 0; i < children.getLength(); i++) {
             final IStoredNode<?> node = (IStoredNode<?>) children.item(i);
             try(final INodeIterator domIter = broker.getNodeIterator(node)) {
@@ -140,16 +157,8 @@ public class NativeSerializer extends Serializer {
                 LOG.warn("Unable to close node iterator", ioe);
             }
         }
-
-        if (generateDocEvent) {receiver.endDocument();}
-
-        if (LOG.isDebugEnabled())
-        {
-            LOG.debug("serializing document {} ({}) to SAX took {} msec", doc.getDocId(), doc.getURI(), System.currentTimeMillis() - start);}
-
     }
-    
-    
+
     protected void serializeToReceiver(IStoredNode node, INodeIterator iter,
             DocumentImpl doc, boolean first, Match match, Set<String> namespaces) throws SAXException {
         if (node == null && iter.hasNext()) {
