@@ -190,12 +190,19 @@ public class DynamicFunctionCall extends AbstractExpression {
                     + key.getItemCount() + " items");
         }
         AtomicValue keyValue = (AtomicValue) key.itemAt(0);
-        if (mapOrArray instanceof final ArrayType array) {
-            if (keyValue.getType() == Type.UNTYPED_ATOMIC) {
-                keyValue = keyValue.convertTo(Type.INTEGER);
+        try {
+            if (mapOrArray instanceof final ArrayType array) {
+                if (keyValue.getType() == Type.UNTYPED_ATOMIC) {
+                    keyValue = keyValue.convertTo(Type.INTEGER);
+                }
+                return array.get(keyValue);
             }
-            return array.get(keyValue);
+            return ((AbstractMapType) mapOrArray).get(keyValue);
+        } catch (final XPathException e) {
+            if (e.getLine() <= 0) {
+                e.setLocation(getLine(), getColumn(), getSource());
+            }
+            throw e;
         }
-        return ((AbstractMapType) mapOrArray).get(keyValue);
     }
 }
