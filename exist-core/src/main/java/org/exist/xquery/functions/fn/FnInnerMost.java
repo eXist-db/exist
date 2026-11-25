@@ -22,14 +22,8 @@
 package org.exist.xquery.functions.fn;
 
 import org.exist.dom.QName;
-import org.exist.numbering.NodeId;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;
-
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 
 public class FnInnerMost extends BasicFunction {
@@ -49,44 +43,9 @@ public class FnInnerMost extends BasicFunction {
 
     @Override
     public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
-        final Sequence nodes = args[0];
-        if(nodes.isEmpty()) {
-            return Sequence.EMPTY_SEQUENCE;
-        } else if(nodes.hasOne()) {
-            return nodes;
-        } else {
-            final Sequence results = new ValueSequence();
-
-            final List<NodeId> nodeIds = getNodeIds(nodes);
-            final Set<NodeId> found = new HashSet<>();
-
-            final SequenceIterator it = nodes.iterate();
-            while(it.hasNext()) {
-                final Item item = it.nextItem();
-                final NodeValue node = ((NodeValue)item);
-                final NodeId currentNodeId = node.getNodeId();
-
-                if(!found.contains(currentNodeId) &&
-                        nodeIds.parallelStream().noneMatch(nodeId -> nodeId.isDescendantOf(currentNodeId))) {
-                    results.add(node);
-                    found.add(currentNodeId);
-                }
-            }
-
-            // the result is in document order, whatever the order of the input
-            results.removeDuplicates();
-            return results;
-        }
-    }
-
-    private List<NodeId> getNodeIds(final Sequence nodes) throws XPathException {
-        final List<NodeId> nodeIds = new ArrayList<>();
-        final SequenceIterator it = nodes.iterate();
-        while(it.hasNext()) {
-            final Item item = it.nextItem();
-            final NodeValue node = ((NodeValue)item);
-            nodeIds.add(node.getNodeId());
-        }
-        return nodeIds;
+        return FnOuterMost.filterByDocumentAncestry(
+                args[0],
+                (currentNodeId, docNodeIds) -> docNodeIds.parallelStream().anyMatch(nodeId -> nodeId.isDescendantOf(currentNodeId))
+        );
     }
 }
