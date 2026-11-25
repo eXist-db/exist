@@ -72,15 +72,19 @@ public class XQueryPool implements BrokerPoolService {
     public static final String CONFIGURATION_ELEMENT_NAME = "query-pool";
     public static final String MAX_STACK_SIZE_ATTRIBUTE = "max-stack-size";
     public static final String POOL_SIZE_ATTTRIBUTE = "size";
+    public static final String EVAL_CACHE_SIZE_ATTRIBUTE = "eval-cache-size";
 
     public static final String PROPERTY_MAX_STACK_SIZE = "db-connection.query-pool.max-stack-size";
     public static final String PROPERTY_POOL_SIZE = "db-connection.query-pool.size";
+    public static final String PROPERTY_EVAL_CACHE_SIZE = "db-connection.query-pool.eval-cache-size";
 
     private static final int DEFAULT_MAX_POOL_SIZE = 128;
     private static final int DEFAULT_MAX_QUERY_STACK_SIZE = 64;
+    private static final int DEFAULT_EVAL_CACHE_SIZE = 256;
 
     private int maxPoolSize = DEFAULT_MAX_POOL_SIZE;
     private int maxQueryStackSize = DEFAULT_MAX_QUERY_STACK_SIZE;
+    private int evalCacheSize = DEFAULT_EVAL_CACHE_SIZE;
 
     /**
      * Source -> Deque of compiled Queries
@@ -97,11 +101,23 @@ public class XQueryPool implements BrokerPoolService {
 
         this.maxQueryStackSize = Objects.requireNonNullElse(maxStSz, DEFAULT_MAX_QUERY_STACK_SIZE);
 
+        this.evalCacheSize = Math.max(0, Objects.requireNonNullElse((Integer) configuration.getProperty(PROPERTY_EVAL_CACHE_SIZE), DEFAULT_EVAL_CACHE_SIZE));
+
         this.cache = Caffeine.newBuilder()
                 .maximumSize(maxPoolSize)
                 .build();
 
-        LOG.info("QueryPool: size = {}; maxQueryStackSize = {}", nf.format(maxPoolSize), nf.format(maxQueryStackSize));
+        LOG.info("QueryPool: size = {}; maxQueryStackSize = {}; evalCacheSize = {}", nf.format(maxPoolSize), nf.format(maxQueryStackSize), nf.format(evalCacheSize));
+    }
+
+    /**
+     * Gets the number of compiled forms of code evaluated by {@code util:eval} with its cache flag that each module
+     * calling it keeps for reuse, see {@link org.exist.xquery.XQueryContext#returnEvalQuery(Source, CompiledXQuery)}.
+     *
+     * @return the number of compiled codes each calling module keeps; 0 if none is kept
+     */
+    public int getEvalCacheSize() {
+        return evalCacheSize;
     }
 
     /**
@@ -194,12 +210,13 @@ public class XQueryPool implements BrokerPoolService {
     }
 
     /**
-     * Determines whether the caller could have resolved every module imported by a pooled compiled
-     * XQuery, had it compiled the query itself.
+     * Determines whether the caller could have resolved every module imported by a compiled XQuery
+     * kept for reuse, here or by {@link XQueryContext#borrowEvalQuery(DBBroker, Source)}, had it
+     * compiled the query itself.
      *
      * A cold compile resolves each imported module through
      * {@link org.exist.source.SourceFactory#getSource(DBBroker, String, String, boolean)}, which
-     * requires READ on the module. The same gate is applied here, so that borrowing from the pool
+     * requires READ on the module. The same gate is applied to kept queries, so that reusing one
      * grants no access which compiling would not.
      *
      * @param broker the database broker
@@ -207,7 +224,7 @@ public class XQueryPool implements BrokerPoolService {
      *
      * @return true if the caller may read every imported module, false otherwise.
      */
-    private static boolean callerMayUseModulesOf(final DBBroker broker, final CompiledXQuery compiledXQuery) {
+    public static boolean callerMayUseModulesOf(final DBBroker broker, final CompiledXQuery compiledXQuery) {
         final XQueryContext context = compiledXQuery.getContext();
         if (context == null) {
             return true;

@@ -291,6 +291,8 @@ public class Eval extends BasicFunction {
         final XQuery xqueryService = evalContext.getBroker().getBrokerPool().getXQueryService();
         final XQueryContext innerContext;
         final Sequence initContextSequence;
+        // the context the code is compiled in a copy of, and which keeps the compiled code, see #execute
+        @Nullable final XQueryContext caller = contextInit == null ? evalContext : null;
         if (contextInit != null) {
             // eval-with-context: initialize a new context
             innerContext = new XQueryContext(context.getBroker().getBrokerPool());
@@ -377,7 +379,7 @@ public class Eval extends BasicFunction {
             try {
                 if (!isCalledAs(FS_EVAL_AND_SERIALIZE_NAME)) {
                     result = execute(evalContext.getBroker(), xqueryService, querySource, innerContext, exprContext,
-                            cache, null);
+                            cache, caller, null);
 
                     return result;
 
@@ -393,7 +395,7 @@ public class Eval extends BasicFunction {
                     // execute the query, XQuery prolog serialization options are collected into `xqueryOutputProperties`
                     final Properties xqueryOutputProperties = new Properties();
                     result = execute(evalContext.getBroker(), xqueryService, querySource, innerContext, exprContext,
-                            cache, xqueryOutputProperties);
+                            cache, caller, xqueryOutputProperties);
 
                     // do we need to subsequence the results?
                     if (getArgumentCount() > 2) {
@@ -465,15 +467,33 @@ public class Eval extends BasicFunction {
         }
     }
 
+    /**
+     * Compiles, or reuses, and executes the code.
+     *
+     * Code compiled in a copy of the calling context uses the calling query's instances of the modules it imports,
+     * whose variables are that query's, and the calling module's namespaces and functions. So its compiled form is
+     * kept by the calling context, which belongs to one query and is only ever used by one thread at a time, rather
+     * than in the XQuery pool, from which another thread could borrow it while the calling query runs, and it is
+     * discarded with the calling query when that is recompiled. The same code called from another module is
+     * compiled again in that module's context. Code compiled in a context of its own is kept in the XQuery pool.
+     *
+     * @param caller the context the code is compiled in a copy of, or null if it has a context of its own
+     */
     private Sequence execute(final DBBroker broker, final XQuery xqueryService, final Source querySource,
             final XQueryContext innerContext, final Sequence exprContext, final boolean cache,
-            @Nullable final Properties outputProperties) throws XPathException {
+            @Nullable final XQueryContext caller, @Nullable final Properties outputProperties) throws XPathException {
 
         CompiledXQuery compiled = null;
         final XQueryPool pool = broker.getBrokerPool().getXQueryPool();
 
         try {
-            compiled = cache ? pool.borrowCompiledXQuery(broker, querySource) : null;
+            if (!cache) {
+                compiled = null;
+            } else if (caller != null) {
+                compiled = caller.borrowEvalQuery(broker, querySource);
+            } else {
+                compiled = pool.borrowCompiledXQuery(broker, querySource);
+            }
             if (compiled == null) {
                 compiled = xqueryService.compile(innerContext, querySource);
             } else {
@@ -506,7 +526,9 @@ public class Eval extends BasicFunction {
         } finally {
             if (compiled != null) {
                 compiled.getContext().runCleanupTasks();
-                if (cache) {
+                if (cache && caller != null) {
+                    caller.returnEvalQuery(querySource, compiled);
+                } else if (cache) {
                     pool.returnCompiledXQuery(querySource, compiled);
                 } else {
                     compiled.reset();
