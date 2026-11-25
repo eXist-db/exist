@@ -317,6 +317,8 @@ public class ExistCollection extends ExistResource {
                     -> (String) broker.getConfiguration().getProperty(Configuration.BINARY_CACHE_CLASS_PROPERTY), is);
                  final CachingFilterInputStream cfis = new CachingFilterInputStream(cache);
                  final EXistInputSource eis = new CachingFilterInputStreamInputSource(cfis)) {
+                // the transaction stores this document only, so the document's lock can be held until it ends
+                txn.setHoldDocumentLocksUntilEnd(true);
                 broker.storeDocument(txn, newNameUri, eis, mime, collection);
             }
 
