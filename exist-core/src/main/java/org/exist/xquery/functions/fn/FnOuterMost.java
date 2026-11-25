@@ -22,14 +22,19 @@
 package org.exist.xquery.functions.fn;
 
 import org.exist.dom.QName;
+import org.exist.dom.persistent.NodeProxy;
 import org.exist.numbering.NodeId;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;
+import org.w3c.dom.Document;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.function.BiPredicate;
 
 
 public class FnOuterMost extends BasicFunction {
@@ -49,44 +54,78 @@ public class FnOuterMost extends BasicFunction {
 
     @Override
     public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
-        final Sequence nodes = args[0];
-        if(nodes.isEmpty()) {
-            return Sequence.EMPTY_SEQUENCE;
-        } else if(nodes.hasOne()) {
-            return nodes;
-        } else {
-            final Sequence results = new ValueSequence();
-
-            final List<NodeId> nodeIds = getNodeIds(nodes);
-            final Set<NodeId> found = new HashSet<>();
-
-            final SequenceIterator it = nodes.iterate();
-            while(it.hasNext()) {
-                final Item item = it.nextItem();
-                final NodeValue node = ((NodeValue)item);
-                final NodeId currentNodeId = node.getNodeId();
-
-                if(!found.contains(currentNodeId) &&
-                        nodeIds.parallelStream().noneMatch(currentNodeId::isDescendantOf)) {
-                    results.add(node);
-                    found.add(currentNodeId);
-                }
-            }
-
-            // the result is in document order, whatever the order of the input
-            results.removeDuplicates();
-            return results;
-        }
+        return filterByDocumentAncestry(
+                args[0],
+                (currentNodeId, docNodeIds) -> docNodeIds.parallelStream().anyMatch(currentNodeId::isDescendantOf)
+        );
     }
 
-    private List<NodeId> getNodeIds(final Sequence nodes) throws XPathException {
-        final List<NodeId> nodeIds = new ArrayList<>();
-        final SequenceIterator it = nodes.iterate();
-        while(it.hasNext()) {
-            final Item item = it.nextItem();
-            final NodeValue node = ((NodeValue)item);
-            nodeIds.add(node.getNodeId());
+    static Sequence filterByDocumentAncestry(
+            final Sequence nodes,
+            final BiPredicate<NodeId, List<NodeId>> hasRelatedNode
+    ) throws XPathException {
+        if (nodes.isEmpty()) {
+            return Sequence.EMPTY_SEQUENCE;
+        } else if (nodes.hasOne()) {
+            return nodes;
         }
-        return nodeIds;
+
+        final Sequence results = new ValueSequence();
+        // Group NodeIds by document so equal NodeIds in distinct documents (e.g. root DLN "1") do not collide.
+        final Map<DocKey, List<NodeId>> nodeIdsByDoc = groupNodeIdsByDoc(nodes);
+        final Map<DocKey, Set<NodeId>> foundByDoc = new HashMap<>();
+
+        final SequenceIterator it = nodes.iterate();
+        while (it.hasNext()) {
+            final Item item = it.nextItem();
+            final NodeValue node = (NodeValue) item;
+            final DocKey docKey = docKey(node);
+            final NodeId currentNodeId = node.getNodeId();
+            final Set<NodeId> foundInDoc = foundByDoc.computeIfAbsent(docKey, ignored -> new HashSet<>());
+            final List<NodeId> docNodeIds = nodeIdsByDoc.get(docKey);
+
+            if (!foundInDoc.contains(currentNodeId)
+                    && !hasRelatedNode.test(currentNodeId, docNodeIds)) {
+                results.add(node);
+                foundInDoc.add(currentNodeId);
+            }
+        }
+
+        // the result is in document order, whatever the order of the input
+        results.removeDuplicates();
+        return results;
+    }
+
+    private static Map<DocKey, List<NodeId>> groupNodeIdsByDoc(final Sequence nodes) throws XPathException {
+        final Map<DocKey, List<NodeId>> nodeIdsByDoc = new HashMap<>();
+        final SequenceIterator it = nodes.iterate();
+        while (it.hasNext()) {
+            final Item item = it.nextItem();
+            final NodeValue node = (NodeValue) item;
+            nodeIdsByDoc.computeIfAbsent(docKey(node), ignored -> new ArrayList<>())
+                    .add(node.getNodeId());
+        }
+        return nodeIdsByDoc;
+    }
+
+    private static DocKey docKey(final NodeValue node) {
+        final int implType = node.getImplementationType();
+        final Document document;
+        if (node instanceof org.exist.dom.memtree.DocumentImpl memDoc) {
+            document = memDoc;
+        } else if (Type.DOCUMENT == node.getType() && node instanceof NodeProxy proxy) {
+            document = (Document) proxy.getNode();
+        } else {
+            document = node.getOwnerDocument();
+        }
+        if (document instanceof org.exist.dom.memtree.DocumentImpl memDoc) {
+            return new DocKey(implType, memDoc.getDocId(), null);
+        } else if (document instanceof org.exist.dom.persistent.DocumentImpl persistentDoc) {
+            return new DocKey(implType, persistentDoc.getDocId(), null);
+        }
+        return new DocKey(implType, 0L, document != null ? document : node);
+    }
+
+    private record DocKey(int implementationType, long docId, Object fallbackDocument) {
     }
 }
