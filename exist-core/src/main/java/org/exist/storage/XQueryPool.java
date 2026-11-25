@@ -101,7 +101,7 @@ public class XQueryPool implements BrokerPoolService {
 
         this.maxQueryStackSize = Objects.requireNonNullElse(maxStSz, DEFAULT_MAX_QUERY_STACK_SIZE);
 
-        this.evalCacheSize = Objects.requireNonNullElse((Integer) configuration.getProperty(PROPERTY_EVAL_CACHE_SIZE), DEFAULT_EVAL_CACHE_SIZE);
+        this.evalCacheSize = Math.max(0, Objects.requireNonNullElse((Integer) configuration.getProperty(PROPERTY_EVAL_CACHE_SIZE), DEFAULT_EVAL_CACHE_SIZE));
 
         this.cache = Caffeine.newBuilder()
                 .maximumSize(maxPoolSize)
