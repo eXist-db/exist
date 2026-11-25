@@ -21,6 +21,7 @@
  */
 package org.exist.indexing.range;
 
+import com.ibm.icu.text.Collator;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.*;
 import org.apache.lucene.util.BytesRef;
@@ -38,6 +39,7 @@ import org.exist.xquery.value.*;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
+import javax.annotation.Nullable;
 import javax.xml.datatype.XMLGregorianCalendar;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -59,6 +61,7 @@ public class RangeIndexConfigElement {
     protected boolean includeNested = false;
     protected boolean caseSensitive = true;
     protected boolean usesCollation = false;
+    @Nullable protected String collation = null;
     protected int wsTreatment = XMLString.SUPPRESS_NONE;
     private TypeConverter typeConverter = null;
 
@@ -93,6 +96,7 @@ public class RangeIndexConfigElement {
         if (!collation.isEmpty()) {
             analyzer.addCollation(collation);
             usesCollation = true;
+            this.collation = collation;
         }
         includeNested = Configuration.parseBooleanAttribute(node, "nested", true);
 
@@ -310,6 +314,36 @@ public class RangeIndexConfigElement {
 
     public boolean usesCollation() {
         return usesCollation;
+    }
+
+    /**
+     * The collation the index compares with, as configured.
+     *
+     * @return the collation URI, or null if the index compares by codepoint (or case-insensitively, with
+     *     {@code case="no"})
+     */
+    public @Nullable String getCollation() {
+        return collation;
+    }
+
+    /**
+     * The collator the index compares with.
+     *
+     * @return the collator, built from {@link #getCollation()} and frozen, or null if the index compares by codepoint
+     *     (or case-insensitively, with {@code case="no"})
+     */
+    public @Nullable Collator getCollator() {
+        return analyzer.getCollator();
+    }
+
+    /**
+     * Whether the index runs its keys through filters ({@code <filter>}), so that it does not compare the strings as
+     * they are.
+     *
+     * @return true if the configuration has at least one filter
+     */
+    public boolean hasFilters() {
+        return analyzer.hasFilters();
     }
 
     public boolean isComplex() {
