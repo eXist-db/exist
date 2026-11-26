@@ -27,12 +27,17 @@ import org.w3c.dom.Element;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+
+import javax.annotation.Nullable;
 import java.io.IOException;
 
 public class Redirect extends URLRewrite {
 
+    private @Nullable RedirectType redirectType;
+
     public Redirect(final Element config, final String uri) throws ServletException {
         super(config, uri);
+        this.redirectType = parseRedirectType(config.getAttribute("type"));
         final String redirectTo = config.getAttribute("url");
         if (redirectTo.isEmpty()) {
             throw new ServletException("<exist:redirect> needs an attribute 'url'.");
@@ -47,16 +52,66 @@ public class Redirect extends URLRewrite {
 
     public Redirect(final Redirect other) {
         super(other);
+        this.redirectType = other.redirectType;
     }
 
     @Override
     public void doRewrite(final HttpServletRequest request, final HttpServletResponse response) throws IOException {
-        setHeaders(new HttpResponseWrapper(response));
-        response.sendRedirect(target);
+        if (redirectType == null) {
+            redirectType =  "GET".equals(request.getMethod()) ? RedirectType.Found : RedirectType.SeeOther;
+        }
+
+        final HttpResponseWrapper responseWrapper = new HttpResponseWrapper(response);
+        setHeaders(responseWrapper);
+        responseWrapper.setStatusCode(redirectType.httpStatusCode);
+        responseWrapper.setHeader("Location", target);
+
+        // commit the response
+        responseWrapper.flushBuffer();
     }
 
     @Override
     protected URLRewrite copy() {
         return new Redirect(this);
+    }
+
+    private static @Nullable RedirectType parseRedirectType(@Nullable final String strRedirectType) throws ServletException {
+        // first, if no value use the default
+        if (strRedirectType == null || strRedirectType.isEmpty()) {
+            return null;
+        }
+
+        // second, try to parse by number
+        try {
+            final int intRedirectType = Integer.valueOf(strRedirectType);
+            for (final RedirectType redirectType : RedirectType.values()) {
+                if (redirectType.httpStatusCode == intRedirectType) {
+                    return redirectType;
+                }
+            }
+        } catch (final NumberFormatException e) {
+            // ignore - no op
+        }
+
+        // third, try to parse by name
+        try {
+            return RedirectType.valueOf(strRedirectType);
+        } catch (final IllegalArgumentException e) {
+            throw new ServletException("<exist:redirect type=\"" + strRedirectType + "\" is unsupported.");
+        }
+    }
+
+    private enum RedirectType {
+        MovedPermanently(301),
+        Found(302),
+        SeeOther(303),
+        TemporaryRedirect(307),
+        PermanentRedirect(308);
+
+        public final int httpStatusCode;
+
+        RedirectType(final int httpStatusCode) {
+            this.httpStatusCode = httpStatusCode;
+        }
     }
 }
