@@ -119,3 +119,33 @@ function wss:inner-for-variable() {
     where $name = "Table"
     return string($d/@id)
 };
+
+(: a step that does not start from the variable navigates from the focus of the FLWOR expression, which is absent here :)
+declare
+    %test:assertError("XPDY0002")
+function wss:relative-step-without-focus() {
+    for $d in collection($wss:COLLECTION)//item
+    where name = "Chair"
+    return string($d/@id)
+};
+
+(: the focus is the test element, which has no name child :)
+declare
+    %test:assertEmpty
+function wss:relative-step-from-focus() {
+    doc($wss:COLLECTION || "/test.xml")/test/(
+        for $d in item
+        where name = "Chair"
+        return string($d/@id)
+    )
+};
+
+declare
+    %test:assertEmpty
+function wss:relative-step-from-focus-on-right-side() {
+    doc($wss:COLLECTION || "/test.xml")/test/(
+        for $d in item
+        where $d/name = name
+        return string($d/@id)
+    )
+};

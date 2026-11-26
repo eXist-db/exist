@@ -30,7 +30,9 @@ import org.exist.dom.persistent.NewArrayNodeSet;
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.persistent.NodeSet;
 import org.exist.dom.persistent.VirtualNodeSet;
+import org.exist.xquery.Constants.Comparison;
 import org.exist.xquery.util.ExpressionDumper;
+import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.NumericValue;
 import org.exist.xquery.value.Sequence;
@@ -279,16 +281,6 @@ public class Predicate extends PathExpr {
     }
 
     /**
-     * Evaluate the inner part of the predicate as a boolean.
-     *
-     * @param contextSequence the context sequence
-     * @param inner the inner expression
-     *
-     * @return The result of the boolean evaluation of the predicate.
-     *
-     * @throws XPathException if an error occurs
-     */
-    /**
      * The item a boolean predicate keeps, with the matches its inner result found on the item's own node. The item is
      * the caller's, so the matches go on a copy; matches on other nodes of the inner result are not the item's.
      *
@@ -310,6 +302,29 @@ public class Predicate extends PathExpr {
         return result;
     }
 
+    /**
+     * Whether a numeric predicate value selects the item at a context position: it does if it is equal to the
+     * position by the {@code eq} operator (XPath 3.1 §3.2.1), so an {@code xs:decimal} is compared exactly and NaN
+     * selects no item.
+     *
+     * @param value the predicate value
+     * @param position the 1-based context position of the item
+     * @return true if the value equals the position
+     */
+    private static boolean isPosition(final NumericValue value, final int position) throws XPathException {
+        return value.compareTo(null, Comparison.EQ, new IntegerValue(position));
+    }
+
+    /**
+     * Evaluate the inner part of the predicate as a boolean.
+     *
+     * @param contextSequence the context sequence
+     * @param inner the inner expression
+     *
+     * @return The result of the boolean evaluation of the predicate.
+     *
+     * @throws XPathException if an error occurs
+     */
     private Sequence evalBoolean(final Sequence contextSequence, final Expression inner, final int mode)
             throws XPathException {
         final Sequence result = new ValueSequence();
@@ -323,7 +338,11 @@ public class Predicate extends PathExpr {
                 context.setContextSequencePosition(p - 1, contextSequence);
                 final Item item = i.nextItem();
                 final Sequence innerSeq = inner.eval(contextSequence, item);
-                if (innerSeq.effectiveBooleanValue()) {
+                if (innerSeq.hasOne() && innerSeq.itemAt(0) instanceof NumericValue numericValue) {
+                    if (isPosition(numericValue, p)) {
+                        result.add(item);
+                    }
+                } else if (innerSeq.effectiveBooleanValue()) {
                     result.add(withMatchesOn(item, innerSeq));
                 }
             }
@@ -336,56 +355,20 @@ public class Predicate extends PathExpr {
                     mode == Constants.ANCESTOR_SELF_AXIS || mode == Constants.PARENT_AXIS ||
                     mode == Constants.PRECEDING_AXIS || mode == Constants.PRECEDING_SIBLING_AXIS);
 
-            // TODO : is this block also accurate in reverse-order processing ?
-            // Compute each position in the boolean-like way...
-            // ... but grab some context positions ! -<8-P
-            if (Type.subTypeOfUnion(inner.returnsType(), Type.NUMERIC)
-                    && Dependency.dependsOn(inner, Dependency.CONTEXT_ITEM)) {
-                final Set<NumericValue> positions = new TreeSet<>();
-                for (final SequenceIterator i = contextSequence.iterate(); i.hasNext(); p++) {
-                    context.setContextSequencePosition(p, contextSequence);
-                    final Item item = i.nextItem();
-                    final Sequence innerSeq = inner.eval(contextSequence, item);
-                    if (innerSeq.hasOne()) {
-                        final NumericValue nv = (NumericValue) innerSeq.itemAt(0);
-                        // Non integers return... nothing, not even an error !
-                        if (!nv.hasFractionalPart() && !nv.isZero()) {
-                            positions.add(nv);
-                        }
+            // A predicate value that is a single number selects the item if it equals the item's context
+            // position; any other value is taken as the effective boolean value (XPath 3.1 §3.2.1).
+            final int count = contextSequence.getItemCount();
+            for (final SequenceIterator i = contextSequence.iterate(); i.hasNext(); p++) {
+                final int position = reverseAxis ? count - p : p + 1;
+                context.setContextSequencePosition(position - 1, contextSequence);
+                final Item item = i.nextItem();
+                final Sequence innerSeq = inner.eval(contextSequence, item);
+                if (innerSeq.hasOne() && innerSeq.itemAt(0) instanceof NumericValue numericValue) {
+                    if (isPosition(numericValue, position)) {
+                        result.add(item);
                     }
-                    //XXX: else error or nothing?
-                }
-                for (final NumericValue pos : positions) {
-                    final int position = (reverseAxis ? contextSequence.getItemCount() - pos.getInt() : pos.getInt() - 1);
-                    // TODO : move this test above ?
-                    if (position <= contextSequence.getItemCount()) {
-                        result.add(contextSequence.itemAt(position));
-                    }
-                }
-            } else {
-                final Set<NumericValue> positions = new TreeSet<>();
-                for (final SequenceIterator i = contextSequence.iterate(); i.hasNext(); p++) {
-                    context.setContextSequencePosition((reverseAxis ? contextSequence.getItemCount() - p - 1 : p), contextSequence);
-                    final Item item = i.nextItem();
-                    final Sequence innerSeq = inner.eval(contextSequence, item);
-                    if (innerSeq.hasOne()
-                            && Type.subTypeOfUnion(innerSeq.getItemType(), Type.NUMERIC)) {
-                        // TODO : introduce a check in innerSeq.hasOne() ?
-                        final NumericValue nv = (NumericValue) innerSeq;
-                        // Non integers return... nothing, not even an error !
-                        if (!nv.hasFractionalPart() && !nv.isZero()) {
-                            positions.add(nv);
-                        }
-                    } else if (innerSeq.effectiveBooleanValue()) {
-                        result.add(withMatchesOn(item, innerSeq));
-                    }
-                }
-                for (final NumericValue pos : positions) {
-                    final int position = (reverseAxis ? contextSequence.getItemCount() - pos.getInt() : pos.getInt() - 1);
-                    // TODO : move this test above ?
-                    if (position <= contextSequence.getItemCount()) {
-                        result.add(contextSequence.itemAt(position));
-                    }
+                } else if (innerSeq.effectiveBooleanValue()) {
+                    result.add(withMatchesOn(item, innerSeq));
                 }
             }
         }

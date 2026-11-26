@@ -96,7 +96,7 @@ public class LetExpr extends BindingExpression {
             Sequence resultSequence = null;
             try {
                 // evaluate input sequence
-                in = inputSequence.eval(contextSequence, null);
+                in = inputSequence.eval(contextSequence, contextItem);
                 clearContext(getExpressionId(), in);
                 // Declare the iteration variable
                 var = createVariable(varName);
@@ -108,7 +108,8 @@ public class LetExpr extends BindingExpression {
                 var.setContextDocs(inputSequence.getContextDocSet());
                 registerUpdateListener(in);
 
-                resultSequence = returnExpr.eval(contextSequence, null);
+                // a let clause binds a variable but doesn't change the focus
+                resultSequence = returnExpr.eval(contextSequence, contextItem);
 
                 if (sequenceType != null) {
                     Cardinality actualCardinality;

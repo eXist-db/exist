@@ -140,8 +140,8 @@ public class ForExpr extends BindingExpression {
         LocalVariable mark = context.markLocalVariables(false);
         Sequence resultSequence = new ValueSequence(unordered);
         try {
-            // Evaluate the "in" expression
-            in = inputSequence.eval(contextSequence, null);
+            // Evaluate the "in" expression, with the focus of the clause
+            in = inputSequence.eval(contextSequence, contextItem);
             clearContext(getExpressionId(), in);
             // Declare the iteration variable
             var = createVariable(varName);
@@ -197,10 +197,10 @@ public class ForExpr extends BindingExpression {
             // Loop through each variable binding
             int p = 0;
             if (in.isEmpty() && allowEmpty) {
-                processItem(var, AtomicValue.EMPTY_VALUE, Sequence.EMPTY_SEQUENCE, resultSequence, at, p);
+                processItem(var, AtomicValue.EMPTY_VALUE, Sequence.EMPTY_SEQUENCE, resultSequence, at, p, contextSequence, contextItem);
             } else {
                 for (final SequenceIterator i = in.iterate(); i.hasNext(); p++) {
-                    processItem(var, i.nextItem(), in, resultSequence, at, p);
+                    processItem(var, i.nextItem(), in, resultSequence, at, p, contextSequence, contextItem);
                 }
             }
         } finally {
@@ -221,27 +221,27 @@ public class ForExpr extends BindingExpression {
         return resultSequence;
     }
 
+    /**
+     * @param outerContextSequence the context sequence of the for clause, which the return clause shares
+     * @param outerContextItem the context item of the for clause, which the return clause shares
+     */
     private void processItem(LocalVariable var, Item contextItem, Sequence in, Sequence resultSequence, LocalVariable
-            at, int p) throws XPathException {
+            at, int p, @Nullable final Sequence outerContextSequence, @Nullable final Item outerContextItem) throws XPathException {
         context.proceed(this);
         context.setContextSequencePosition(p, in);
         if (positionalVariable != null) {
             final int position = contextItem == AtomicValue.EMPTY_VALUE ? 0 : p + 1;
             at.setValue(new IntegerValue(this, position));
         }
-        final Sequence contextSequence = contextItem.toSequence();
+        final Sequence itemSequence = contextItem.toSequence();
         // set variable value to current item
-        var.setValue(contextSequence);
+        var.setValue(itemSequence);
         var.checkType();
         //Reset the context position
         context.setContextSequencePosition(0, null);
 
-        final Sequence returnExprResult;
-        if (returnExpr instanceof OrderByClause) {
-            returnExprResult = returnExpr.eval(contextSequence, null);
-        } else {
-            returnExprResult = returnExpr.eval(null, null);
-        }
+        // a for clause binds a variable but doesn't change the focus, which the clauses after it share
+        final Sequence returnExprResult = returnExpr.eval(outerContextSequence, outerContextItem);
         resultSequence.addAll(returnExprResult);
 
         // free resources

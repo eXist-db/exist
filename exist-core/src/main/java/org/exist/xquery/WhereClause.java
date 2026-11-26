@@ -166,7 +166,7 @@ public class WhereClause extends AbstractFLWORClause {
                     unboundVars.add(forExpr.getPositionalVariable());
                 }
                 if (forExpr.isOuterFor()) {
-                    return onlyNavigatesFrom(whereExpr, forExpr.getVariable(), unboundVars, true);
+                    return onlyNavigatesFrom(whereExpr, forExpr.getVariable(), unboundVars, true, true);
                 }
                 unboundVars.add(forExpr.getVariable());
             } else if (clause instanceof LetExpr letExpr) {
@@ -181,7 +181,13 @@ public class WhereClause extends AbstractFLWORClause {
     }
 
     /**
-     * Checks that the variable is only referenced in navigating positions of the expression.
+     * Checks that the variable is only referenced in navigating positions of the expression,
+     * and that no step navigates from the focus of the FLWOR expression.
+     *
+     * In the single step evaluation, the where expression is evaluated with the whole input
+     * sequence as context, so a step whose context would be the focus of the FLWOR expression,
+     * e.g. {@code t} in {@code where t = 'y'} or in {@code where $x/t = t}, would navigate from
+     * the input items instead.
      *
      * Unknown expressions are rejected, so that the single step evaluation is only used
      * when it is known to be correct.
@@ -190,10 +196,14 @@ public class WhereClause extends AbstractFLWORClause {
      * @param var the name of the variable bound to the whole input sequence.
      * @param unboundVars the names of variables which must not be referenced at all.
      * @param navigating true if expr is in a position from which the result is navigated.
+     * @param inFocus true if the context of expr is the focus of the FLWOR expression, i.e. it is
+     *     neither in a predicate nor a step after the first one of a path.
      *
-     * @return true if the variable is only referenced in navigating positions.
+     * @return true if the variable is only referenced in navigating positions, and no step
+     *     navigates from the focus.
      */
-    private static boolean onlyNavigatesFrom(final Expression expr, final QName var, final Set<QName> unboundVars, final boolean navigating) {
+    private static boolean onlyNavigatesFrom(final Expression expr, final QName var, final Set<QName> unboundVars,
+            final boolean navigating, final boolean inFocus) {
         if (expr instanceof VariableReference ref) {
             if (ref.getName().equals(var)) {
                 return navigating;
@@ -204,36 +214,46 @@ public class WhereClause extends AbstractFLWORClause {
             return true;
 
         } else if (expr instanceof LocationStep step) {
-            return allOnlyNavigateFrom(step.getPredicates(), var, unboundVars);
+            // a step in the focus navigates from the focus, not from the variable
+            return !inFocus && allOnlyNavigateFrom(step.getPredicates(), var, unboundVars);
 
-        } else if (expr instanceof Predicate || expr instanceof SequenceConstructor) {
+        } else if (expr instanceof Predicate) {
+            // the context of a predicate is the items it filters
             for (int i = 0; i < expr.getSubExpressionCount(); i++) {
-                if (!onlyNavigatesFrom(expr.getSubExpression(i), var, unboundVars, false)) {
+                if (!onlyNavigatesFrom(expr.getSubExpression(i), var, unboundVars, false, false)) {
+                    return false;
+                }
+            }
+            return true;
+
+        } else if (expr instanceof SequenceConstructor) {
+            for (int i = 0; i < expr.getSubExpressionCount(); i++) {
+                if (!onlyNavigatesFrom(expr.getSubExpression(i), var, unboundVars, false, inFocus)) {
                     return false;
                 }
             }
             return true;
 
         } else if (expr instanceof InternalFunctionCall functionCall) {
-            return onlyNavigatesFrom(functionCall.getFunction(), var, unboundVars, navigating);
+            return onlyNavigatesFrom(functionCall.getFunction(), var, unboundVars, navigating, inFocus);
 
         } else if (expr instanceof GeneralComparison comparison) {
             // the comparison selects nodes from its left operand
-            return onlyNavigatesFrom(comparison.getLeft(), var, unboundVars, navigating)
-                    && onlyNavigatesFrom(comparison.getRight(), var, unboundVars, false);
+            return onlyNavigatesFrom(comparison.getLeft(), var, unboundVars, navigating, inFocus)
+                    && onlyNavigatesFrom(comparison.getRight(), var, unboundVars, false, inFocus);
 
         } else if (expr instanceof LogicalOp logicalOp) {
-            return onlyNavigatesFrom(logicalOp.getLeft(), var, unboundVars, navigating)
-                    && onlyNavigatesFrom(logicalOp.getRight(), var, unboundVars, navigating);
+            return onlyNavigatesFrom(logicalOp.getLeft(), var, unboundVars, navigating, inFocus)
+                    && onlyNavigatesFrom(logicalOp.getRight(), var, unboundVars, navigating, inFocus);
 
         } else if (expr instanceof BinaryOp binaryOp) {
-            return onlyNavigatesFrom(binaryOp.getLeft(), var, unboundVars, false)
-                    && onlyNavigatesFrom(binaryOp.getRight(), var, unboundVars, false);
+            return onlyNavigatesFrom(binaryOp.getLeft(), var, unboundVars, false, inFocus)
+                    && onlyNavigatesFrom(binaryOp.getRight(), var, unboundVars, false, inFocus);
 
         } else if (expr instanceof Function function) {
             // the result of a function is not mapped back to the input items
             for (int i = 0; i < function.getArgumentCount(); i++) {
-                if (!onlyNavigatesFrom(function.getArgument(i), var, unboundVars, false)) {
+                if (!onlyNavigatesFrom(function.getArgument(i), var, unboundVars, false, inFocus)) {
                     return false;
                 }
             }
@@ -241,28 +261,28 @@ public class WhereClause extends AbstractFLWORClause {
 
         } else if (expr instanceof FilteredExpression filtered) {
             // the result of a filter expression is not mapped back to the input items
-            return onlyNavigatesFrom(filtered.getExpression(), var, unboundVars, false)
+            return onlyNavigatesFrom(filtered.getExpression(), var, unboundVars, false, inFocus)
                     && allOnlyNavigateFrom(filtered.getPredicates().toArray(new Predicate[0]), var, unboundVars);
 
         } else if (expr instanceof DebuggableExpression debuggable) {
-            return onlyNavigatesFrom(debuggable.getFirst(), var, unboundVars, navigating);
+            return onlyNavigatesFrom(debuggable.getFirst(), var, unboundVars, navigating, inFocus);
 
         } else if (expr instanceof ExtensionExpression extension) {
-            return onlyNavigatesFrom(extension.getExpression(), var, unboundVars, navigating);
+            return onlyNavigatesFrom(extension.getExpression(), var, unboundVars, navigating, inFocus);
 
         } else if (expr instanceof Atomize atomize) {
-            return onlyNavigatesFrom(atomize.getExpression(), var, unboundVars, navigating);
+            return onlyNavigatesFrom(atomize.getExpression(), var, unboundVars, navigating, inFocus);
 
         } else if (expr instanceof DynamicCardinalityCheck check) {
-            return onlyNavigatesFrom(check.getExpression(), var, unboundVars, navigating);
+            return onlyNavigatesFrom(check.getExpression(), var, unboundVars, navigating, inFocus);
 
         } else if (expr instanceof DynamicTypeCheck || expr instanceof UntypedValueCheck) {
-            return onlyNavigatesFrom(expr.getSubExpression(0), var, unboundVars, navigating);
+            return onlyNavigatesFrom(expr.getSubExpression(0), var, unboundVars, navigating, inFocus);
 
         } else if (expr.getClass() == PathExpr.class) {
             // the steps after the first one navigate from the result of the first one
             for (int i = 0; i < expr.getSubExpressionCount(); i++) {
-                if (!onlyNavigatesFrom(expr.getSubExpression(i), var, unboundVars, navigating && i == 0)) {
+                if (!onlyNavigatesFrom(expr.getSubExpression(i), var, unboundVars, navigating && i == 0, inFocus && i == 0)) {
                     return false;
                 }
             }
@@ -275,7 +295,7 @@ public class WhereClause extends AbstractFLWORClause {
     private static boolean allOnlyNavigateFrom(@Nullable final Predicate[] predicates, final QName var, final Set<QName> unboundVars) {
         if (predicates != null) {
             for (final Predicate predicate : predicates) {
-                if (!onlyNavigatesFrom(predicate, var, unboundVars, false)) {
+                if (!onlyNavigatesFrom(predicate, var, unboundVars, false, false)) {
                     return false;
                 }
             }
@@ -286,7 +306,8 @@ public class WhereClause extends AbstractFLWORClause {
     @Override
     public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
         final List<NodeSet> carriers = new ArrayList<>();
-        final boolean passesWhere = applyWhereExpression(carriers);
+        // a where clause doesn't change the focus: its expression and the return clause share the FLWOR's
+        final boolean passesWhere = applyWhereExpression(contextSequence, contextItem, carriers);
         if (passesWhere) {
             @Nullable final LocalVariable tupleVariable = tupleVariableForCarriers(carriers);
             if (tupleVariable != null) {
@@ -296,13 +317,13 @@ public class WhereClause extends AbstractFLWORClause {
                     // the tuple's nodes are the caller's: the return clause sees copies of them with the matches
                     tupleVariable.setValue(withMatches);
                     try {
-                        return returnExpr.eval(null, null);
+                        return returnExpr.eval(contextSequence, contextItem);
                     } finally {
                         tupleVariable.setValue(value);
                     }
                 }
             }
-            return returnExpr.eval(null, null);
+            return returnExpr.eval(contextSequence, contextItem);
         }
         return Sequence.EMPTY_SEQUENCE;
     }
@@ -316,31 +337,33 @@ public class WhereClause extends AbstractFLWORClause {
         return super.postEval(seq);
     }
 
-    private boolean applyWhereExpression(final List<NodeSet> carriers) throws XPathException {
+    private boolean applyWhereExpression(@Nullable final Sequence contextSequence, @Nullable final Item contextItem,
+            final List<NodeSet> carriers) throws XPathException {
         if (fastTrack) {
             return true;
         }
 
         final Expression unwrappedWhereExpr = unwrapBooleanExpression(whereExpr);
         if (unwrappedWhereExpr instanceof OpAnd opAnd) {
-            return evalExpressionWithCarriers(opAnd, carriers);
+            return evalExpressionWithCarriers(opAnd, contextSequence, contextItem, carriers);
         }
 
-        final Sequence innerSeq = whereExpr.eval(null, null);
+        final Sequence innerSeq = whereExpr.eval(contextSequence, contextItem);
         captureCarrierFromSequence(whereExpr, innerSeq, carriers);
         return innerSeq.effectiveBooleanValue();
     }
 
-    private boolean evalExpressionWithCarriers(final Expression expr, final List<NodeSet> carriers) throws XPathException {
+    private boolean evalExpressionWithCarriers(final Expression expr, @Nullable final Sequence contextSequence,
+            @Nullable final Item contextItem, final List<NodeSet> carriers) throws XPathException {
         final Expression unwrappedExpr = unwrapBooleanExpression(expr);
         if (unwrappedExpr instanceof OpAnd opAnd) {
-            if (!evalExpressionWithCarriers(opAnd.getLeft(), carriers)) {
+            if (!evalExpressionWithCarriers(opAnd.getLeft(), contextSequence, contextItem, carriers)) {
                 return false;
             }
-            return evalExpressionWithCarriers(opAnd.getRight(), carriers);
+            return evalExpressionWithCarriers(opAnd.getRight(), contextSequence, contextItem, carriers);
         }
 
-        final Sequence seq = expr.eval(null, null);
+        final Sequence seq = expr.eval(contextSequence, contextItem);
         captureCarrierFromSequence(expr, seq, carriers);
         return seq.effectiveBooleanValue();
     }
@@ -495,5 +518,13 @@ public class WhereClause extends AbstractFLWORClause {
         }
 
         return vars;
+    }
+
+    /**
+     * Also what the where expression depends on, e.g. {@code where $x = .}.
+     */
+    @Override
+    public int getDependencies() {
+        return super.getDependencies() | whereExpr.getDependencies();
     }
 }
