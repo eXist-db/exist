@@ -1210,21 +1210,23 @@ public class RESTServer {
      *
      * @param root the query element
      * @param parameter the attribute to parse
-     * @param defaultValue the value to use if the attribute value cannot be parsed
+     * @param defaultValue the value to use if the attribute is absent or empty
      *
      * @return the parsed value, or the default value
+     *
+     * @throws BadRequestException if the attribute value is not an int
      */
     private int parseIntAttribute(final ElementImpl root, final RESTServerParameter parameter,
-            final int defaultValue) {
+            final int defaultValue) throws BadRequestException {
         final String option = root.getAttribute(parameter.xmlKey());
         if (option.isEmpty()) {
-            try {
-                return Integer.parseInt(option);
-            } catch (final NumberFormatException e) {
-                //
-            }
+            return defaultValue;
         }
-        return defaultValue;
+        try {
+            return Integer.parseInt(option);
+        } catch (final NumberFormatException e) {
+            throw new BadRequestException("Attribute " + parameter.xmlKey() + " should be an int");
+        }
     }
 
     /**
