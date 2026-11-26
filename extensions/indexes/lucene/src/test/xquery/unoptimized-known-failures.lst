@@ -1,6 +1,18 @@
 # Tests of LuceneTests that fail without the optimizer, see LuceneUnoptimizedTests.
 # Remove a test once it passes without the optimizer; the suite fails while a listed test passes.
 
+# A nested context node is dropped without the optimizer, see https://github.com/eXist-db/exist/issues/6935
+path-shapes.xqm: query-desc--nested-desc
+
+# Pre-selection itself
+path-shapes.xqm: fast--query-desc
+path-shapes.xqm: fast--query-child
+path-shapes.xqm: fast--query-of-a-child
+path-shapes.xqm: fast--field
+path-shapes.xqm: fast--vector-desc
+path-shapes.xqm: fast--vector-variable
+path-shapes.xqm: fast--field-vector-on-the-step
+
 # Checks of the optimizer itself (%test:stats, or an index pragma that needs it); these stay
 ft-query-forms.xqm: optimizer-query-on-element
 ft-query-forms.xqm: optimizer-query-on-self

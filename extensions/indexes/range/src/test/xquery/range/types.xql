@@ -147,7 +147,6 @@ function tt:eq-date-optimize($date as xs:date) {
  : TDD: string-lc (case-insensitive) equality via explicit range:eq.
  :)
 declare
-    %test:pending("Range index string fields return 0 hits with Lucene 10; root cause TBD")
     %test:args("mixedmode")
     %test:assertEquals("E3")
     %test:args("MIXEDMODE")

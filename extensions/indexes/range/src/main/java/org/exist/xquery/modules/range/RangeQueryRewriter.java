@@ -163,9 +163,9 @@ public class RangeQueryRewriter extends QueryRewriter {
             }
             boolean caseInsensitive = false;
             if (argCount == 3) {
-                final Expression flagsExpr = funMatches.getArgument(2);
-                if (flagsExpr instanceof LiteralValue value) {
-                    final String flags = value.getValue().getStringValue();
+                // The flags argument is wrapped in a cardinality check, so read it as the pattern is read.
+                final String flags = getConstantPattern(funMatches.getArgument(2));
+                if (flags != null) {
                     for (int i = 0; i < flags.length(); i++) {
                         if (flags.charAt(i) != 'i') {
                             return null;

@@ -128,3 +128,13 @@ types.xql: starts-with-ignore-case
 types.xql: string-contains-ignore-case
 types.xql: string-equals-2-ignore-case
 types.xql: string-equals-ignore-case
+
+# Pre-selection itself
+path-shapes.xqm: fast--comparison
+path-shapes.xqm: fast--comparison-child
+path-shapes.xqm: fast--range-eq
+path-shapes.xqm: fast--comparison-on-a-field
+path-shapes.xqm: fast--anchored-matches-of-self
+path-shapes.xqm: fast--anchored-matches-of-a-child
+path-shapes.xqm: fast--anchored-matches-of-an-attribute
+path-shapes.xqm: fast--anchored-matches-ignoring-case
