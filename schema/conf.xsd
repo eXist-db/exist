@@ -8,7 +8,7 @@
 
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
            xmlns:vc="http://www.w3.org/2007/XMLSchema-versioning" vc:minVersion="1.1"
-           version="2.11.0">
+           version="2.11.1">
 
     <xs:include schemaLocation="schema-version-type.xsd"/>
 
@@ -1206,6 +1206,17 @@
                                 </xs:complexType>
                             </xs:element>
                             <xs:element name="grammar-cache">
+                                <xs:annotation>
+                                    <xs:documentation>
+                                        The cache of compiled XSD and DTD grammars. A cached grammar is not refreshed
+                                        when its DTD or schema changes, and the lifetime of an entry is renewed each
+                                        time it is used, so an entry that is in use does not expire. After editing a
+                                        DTD or schema that has been used, call validation:clear-grammar-cache() to have
+                                        it read again. A DTD whose grammar is never cached (it declares a notation, or
+                                        an unparsed or external general entity) is read again for every document, and
+                                        needs no clearing.
+                                    </xs:documentation>
+                                </xs:annotation>
                                 <xs:complexType>
                                     <xs:attribute name="size">
                                         <xs:annotation>
@@ -1244,7 +1255,13 @@
                                     can validate against both: schemas and DTDs.
                                     <p/>
                                     Possible values: "yes", "no", "auto". "auto" will leave validation
-                                    to the parser.
+                                    to the parser. If the element or its mode is missing, "auto" is used.
+                                    <p/>
+                                    This is the mode of the server. It applies to every collection whose
+                                    configuration (collection.xconf) does not set a validation mode of its own;
+                                    a mode set in a collection configuration takes precedence for that collection
+                                    and the collections below it. With "yes", every document that has neither a
+                                    schema nor a DOCTYPE is rejected, collection configuration documents included.
                                 </xs:documentation>
                             </xs:annotation>
                             <xs:simpleType>

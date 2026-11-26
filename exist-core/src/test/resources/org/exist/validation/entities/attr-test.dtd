@@ -1,0 +1,4 @@
+<!-- Attribute declarations used by org.exist.validation.DtdGrammarCacheTest: eid is an ID -->
+<!ELEMENT r (c*)>
+<!ELEMENT c EMPTY>
+<!ATTLIST c eid ID #IMPLIED>

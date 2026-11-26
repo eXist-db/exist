@@ -171,6 +171,13 @@ public class AbstractChainOfReceivers implements ChainOfReceivers {
     }
 
     @Override
+    public void documentType(final String name, final String publicId, final String systemId, final String internalSubset) throws SAXException {
+        if (next != null) {
+            next.documentType(name, publicId, systemId, internalSubset);
+        }
+    }
+
+    @Override
     public void highlightText(CharSequence seq) throws SAXException {
         if (next != null) {
             next.highlightText(seq);

@@ -125,6 +125,7 @@ public class IndexInfo {
             final Object entityManager = reader.getProperty(XMLReaderObjectFactory.APACHE_PROPERTIES_INTERNAL_ENTITYMANAGER);
             if (pool instanceof ReaderGrammarPool readerPool && entityManager instanceof XMLEntityManager xmlEntityManager) {
                 indexer.setDtdEntityRestorer(new DtdEntityRestorer(readerPool.getDelegate(), xmlEntityManager));
+                indexer.setReaderGrammarPool(readerPool);
                 readerPool.enableDtdReuse();
             }
         } catch (final SAXNotRecognizedException | SAXNotSupportedException e) {

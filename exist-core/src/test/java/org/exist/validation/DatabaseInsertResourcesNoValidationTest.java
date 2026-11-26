@@ -27,7 +27,6 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.test.ExistEmbeddedServer;
-import org.exist.util.Configuration;
 import org.exist.util.XMLReaderObjectFactory;
 import org.exist.xmldb.XmldbURI;
 import org.junit.jupiter.api.AfterAll;
@@ -53,7 +52,7 @@ public class DatabaseInsertResourcesNoValidationTest {
     @RegisterExtension
     public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(
             propertiesBuilder()
-                    .set(XMLReaderObjectFactory.PROPERTY_VALIDATION_MODE, "auto")
+                    .set(XMLReaderObjectFactory.PROPERTY_VALIDATION_MODE, "no")
                     .build(),
             true,
             true);
@@ -119,9 +118,6 @@ public class DatabaseInsertResourcesNoValidationTest {
      */
     @Test
     void insertValidationResources_xsd() throws IOException {
-        final Configuration config = existEmbeddedServer.getBrokerPool().getConfiguration();
-        config.setProperty(XMLReaderObjectFactory.PROPERTY_VALIDATION_MODE, "no");
-
         try (final InputStream is = SAMPLES.getSample("validation/addressbook/addressbook.xsd")) {
             TestTools.insertDocumentToURL(is,
                     "xmldb:exist://" + VALIDATION_HOME_COLLECTION_URI + "/" + TestTools.VALIDATION_XSD_COLLECTION + "/addressbook.xsd");
@@ -145,9 +141,6 @@ public class DatabaseInsertResourcesNoValidationTest {
 
     @Test
     void insertValidationResources_dtd() throws IOException {
-        final Configuration config = existEmbeddedServer.getBrokerPool().getConfiguration();
-        config.setProperty(XMLReaderObjectFactory.PROPERTY_VALIDATION_MODE, "no");
-
         try (final InputStream is = SAMPLES.getSample("validation/dtd/hamlet.dtd")) {
             TestTools.insertDocumentToURL(is,
                     "xmldb:exist://" + VALIDATION_HOME_COLLECTION_URI + "/" + TestTools.VALIDATION_DTD_COLLECTION + "/hamlet.dtd");
@@ -171,9 +164,6 @@ public class DatabaseInsertResourcesNoValidationTest {
 
     @Test
     void insertValidationResource_dtd_badDocType() throws IOException {
-        final Configuration config = existEmbeddedServer.getBrokerPool().getConfiguration();
-        config.setProperty(XMLReaderObjectFactory.PROPERTY_VALIDATION_MODE, "no");
-
         try (final InputStream is = SAMPLES.getSample("validation/dtd/hamlet_nodoctype.xml")) {
             TestTools.insertDocumentToURL(is,
                     "xmldb:exist://" + VALIDATION_HOME_COLLECTION_URI + "/hamlet_nodoctype.xml");

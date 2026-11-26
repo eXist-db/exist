@@ -86,6 +86,8 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
 
     public static final byte NO_DOCTYPE = 0;
     public static final byte HAS_DOCTYPE = 1;
+    /** A document type that also keeps the attribute types its internal subset declares, see {@link DocumentTypeImpl#getInternalSubset()}. */
+    public static final byte HAS_DOCTYPE_WITH_SUBSET = 2;
 
     public static final byte NO_LOCKTOKEN = 0;
     public static final byte HAS_LOCKTOKEN = 2;
@@ -707,12 +709,11 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
     private void copyModeAcl(final DBBroker broker, final Permission srcPermissions, final Permission destPermissions) throws PermissionDeniedException {
         PermissionFactory.chmod(broker, destPermissions, Optional.of(srcPermissions.getMode()), Optional.empty());
 
-        if (srcPermissions instanceof SimpleACLPermission srcAclPermissions && destPermissions instanceof SimpleACLPermission destAclPermissions) {
-            if (!destAclPermissions.equalsAcl(srcAclPermissions)) {
-                PermissionFactory.chacl(destAclPermissions, newAcl ->
-                    ((SimpleACLPermission)newAcl).copyAclOf(srcAclPermissions)
-                );
-            }
+        if (srcPermissions instanceof SimpleACLPermission srcAclPermissions && destPermissions instanceof SimpleACLPermission destAclPermissions
+                && !destAclPermissions.equalsAcl(srcAclPermissions)) {
+            PermissionFactory.chacl(destAclPermissions, newAcl ->
+                ((SimpleACLPermission)newAcl).copyAclOf(srcAclPermissions)
+            );
         }
     }
 
@@ -878,17 +879,47 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
         } else {
             ostream.writeByte(NO_XMLDECL);
         }
-        if (docType != null) {
-            ostream.writeByte(HAS_DOCTYPE);
-            ((DocumentTypeImpl) docType).write(ostream);
-        } else {
-            ostream.writeByte(NO_DOCTYPE);
-        }
+        writeDocType(ostream, docType);
         if (lockToken != null) {
             ostream.writeByte(HAS_LOCKTOKEN);
             lockToken.write(ostream);
         } else {
             ostream.writeByte(NO_LOCKTOKEN);
+        }
+    }
+
+    /**
+     * Reads the document type of a document, behind the flag that says how it was written.
+     *
+     * @param istream the input
+     * @return the document type, or null if the document has none
+     * @throws IOException if the document type cannot be read
+     */
+    @Nullable
+    static DocumentTypeImpl readDocType(final VariableByteInput istream) throws IOException {
+        final byte flag = istream.readByte();
+        if (flag == HAS_DOCTYPE) {
+            return DocumentTypeImpl.read(istream);
+        } else if (flag == HAS_DOCTYPE_WITH_SUBSET) {
+            return DocumentTypeImpl.readWithInternalSubset(istream);
+        }
+        return null;
+    }
+
+    /**
+     * Writes the document type of a document, behind the flag that says how it is written: with the declarations of
+     * its internal subset, or without.
+     *
+     * @param ostream the output
+     * @param docType the document type, or null if the document has none
+     * @throws IOException if the document type cannot be written
+     */
+    static void writeDocType(final VariableByteOutputStream ostream, @Nullable final DocumentType docType) throws IOException {
+        if (docType != null) {
+            ostream.writeByte(docType.getInternalSubset() != null ? HAS_DOCTYPE_WITH_SUBSET : HAS_DOCTYPE);
+            ((DocumentTypeImpl) docType).write(ostream);
+        } else {
+            ostream.writeByte(NO_DOCTYPE);
         }
     }
 
@@ -927,12 +958,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
         } else {
             xmlDecl = null;
         }
-        final DocumentTypeImpl docType;
-        if (istream.readByte() == HAS_DOCTYPE) {
-            docType = DocumentTypeImpl.read(istream);
-        } else {
-            docType = null;
-        }
+        final DocumentTypeImpl docType = readDocType(istream);
         final LockToken lockToken;
         if (istream.readByte() == HAS_LOCKTOKEN) {
             lockToken = LockToken.read(istream);
@@ -1301,7 +1327,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
 
     @EnsureContainerLocked(mode=READ_LOCK)
     protected NodeProxy getFirstChildProxy() {
-        return new NodeProxy(getExpression(), this, NodeId.ROOT_NODE, Node.ELEMENT_NODE, childAddress[0]);
+        return new NodeProxy(getExpression(), this, NodeId.ROOT_NODE, ELEMENT_NODE, childAddress[0]);
     }
 
     /**
@@ -1479,7 +1505,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
      */
     @Override
     public short getNodeType() {
-        return Node.DOCUMENT_NODE;
+        return DOCUMENT_NODE;
     }
 
     /**
@@ -1656,7 +1682,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
     public Element getDocumentElement() {
         final NodeList cl = getChildNodes();
         for(int i = 0; i < cl.getLength(); i++) {
-            if(cl.item(i).getNodeType() == Node.ELEMENT_NODE) {
+            if(cl.item(i).getNodeType() == ELEMENT_NODE) {
                 return (Element) cl.item(i);
             }
         }
@@ -1740,11 +1766,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
     @EnsureContainerLocked(mode=READ_LOCK)
     public boolean isSameNode(final Node other) {
         // This function is used by Saxon in some circumstances, and this partial implementation is required for proper Saxon operation.
-        if(other instanceof DocumentImpl impl) {
-            return this.docId == impl.getDocId();
-        } else {
-            return false;
-        }
+        return other instanceof DocumentImpl impl && this.docId == impl.getDocId();
     }
 
     @Override
@@ -1785,7 +1807,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
     }
 
     @Override
-    public org.w3c.dom.DOMImplementation getImplementation() {
+    public DOMImplementation getImplementation() {
         return new DOMImplementationImpl();
     }
 
@@ -1826,6 +1848,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
 
     @Override
     public void setXmlStandalone(final boolean xmlStandalone) throws DOMException {
+        // not supported: the standalone flag is not recorded from the XML document, see getXmlStandalone()
     }
 
     @Override
@@ -1835,6 +1858,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
 
     @Override
     public void setXmlVersion(final String xmlVersion) throws DOMException {
+        // not supported: the XML version is not recorded from the XML document, see getXmlVersion()
     }
 
     @Override
@@ -1880,11 +1904,11 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
 
     @Override
     public Node appendChild(final Node newChild) throws DOMException {
-        if(newChild.getNodeType() != Node.DOCUMENT_NODE && newChild.getOwnerDocument() != this) {
+        if(newChild.getNodeType() != DOCUMENT_NODE && !equals(newChild.getOwnerDocument())) {
             throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, "Owning document IDs do not match");
         }
 
-        if(newChild == this) {
+        if(equals(newChild)) {
             throw new DOMException(DOMException.HIERARCHY_REQUEST_ERR,
                     "Cannot append a document to itself");
         }

@@ -212,6 +212,13 @@ public class XMLReaderObjectFactory extends BasePooledObjectFactory<XMLReader> i
         }
     }
 
+    /**
+     * The validation mode of a reader.
+     *
+     * <p>{@link #UNKNOWN} means that no mode is set. A collection configuration that sets none has it, and the
+     * reader of such a collection keeps the mode of the server. A server mode that is not recognised has it too,
+     * and then the reader does not validate.</p>
+     */
     public enum VALIDATION_SETTING {
         UNKNOWN, ENABLED, AUTO, DISABLED;
 

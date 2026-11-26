@@ -112,12 +112,7 @@ public class DocumentMetadata implements ResourceMetadata {
         final String mimeType = symbolTable.getMimeType(mimeTypeSymbolsIndex);
         final int pageCount = istream.readInt();
         final int userLock = istream.readInt();
-        final DocumentTypeImpl docType;
-        if (istream.readByte() == DocumentImpl.HAS_DOCTYPE) {
-            docType = DocumentTypeImpl.read(istream);
-        } else {
-            docType = null;
-        }
+        final DocumentTypeImpl docType = DocumentImpl.readDocType(istream);
         final LockToken lockToken;
         if (istream.readByte() == DocumentImpl.HAS_LOCKTOKEN) {
             lockToken = LockToken.read(istream);

@@ -55,6 +55,7 @@ import static org.exist.test.TestConstants.TEST_COLLECTION_URI;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.exist.test.ExistEmbeddedServer;
 import org.exist.util.LockException;
@@ -62,6 +63,8 @@ import org.exist.util.MimeType;
 import org.exist.util.StringInputSource;
 import org.exist.util.io.InputStreamUtil;
 import org.exist.xmldb.XmldbURI;
+import org.exist.xquery.XPathException;
+import org.exist.xquery.value.Sequence;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -97,6 +100,7 @@ public class SystemExportImportTest {
     private static XmldbURI doc02uri = TEST_COLLECTION_URI.append("test2.xml");
     private static XmldbURI doc03uri = TEST_COLLECTION_URI.append("test3.xml");
     private static XmldbURI doc04uri = TEST_COLLECTION_URI.append("test4.xml");
+    private static XmldbURI doc05uri = TEST_COLLECTION_URI.append("test5.xml");
     private static XmldbURI doc11uri = TEST_COLLECTION_URI.append("test.binary");
 
     private static String XML1 = "<test attr=\"test\"/>";
@@ -118,6 +122,10 @@ public class SystemExportImportTest {
     private static String XML4_DECL = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>";
     private static String XML4 = XML4_DECL + "\n<test/>";
 
+    // the attribute types that the internal subset declares are what a restore needs to find the element by its ID
+    private static String XML5 = "<!DOCTYPE r [<!ATTLIST c id ID #IMPLIED>]><r><c id=\"x\"/></r>";
+    private static String XML5_INTERNAL_SUBSET = "<!ATTLIST c id ID #IMPLIED>";
+
     private static String BINARY = "test";
 
     public static Stream<Arguments> data() {
@@ -130,7 +138,7 @@ public class SystemExportImportTest {
     }
 
     @MethodSource("data") @ParameterizedTest(name = "{0} zip:{2}")
-    void exportImport(String apiName, boolean direct, boolean zip) throws EXistException, IOException, PermissionDeniedException, SAXException, ParserConfigurationException, AuthenticationException, URISyntaxException, XMLDBException {
+    void exportImport(String apiName, boolean direct, boolean zip) throws EXistException, IOException, PermissionDeniedException, SAXException, ParserConfigurationException, AuthenticationException, URISyntaxException, XMLDBException, XPathException {
         initSystemExportImportTest(apiName, direct, zip);
         Path file;
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
@@ -175,6 +183,13 @@ public class SystemExportImportTest {
             withXmlDeclOutputProps.putAll(contentsOutputProps);
             withXmlDeclOutputProps.setProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
             assertEquals(XML4, serializer(broker, doc, withXmlDeclOutputProps));
+
+            // the declarations of the internal subset survive export and import, and type the attribute again
+            doc = getDoc(broker, test, doc05uri.lastSegment());
+            assertEquals(XML5_INTERNAL_SUBSET, doc.getDoctype().getInternalSubset());
+            assertTrue(serializer(broker, doc).startsWith("<!DOCTYPE r [" + XML5_INTERNAL_SUBSET + "]>"), serializer(broker, doc));
+            final Sequence found = pool.getXQueryService().execute(broker, "count(id('x', doc('" + doc05uri + "')))", null);
+            assertEquals("1", found.itemAt(0).getStringValue());
 
             doc = getDoc(broker, test, doc11uri.lastSegment());
             assertInstanceOf(BinaryDocument.class, doc);
@@ -247,6 +262,7 @@ public class SystemExportImportTest {
             broker.storeDocument(transaction, doc02uri.lastSegment(), new StringInputSource(XML2), MimeType.XML_TYPE, test);
             broker.storeDocument(transaction, doc03uri.lastSegment(), new StringInputSource(XML3), MimeType.XML_TYPE, test);
             broker.storeDocument(transaction, doc04uri.lastSegment(), new StringInputSource(XML4), MimeType.XML_TYPE, test);
+            broker.storeDocument(transaction, doc05uri.lastSegment(), new StringInputSource(XML5), MimeType.XML_TYPE, test);
             broker.storeDocument(transaction, doc11uri.lastSegment(), new StringInputSource(BINARY.getBytes(UTF_8)), MimeType.BINARY_TYPE, test);
 
             transaction.commit();
