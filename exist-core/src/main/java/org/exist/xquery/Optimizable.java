@@ -61,6 +61,36 @@ public interface Optimizable extends Expression {
     }
 
     /**
+     * The operands whose value {@link #preSelect(Sequence, boolean)} computes once, with the documents of the context as the
+     * context: the key of a comparison, the pattern and the flags of a match, the query of an index function. An operand that
+     * reads the focus has a value for each node, so pre-selecting with one value for all of them gives a wrong answer, and
+     * the optimizer does not pre-select an expression with such an operand.
+     *
+     * <p>For a function the default is every argument after the first, the nodes searched, which is the layout of the index
+     * functions. An expression that is not a function, or one with another layout, overrides it. An expression that does not
+     * say what it evaluates once is not trusted: list all its operands.</p>
+     *
+     * @return the operands that are evaluated once, without a context item of their own
+     */
+    default Expression[] getKeyOperands() {
+        if (this instanceof final Function function) {
+            final Expression[] operands = new Expression[Math.max(0, function.getArgumentCount() - 1)];
+            for (int i = 0; i < operands.length; i++) {
+                operands[i] = function.getArgument(i + 1);
+            }
+            return operands;
+        }
+        return new Expression[0];
+    }
+
+    /**
+     * @return true if one of the {@link #getKeyOperands() key operands} reads the focus: it has a value for each node
+     */
+    default boolean keyReadsFocus() {
+        return Dependency.focusOf(getKeyOperands()) != Dependency.NO_DEPENDENCY;
+    }
+
+    /**
      * Forgets what {@link #preSelect(Sequence, boolean)} found, and what it gave to the location steps, when the
      * evaluation that used it is over. The expression is evaluated again, perhaps over a collection without the index
      * or a sequence that is empty, and must then evaluate as written, not read the previous evaluation's nodes.

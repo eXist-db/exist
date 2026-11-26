@@ -84,13 +84,45 @@ public abstract class AbstractExpression implements Expression {
     }
 
     /**
-     * Returns {@link Dependency#DEFAULT_DEPENDENCIES}.
+     * Returns {@link Dependency#CONSERVATIVE_DEPENDENCIES}: an expression that does not say what it reads is taken to read the
+     * focus. An expression with no operand that reads nothing returns {@link Dependency#DEFAULT_DEPENDENCIES}; one that holds
+     * operands reports what they read.
      *
      * @see org.exist.xquery.Expression#getDependencies()
      */
+    /**
+     * What this expression needs itself, apart from what its {@link Operands operands} read of the focus. The default
+     * for an expression that lists its operands is {@link Dependency#DEFAULT_DEPENDENCIES}; for one that does not it is
+     * {@link Dependency#CONSERVATIVE_DEPENDENCIES}: an expression kind that does not say what it reads is taken to read the
+     * focus, the position and the size.
+     *
+     * @return the dependencies of this expression without its operands
+     */
+    protected int ownDependencies() {
+        return this instanceof Operands ? Dependency.DEFAULT_DEPENDENCIES : Dependency.CONSERVATIVE_DEPENDENCIES;
+    }
+
+    /**
+     * The part of an operand's dependencies that this expression hands on. By default what the operand reads of the focus: the
+     * focus, the position and the size; not the context item, which a step reports in its own way and which the optimizer
+     * reads as "evaluate per item". An expression that does not bind the focus and passes everything on, such as a clause of
+     * a FLWOR expression, widens it.
+     *
+     * @return the bits of an operand's dependencies that are part of this expression's own
+     */
+    protected int operandMask() {
+        return Dependency.CONTEXT_FOCUS | Dependency.CONTEXT_POSITION;
+    }
+
     @Override
     public int getDependencies() {
-        return Dependency.DEFAULT_DEPENDENCIES;
+        int dependencies = ownDependencies();
+        if (this instanceof final Operands operands) {
+            final int[] focus = {Dependency.NO_DEPENDENCY};
+            operands.forEachOperand(operand -> focus[0] |= operand.getDependencies() & operandMask());
+            dependencies |= focus[0];
+        }
+        return dependencies;
     }
 
     @Override

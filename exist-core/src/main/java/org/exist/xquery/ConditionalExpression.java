@@ -26,13 +26,14 @@ import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
+import java.util.function.Consumer;
 
 /**
  * XQuery if ... then ... else expression.
  * 
  * @author wolf
  */
-public class ConditionalExpression extends AbstractExpression implements RewritableExpression {
+public class ConditionalExpression extends AbstractExpression implements RewritableExpression, Operands {
 
     private Expression testExpr;
     private Expression thenExpr;
@@ -49,7 +50,13 @@ public class ConditionalExpression extends AbstractExpression implements Rewrita
     /* (non-Javadoc)
      * @see org.exist.xquery.AbstractExpression#getDependencies()
      */
-    public int getDependencies() {
+    @Override
+    public void forEachOperand(final Consumer<Expression> action) {
+        Operands.each(action, testExpr, thenExpr, elseExpr);
+    }
+
+    @Override
+    protected int ownDependencies() {
         return Dependency.CONTEXT_SET | Dependency.CONTEXT_ITEM;
     }
 

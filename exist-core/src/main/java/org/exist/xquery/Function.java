@@ -607,7 +607,32 @@ public abstract class Function extends PathExpr {
 
     @Override
     public int getDependencies() {
-        return Dependency.CONTEXT_ITEM | Dependency.CONTEXT_SET;
+        return Dependency.CONTEXT_ITEM | Dependency.CONTEXT_SET | focusDependencies();
+    }
+
+    /**
+     * Whether a call reads the focus itself, not through its arguments: the forms that default to the context item,
+     * such as {@code fn:string()}, and {@code fn:last} and {@code fn:position}. Functions that read only the rest of
+     * the dynamic context ({@code fn:current-dateTime}, {@code fn:default-collation}, ...) do not.
+     *
+     * @return true if the call reads the focus
+     */
+    public boolean readsFocus() {
+        return isContextDependent();
+    }
+
+    /**
+     * What a call hands on about the focus: the focus it reads itself and the focus and position its arguments read.
+     * A function that overrides {@link #getDependencies()} adds this to what it reports.
+     *
+     * @return the focus bits of the call
+     */
+    protected final int focusDependencies() {
+        int deps = readsFocus() ? Dependency.CONTEXT_FOCUS : Dependency.NO_DEPENDENCY;
+        for (int i = 0; i < getArgumentCount(); i++) {
+            deps |= Dependency.focusOf(getArgument(i));
+        }
+        return deps;
     }
 
     @Override
@@ -657,6 +682,11 @@ public abstract class Function extends PathExpr {
 
         public Placeholder(final XQueryContext context) {
             super(context);
+        }
+
+        @Override
+        public int getDependencies() {
+            return Dependency.DEFAULT_DEPENDENCIES;
         }
 
         @Override

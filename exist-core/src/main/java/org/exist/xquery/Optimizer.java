@@ -703,6 +703,12 @@ public class Optimizer extends DefaultExpressionVisitor {
                 return;
             }
 
+            // [a and b] is [a][b] only if neither operand asks for the position or the size of the context:
+            // the second predicate would count the nodes the first one kept, not those of the step
+            if (Dependency.dependsOn(and, Dependency.CONTEXT_POSITION)) {
+                return;
+            }
+
             if (LOG.isTraceEnabled()) {
                 LOG.trace("Rewriting boolean expression: {}", ExpressionDumper.dump(and));
             }
@@ -800,6 +806,10 @@ public class Optimizer extends DefaultExpressionVisitor {
         }
 
         for (final Optimizable optimizable : list) {
+            // the key is computed once for all the nodes of the step: not for a key that has a value for each node
+            if (optimizable.keyReadsFocus()) {
+                return false;
+            }
             final int axis = optimizable.getOptimizeAxis();
             if (!(axis == Constants.CHILD_AXIS || axis == Constants.DESCENDANT_AXIS ||
                     axis == Constants.DESCENDANT_SELF_AXIS || axis == Constants.ATTRIBUTE_AXIS ||

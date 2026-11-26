@@ -104,7 +104,16 @@ public abstract class AbstractFLWORClause extends AbstractExpression implements 
     }
 
     @Override
-    public int getDependencies() {
+    protected int ownDependencies() {
         return returnExpr.getDependencies();
+    }
+
+    /**
+     * A clause binds variables but not the focus: what its own expressions depend on, the context item included, is what the
+     * clause depends on (#6863).
+     */
+    @Override
+    protected int operandMask() {
+        return ~Dependency.NO_DEPENDENCY;
     }
 }

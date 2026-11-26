@@ -32,13 +32,14 @@ import org.exist.xquery.value.Type;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 /**
  * Implements the XQuery 3.1 arrow operator.
  *
  * @author wolf
  */
-public class ArrowOperator extends AbstractExpression {
+public class ArrowOperator extends AbstractExpression implements Operands {
 
     private QName qname = null;
     private Expression leftExpr;
@@ -196,6 +197,12 @@ public class ArrowOperator extends AbstractExpression {
             parameters.get(i).dump(dumper);
         }
         dumper.display(')');
+    }
+
+    @Override
+    public void forEachOperand(final Consumer<Expression> action) {
+        Operands.each(action, leftExpr, namedCall, funcSpec);
+        Operands.each(action, parameters);
     }
 
     @Override

@@ -30,12 +30,13 @@ import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.function.Consumer;
 
 /**
  * @author <a href="adam@evolvedbinary.com">Adam Retter</a>
  * @author <a href="gabriele@strumenta.com">Gabriele Tomassetti</a>
  */
-public class WindowExpr extends BindingExpression {
+public class WindowExpr extends BindingExpression implements Operands {
 
     public enum WindowType {
         TUMBLING_WINDOW,
@@ -71,6 +72,15 @@ public class WindowExpr extends BindingExpression {
     @Nullable
     public WindowCondition getWindowEndCondition() {
         return windowEndCondition;
+    }
+
+    @Override
+    public void forEachOperand(final Consumer<Expression> action) {
+        super.forEachOperand(action);
+        Operands.each(action, windowStartCondition.getWhenExpression());
+        if (windowEndCondition != null) {
+            Operands.each(action, windowEndCondition.getWhenExpression());
+        }
     }
 
     @Override

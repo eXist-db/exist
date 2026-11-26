@@ -46,6 +46,11 @@ public class RangeExpression extends PathExpr {
         end = endExpr;
     }
 
+    @Override
+    public int getDependencies() {
+        return super.getDependencies() | Dependency.focusOf(start, end);
+    }
+
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
         inPredicate = (contextInfo.getFlags() & IN_PREDICATE) > 0;
         contextId = contextInfo.getContextId();

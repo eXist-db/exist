@@ -343,10 +343,12 @@ public final class FunMatches extends Function implements BoundSequenceOptimizab
 
         if (Type.subTypeOf(stringArg.returnsType(), Type.NODE) &&
                 !Dependency.dependsOn(stringArg, Dependency.CONTEXT_ITEM) &&
-                (patternArg == null || !Dependency.dependsOn(patternArg, Dependency.CONTEXT_ITEM))) {
-            return Dependency.CONTEXT_SET;
+                (patternArg == null || !Dependency.dependsOn(patternArg, Dependency.CONTEXT_ITEM)) &&
+                // a pattern or flags that read the focus have a value for each item
+                !keyReadsFocus()) {
+            return Dependency.CONTEXT_SET | focusDependencies();
         } else {
-            return Dependency.CONTEXT_SET + Dependency.CONTEXT_ITEM;
+            return Dependency.CONTEXT_SET | Dependency.CONTEXT_ITEM | focusDependencies();
         }
     }
 

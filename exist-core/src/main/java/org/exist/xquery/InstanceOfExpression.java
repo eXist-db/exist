@@ -24,13 +24,14 @@ package org.exist.xquery;
 import org.exist.dom.persistent.DocumentSet;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.*;
+import java.util.function.Consumer;
 
 /**
  * Implements the XQuery "instance of" operator.
  * 
  * @author wolf
  */
-public class InstanceOfExpression extends AbstractExpression {
+public class InstanceOfExpression extends AbstractExpression implements Operands {
 
 	private final Expression expression;
 	private final SequenceType type;
@@ -113,8 +114,14 @@ public class InstanceOfExpression extends AbstractExpression {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.AbstractExpression#getDependencies()
 	 */
-	public int getDependencies() {
-		return Dependency.CONTEXT_SET + Dependency.CONTEXT_ITEM;
+	@Override
+	public void forEachOperand(final Consumer<Expression> action) {
+		Operands.each(action, expression);
+	}
+
+	@Override
+	protected int ownDependencies() {
+		return Dependency.CONTEXT_SET | Dependency.CONTEXT_ITEM;
 	}
 	
 	/* (non-Javadoc)

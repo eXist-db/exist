@@ -68,7 +68,7 @@ public class FunDocAvailable extends Function {
 
     @Override
     public int getDependencies() {
-        return Dependency.CONTEXT_SET;
+        return Dependency.CONTEXT_SET | focusDependencies();
     }
 
     @Override

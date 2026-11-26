@@ -24,11 +24,12 @@ package org.exist.xquery;
 import org.exist.dom.persistent.DocumentSet;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.*;
+import java.util.function.Consumer;
 
 /**
  * @author wolf
  */
-public class AtomicToString extends AbstractExpression {
+public class AtomicToString extends AbstractExpression implements Operands {
 
     Expression expression;
 
@@ -97,6 +98,11 @@ public class AtomicToString extends AbstractExpression {
     /* (non-Javadoc)
      * @see org.exist.xquery.AbstractExpression#resetState()
      */
+    @Override
+    public void forEachOperand(final Consumer<Expression> action) {
+        Operands.each(action, expression);
+    }
+
     public void resetState(boolean postOptimization) {
         super.resetState(postOptimization);
         expression.resetState(postOptimization);

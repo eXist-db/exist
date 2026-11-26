@@ -571,7 +571,7 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
     }
 
     @Override
-    public int getDependencies() {
+    protected int ownDependencies() {
         int deps = 0;
         for (final Expression step : steps) {
             deps = deps | step.getDependencies();

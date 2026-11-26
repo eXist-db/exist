@@ -30,13 +30,14 @@ import org.exist.xquery.value.StringValue;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.function.Consumer;
 
 /**
  * Node constructor for attribute nodes.
  * 
  * @author wolf
  */
-public class AttributeConstructor extends NodeConstructor {
+public class AttributeConstructor extends NodeConstructor implements Operands {
 
 	final String qname;
 	public final List<Object> contents = new ArrayList<>(5);
@@ -179,6 +180,15 @@ public class AttributeConstructor extends NodeConstructor {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.NodeConstructor#resetState()
 	 */
+    @Override
+    public void forEachOperand(final Consumer<Expression> action) {
+        for (final Object part : contents) {
+            if (part instanceof final Expression expression) {
+                action.accept(expression);
+            }
+        }
+    }
+
     @Override
     public void resetState(boolean postOptimization) {
 		super.resetState(postOptimization);

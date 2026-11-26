@@ -387,11 +387,13 @@ public class Query extends Function implements Optimizable {
     @Override
     public int getDependencies() {
         final Expression stringArg = getArgument(0);
+        // a query that reads the focus has a value for each item
         if (Type.subTypeOf(stringArg.returnsType(), Type.NODE) &&
-                !Dependency.dependsOn(stringArg, Dependency.CONTEXT_ITEM)) {
-            return Dependency.CONTEXT_SET;
+                !Dependency.dependsOn(stringArg, Dependency.CONTEXT_ITEM) &&
+                !keyReadsFocus()) {
+            return Dependency.CONTEXT_SET | focusDependencies();
         } else {
-            return Dependency.CONTEXT_SET + Dependency.CONTEXT_ITEM;
+            return Dependency.CONTEXT_SET | Dependency.CONTEXT_ITEM | focusDependencies();
         }
     }
 

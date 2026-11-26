@@ -65,7 +65,7 @@ public class RootNode extends Step {
         // item, falls through to getStaticallyKnownDocuments(), and returns
         // arbitrary content from the static-context default (which under
         // admin includes /db/system).
-        return Dependency.CONTEXT_ITEM | Dependency.CONTEXT_SET;
+        return Dependency.CONTEXT_ITEM | Dependency.CONTEXT_SET | Dependency.CONTEXT_FOCUS;
     }
 
     public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {

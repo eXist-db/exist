@@ -35,6 +35,10 @@ fields.xql: field-head-ends-with-optimize
 fields.xql: field-l-eq-optimize
 fields.xql: field-speaker-eq-optimize
 fields.xql: field-stage-eq-optimize
+key-reads-focus.xqm: function-of-a-literal-uses-the-index
+key-reads-focus.xqm: function-of-a-variable-uses-the-index
+key-reads-focus.xqm: literal-key-uses-the-index
+key-reads-focus.xqm: variable-key-uses-the-index
 optimizer.xql: issue2363-formulation1-optimized
 optimizer.xql: issue4881-eq-uses-index
 optimizer.xql: issue4881-matches-case-insensitive-uses-index

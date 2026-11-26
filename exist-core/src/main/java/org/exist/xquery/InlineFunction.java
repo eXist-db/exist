@@ -93,6 +93,12 @@ public class InlineFunction extends AbstractExpression {
 	}
 
     @Override
+    public int getDependencies() {
+        // the body of a function does not see the focus of the expression that creates the function item
+        return Dependency.DEFAULT_DEPENDENCIES;
+    }
+
+    @Override
     public void resetState(boolean postOptimization) {
         super.resetState(postOptimization);
         calls.clear();

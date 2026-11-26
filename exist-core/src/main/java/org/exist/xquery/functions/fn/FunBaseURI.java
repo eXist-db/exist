@@ -86,6 +86,12 @@ public class FunBaseURI extends BasicFunction {
         return isCalledAs(FS_STATIC_BASE_URI) || getArgumentCount() == 0;
     }
 
+    @Override
+    public boolean readsFocus() {
+        // static-base-uri() reads the static context
+        return !isCalledAs(FS_STATIC_BASE_URI) && getArgumentCount() == 0;
+    }
+
     /* (non-Javadoc)
      * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[],
      * org.exist.xquery.value.Sequence)

@@ -31,6 +31,7 @@ import org.exist.xquery.value.SequenceType;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 /**
  * Implements the XQuery typeswitch construct.
@@ -38,7 +39,7 @@ import java.util.List;
  * @author wolf
  *
  */
-public class TypeswitchExpression extends AbstractExpression {
+public class TypeswitchExpression extends AbstractExpression implements Operands {
 
     /**
      * Internal class used to hold a single case clause.
@@ -152,8 +153,20 @@ public class TypeswitchExpression extends AbstractExpression {
         return operand.returnsType();
     }
 
-    public int getDependencies() {
-        return Dependency.CONTEXT_SET + Dependency.CONTEXT_ITEM;
+    @Override
+    public void forEachOperand(final Consumer<Expression> action) {
+        Operands.each(action, operand);
+        for (final Case next : cases) {
+            Operands.each(action, next.returnClause);
+        }
+        if (defaultClause != null) {
+            Operands.each(action, defaultClause.returnClause);
+        }
+    }
+
+    @Override
+    protected int ownDependencies() {
+        return Dependency.CONTEXT_SET | Dependency.CONTEXT_ITEM;
     }
 
     @Override

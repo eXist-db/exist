@@ -33,11 +33,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.exist.xquery.functions.map.MapType.newLinearMap;
+import java.util.function.Consumer;
 
 /**
  * Implements the literal syntax for creating maps.
  */
-public class MapExpr extends AbstractExpression {
+public class MapExpr extends AbstractExpression implements Operands {
 
     private final List<Mapping> mappings = new ArrayList<>(13);
 
@@ -102,6 +103,13 @@ public class MapExpr extends AbstractExpression {
     @Override
     public int returnsType() {
         return Type.MAP_ITEM;
+    }
+
+    @Override
+    public void forEachOperand(final Consumer<Expression> action) {
+        for (final Mapping mapping : mappings) {
+            Operands.each(action, mapping.key, mapping.value);
+        }
     }
 
     @Override

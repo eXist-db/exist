@@ -31,6 +31,7 @@ import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
+import java.util.function.Consumer;
 
 /**
  * Implements the XQuery 3 switch expression.
@@ -38,7 +39,7 @@ import org.exist.xquery.value.Sequence;
  * @author ljo
  *
  */
-public class SwitchExpression extends AbstractExpression {
+public class SwitchExpression extends AbstractExpression implements Operands {
 
     /**
      * Internal class used to hold a single case clause.
@@ -122,8 +123,21 @@ public class SwitchExpression extends AbstractExpression {
         return operand.returnsType();
     }
 
-    public int getDependencies() {
-        return Dependency.CONTEXT_SET + Dependency.CONTEXT_ITEM;
+    @Override
+    public void forEachOperand(final Consumer<Expression> action) {
+        Operands.each(action, operand);
+        for (final Case next : cases) {
+            Operands.each(action, next.operands);
+            Operands.each(action, next.returnClause);
+        }
+        if (defaultClause != null) {
+            Operands.each(action, defaultClause.returnClause);
+        }
+    }
+
+    @Override
+    protected int ownDependencies() {
+        return Dependency.CONTEXT_SET | Dependency.CONTEXT_ITEM;
     }
 
     @Override

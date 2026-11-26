@@ -28,6 +28,7 @@ import org.exist.xquery.value.*;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.function.Consumer;
 
 /**
  * Represents an "order by" clause within a FLWOR expression.
@@ -38,7 +39,7 @@ import java.util.stream.IntStream;
  * collected tuples in {@link #postEval}, and then replaying each sorted tuple through the
  * downstream clause chain — mirroring the pattern used by {@link GroupByClause}.</p>
  */
-public class OrderByClause extends AbstractFLWORClause {
+public class OrderByClause extends AbstractFLWORClause implements Operands {
 
     // Package-private instrumentation fields for memory benchmarking.
     // volatile is required: postEval() writes these in a query-executor worker thread,
@@ -422,6 +423,13 @@ public class OrderByClause extends AbstractFLWORClause {
     @Override
     public void accept(ExpressionVisitor visitor) {
         visitor.visitOrderByClause(this);
+    }
+
+    @Override
+    public void forEachOperand(final Consumer<Expression> action) {
+        for (final OrderSpec orderSpec : orderSpecs) {
+            Operands.each(action, orderSpec.getSortExpression());
+        }
     }
 
     @Override

@@ -44,13 +44,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.function.Consumer;
 
 /**
  * Implements a where clause inside a FLWOR expressions.
  *
  * @author wolf
  */
-public class WhereClause extends AbstractFLWORClause {
+public class WhereClause extends AbstractFLWORClause implements Operands {
 
     protected Expression whereExpr;
     protected boolean fastTrack = false;
@@ -476,6 +477,11 @@ public class WhereClause extends AbstractFLWORClause {
         dumper.startIndent();
         whereExpr.dump(dumper);
         dumper.endIndent().nl();
+    }
+
+    @Override
+    public void forEachOperand(final Consumer<Expression> action) {
+        Operands.each(action, whereExpr);
     }
 
     @Override

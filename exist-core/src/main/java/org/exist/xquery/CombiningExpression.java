@@ -26,6 +26,7 @@ import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
+import java.util.function.Consumer;
 
 /**
  * Abstract base class for the XQuery/XPath combining operators "union", "intersect"
@@ -33,7 +34,7 @@ import org.exist.xquery.value.Type;
  * 
  * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
  */
-public abstract class CombiningExpression extends AbstractExpression {
+public abstract class CombiningExpression extends AbstractExpression implements Operands {
 
 	final protected PathExpr left;
 	final protected PathExpr right;
@@ -42,6 +43,11 @@ public abstract class CombiningExpression extends AbstractExpression {
 		super(context);
 		this.left = left;
 		this.right = right;
+	}
+
+	@Override
+	public void forEachOperand(final Consumer<Expression> action) {
+		Operands.each(action, left, right);
 	}
 
 	@Override

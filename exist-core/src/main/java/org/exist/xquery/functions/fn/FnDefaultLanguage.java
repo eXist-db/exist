@@ -47,6 +47,12 @@ public class FnDefaultLanguage extends BasicFunction {
     }
 
     @Override
+    public boolean readsFocus() {
+        // the default language is part of the dynamic context, not of the focus
+        return false;
+    }
+
+    @Override
     public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
 
         return new StringValue(this, context.getDefaultLanguage());

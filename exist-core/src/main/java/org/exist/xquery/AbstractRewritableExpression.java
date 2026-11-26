@@ -20,6 +20,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 package org.exist.xquery;
+import java.util.function.Consumer;
 
 /**
  * Base class for the runtime function-argument check wrappers (
@@ -30,7 +31,7 @@ package org.exist.xquery;
  * wrapped expression in place -- e.g. to attach an {@code (#exist:optimize#)}
  * pragma to a function argument -- without dropping the check. See GH-873.
  */
-public abstract class AbstractRewritableExpression extends AbstractExpression implements RewritableExpression {
+public abstract class AbstractRewritableExpression extends AbstractExpression implements RewritableExpression, Operands {
 
     protected Expression expression;
 
@@ -54,6 +55,11 @@ public abstract class AbstractRewritableExpression extends AbstractExpression im
             return expression;
         }
         throw new IndexOutOfBoundsException("Index: " + index + ", Size: " + getSubExpressionCount());
+    }
+
+    @Override
+    public void forEachOperand(final Consumer<Expression> action) {
+        Operands.each(action, expression);
     }
 
     @Override

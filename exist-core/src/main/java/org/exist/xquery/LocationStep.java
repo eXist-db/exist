@@ -76,6 +76,13 @@ public class LocationStep extends Step {
      */
     private boolean initialStep = false;
 
+    /**
+     * Whether a previous step of the same path feeds this step, so that it does not read the focus itself. A step that is an
+     * operand, an argument, a branch or the first step of a path starts a relative path and reads the focus of its expression.
+     * Captured during analyze, with {@link #initialStep}; until then the step is taken to read the focus.
+     */
+    private boolean continuesPath = false;
+
     //private int parentDeps = Dependency.UNKNOWN_DEPENDENCY;
     private boolean preloadedData = false;
     protected boolean optimized = false;
@@ -116,9 +123,13 @@ public class LocationStep extends Step {
 
         // TODO : normally, we should call this one...
         // int deps = super.getDependencies(); ???
+        if (!continuesPath) {
+            deps |= Dependency.CONTEXT_FOCUS;
+        }
         if (predicates != null) {
             for (final Predicate pred : predicates) {
-                deps |= pred.getDependencies();
+                // the focus of a predicate is the step's own items, not the focus of the expression around the step
+                deps |= pred.getDependencies() & ~Dependency.CONTEXT_FOCUS;
             }
         }
 
@@ -407,6 +418,7 @@ public class LocationStep extends Step {
         // argument), so deferring this test to getDependencies() is unreliable.
         this.initialStep = parent != null && parent.getSubExpressionCount() > 0
                 && parent.getSubExpression(0) == this;
+        this.continuesPath = parent != null && parent.getClass() == PathExpr.class && !initialStep;
     }
 
     @Override

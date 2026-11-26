@@ -26,6 +26,7 @@ import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
+import java.util.function.Consumer;
 
 
 /**
@@ -34,7 +35,7 @@ import org.exist.xquery.value.SequenceIterator;
  * 
  * @author wolf
  */
-public class DynamicTextConstructor extends NodeConstructor {
+public class DynamicTextConstructor extends NodeConstructor implements Operands {
 
     final private Expression content;
 
@@ -125,6 +126,11 @@ public class DynamicTextConstructor extends NodeConstructor {
     public String toString() {
         return "text {" + content.toString() + "}";
     }    
+
+    @Override
+    public void forEachOperand(final Consumer<Expression> action) {
+        Operands.each(action, content);
+    }
 
     public void resetState(boolean postOptimization) {
     	super.resetState(postOptimization);

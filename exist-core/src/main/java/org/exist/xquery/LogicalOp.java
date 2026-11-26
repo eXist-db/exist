@@ -24,13 +24,14 @@ package org.exist.xquery;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
+import java.util.function.Consumer;
 
 /**
  * Base class for the boolean operators "and" and "or".
  * 
  * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang</a>
  */
-public abstract class LogicalOp extends BinaryOp {
+public abstract class LogicalOp extends BinaryOp implements Operands {
 
 	/**
 	 * If set to true, the boolean operation is processed as
@@ -96,11 +97,14 @@ public abstract class LogicalOp extends BinaryOp {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.PathExpr#getDependencies()
 	 */
-	public int getDependencies() {
-		if(!optimize)
-			{return Dependency.CONTEXT_SET + Dependency.CONTEXT_ITEM;}
-		else
-			{return Dependency.CONTEXT_SET;}
+	@Override
+	public void forEachOperand(final Consumer<Expression> action) {
+		Operands.each(action, getLeft(), getRight());
+	}
+
+	@Override
+	protected int ownDependencies() {
+		return optimize ? Dependency.CONTEXT_SET : Dependency.CONTEXT_SET | Dependency.CONTEXT_ITEM;
 	}
 
     public Expression getParent() {

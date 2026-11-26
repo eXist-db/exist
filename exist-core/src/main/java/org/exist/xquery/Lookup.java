@@ -156,6 +156,13 @@ public class Lookup extends AbstractExpression {
     }
 
     @Override
+    public int getDependencies() {
+        // a unary lookup, ?key, takes the context item as its input
+        final int input = contextExpression == null ? Dependency.CONTEXT_FOCUS : Dependency.focusOf(contextExpression);
+        return Dependency.DEFAULT_DEPENDENCIES | input | Dependency.focusOf(keyExpression);
+    }
+
+    @Override
     public void resetState(boolean postOptimization) {
         super.resetState(postOptimization);
         if (contextExpression != null) {
