@@ -239,6 +239,17 @@ public class GrammarPool implements XMLGrammarPool {
         return notReusableDtds.getIfPresent(GrammarKey.ofDtd(publicId, expandedSystemId)) != null;
     }
 
+    /**
+     * Remember that the grammar of an external DTD could not be built, so that it is not asked for again for each
+     * document until the entry expires, as for a DTD that is read and found not reusable.
+     *
+     * @param publicId the public id of the DOCTYPE, or null
+     * @param expandedSystemId the system id of the DOCTYPE, expanded against the document
+     */
+    void markNotReusableDtd(@Nullable final String publicId, final String expandedSystemId) {
+        notReusableDtds.put(GrammarKey.ofDtd(publicId, expandedSystemId), Boolean.TRUE);
+    }
+
     @Override
     public void lockPool() {
         isLocked = true;

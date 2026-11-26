@@ -154,6 +154,7 @@ public class ReaderGrammarPool implements XMLGrammarPool {
         } catch (final SAXException | IOException | RuntimeException e) {
             LOG.debug("The grammar of the DTD {} {} was not built: {}", seed.publicId(), seed.systemId(), e.getMessage());
             seeded.clear();
+            markNotReusable(seed);
         } finally {
             seeding = false;
         }
@@ -162,6 +163,15 @@ public class ReaderGrammarPool implements XMLGrammarPool {
             delegate.cacheGrammars(XMLGrammarDescription.XML_DTD, seeded.toArray(Grammar[]::new));
         }
         seeded.clear();
+    }
+
+    /** A DTD whose grammar failed to build is not asked for again until the entry expires: every document would repeat the failure. */
+    private void markNotReusable(final DtdSeed seed) {
+        try {
+            delegate.markNotReusableDtd(seed.publicId(), XMLEntityManager.expandSystemId(seed.systemId(), seed.baseSystemId(), false));
+        } catch (final URI.MalformedURIException e) {
+            // no identity to remember it by
+        }
     }
 
     private static String doctypeOnly(final DtdSeed seed) {

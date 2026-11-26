@@ -26,11 +26,18 @@ import org.apache.xerces.xni.grammars.Grammar;
 import org.apache.xerces.xni.grammars.XMLGrammarDescription;
 import org.apache.xerces.xni.parser.XMLInputSource;
 import org.junit.jupiter.api.Test;
+import org.xml.sax.XMLReader;
 
+import com.sun.net.httpserver.HttpServer;
+
+import javax.xml.parsers.SAXParserFactory;
 import java.io.IOException;
 import java.io.StringReader;
+import java.net.InetSocketAddress;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * The view of the shared pool that a reader has does not cache the DTD grammars of the documents that are parsed with
@@ -53,5 +60,48 @@ public class ReaderGrammarPoolTest {
         shared.cacheGrammars(XMLGrammarDescription.XML_DTD, new Grammar[]{dtd});
         view.enableDtdReuse();
         assertEquals(1, view.retrieveInitialGrammarSet(XMLGrammarDescription.XML_DTD).length);
+    }
+
+    /**
+     * The parse that builds the grammar of a DTD fails when the DTD can not be read. The DTD is then remembered as one
+     * that is not asked for, like a DTD that is read and found not reusable, and not requested again for each document.
+     */
+    @Test
+    void aDtdWhoseGrammarCouldNotBeBuiltIsNotAskedForAgain() throws Exception {
+        final AtomicInteger requests = new AtomicInteger();
+        final HttpServer http = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
+        http.createContext("/", exchange -> {
+            requests.incrementAndGet();
+            exchange.sendResponseHeaders(500, -1);
+            exchange.close();
+        });
+        http.start();
+        try {
+            final String dtd = "http://127.0.0.1:" + http.getAddress().getPort() + "/unreadable.dtd";
+            final GrammarPool shared = new GrammarPool();
+            final ReaderGrammarPool view = new ReaderGrammarPool(shared);
+            final XMLReader reader = readerOf(view);
+
+            view.requestSeed(null, dtd, null, "a");
+            view.seed(reader);
+            assertEquals(1, requests.get(), "the first document asks for the grammar and the DTD is requested");
+            assertTrue(shared.isKnownNotReusableDtd(null, dtd), "the failure is remembered");
+            assertEquals(0, shared.retrieveCachedDtdGrammars().length, "and no grammar is cached");
+
+            view.requestSeed(null, dtd, null, "a");
+            view.seed(reader);
+            assertEquals(1, requests.get(), "the next document does not ask for the grammar again");
+        } finally {
+            http.stop(0);
+        }
+    }
+
+    private static XMLReader readerOf(final ReaderGrammarPool view) throws Exception {
+        final SAXParserFactory factory = SAXParserFactory.newInstance();
+        factory.setNamespaceAware(true);
+        final XMLReader reader = factory.newSAXParser().getXMLReader();
+        reader.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", true);
+        reader.setProperty("http://apache.org/xml/properties/internal/grammar-pool", view);
+        return reader;
     }
 }
