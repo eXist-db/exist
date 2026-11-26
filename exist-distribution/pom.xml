@@ -48,6 +48,11 @@
 
     <properties>
         <assemble.dir>${project.build.directory}/${project.artifactId}-dir</assemble.dir>
+
+        <!-- vector embeddings (`vector` profile; vector.* defaults in exist-parent): ships the vector.models in
+             onnx-models/<id>, registers them in etc/conf.xml <vector-models>, enables the vector XQuery module
+             and adds vector.java.opts to the bin/ launch scripts -->
+        <vector.build.dir>${project.build.directory}/vector</vector.build.dir>
         <public.xar.repo.uri>http://exist-db.org/exist/apps/public-repo</public.xar.repo.uri>
         <expath.pkg.dir>${project.build.directory}/expath-pkgs</expath.pkg.dir>
         <mac.bundle.dir>${project.build.directory}/${project.artifactId}-${project.version}.app</mac.bundle.dir>
@@ -526,18 +531,23 @@
                                     </sequential>
                                 </macrodef>
 
+                                <!-- @VECTOR_JAVA_OPTS@ in the launch script templates: empty unless -Pvector -->
+                                <filterset id="launcher-filters">
+                                    <filter token="VECTOR_JAVA_OPTS" value="${vector.java.opts}"/>
+                                </filterset>
+
                                 <!-- windows -->
-                                <copy file="src/main/templates/template.bat" tofile="${assemble.dir}/bin/launcher.bat"/>
-                                <copy file="src/main/templates/template.bat" tofile="${assemble.dir}/bin/backup.bat"/>
-                                <copy file="src/main/templates/template.bat" tofile="${assemble.dir}/bin/client.bat"/>
-                                <copy file="src/main/templates/template.bat" tofile="${assemble.dir}/bin/export-gui.bat"/>
-                                <copy file="src/main/templates/template.bat" tofile="${assemble.dir}/bin/export.bat"/>
-                                <copy file="src/main/templates/template.bat" tofile="${assemble.dir}/bin/jmxclient.bat"/>
-                                <copy file="src/main/templates/template.bat" tofile="${assemble.dir}/bin/shutdown.bat"/>
-                                <copy file="src/main/templates/template.bat" tofile="${assemble.dir}/bin/startup.bat"/>
+                                <copy file="src/main/templates/template.bat" tofile="${assemble.dir}/bin/launcher.bat"><filterset refid="launcher-filters"/></copy>
+                                <copy file="src/main/templates/template.bat" tofile="${assemble.dir}/bin/backup.bat"><filterset refid="launcher-filters"/></copy>
+                                <copy file="src/main/templates/template.bat" tofile="${assemble.dir}/bin/client.bat"><filterset refid="launcher-filters"/></copy>
+                                <copy file="src/main/templates/template.bat" tofile="${assemble.dir}/bin/export-gui.bat"><filterset refid="launcher-filters"/></copy>
+                                <copy file="src/main/templates/template.bat" tofile="${assemble.dir}/bin/export.bat"><filterset refid="launcher-filters"/></copy>
+                                <copy file="src/main/templates/template.bat" tofile="${assemble.dir}/bin/jmxclient.bat"><filterset refid="launcher-filters"/></copy>
+                                <copy file="src/main/templates/template.bat" tofile="${assemble.dir}/bin/shutdown.bat"><filterset refid="launcher-filters"/></copy>
+                                <copy file="src/main/templates/template.bat" tofile="${assemble.dir}/bin/startup.bat"><filterset refid="launcher-filters"/></copy>
 
                                 <!-- unix -->
-                                <copy file="src/main/templates/template.sh" tofile="${assemble.dir}/bin/launcher.sh"/>
+                                <copy file="src/main/templates/template.sh" tofile="${assemble.dir}/bin/launcher.sh"><filterset refid="launcher-filters"/></copy>
 
                                 <symlink link="${assemble.dir}/bin/backup.sh" resource="launcher.sh"/>
                                 <symlink link="${assemble.dir}/bin/client.sh" resource="launcher.sh"/>
@@ -558,6 +568,35 @@
                                 <!-- set permissions -->
                                 <chmod dir="${assemble.dir}/bin" perm="755" includes="*.sh,jsvc*"/>
 
+                            </target>
+                        </configuration>
+                    </execution>
+
+                    <execution>
+                        <!-- after "copy files": ship the vector models and the conf.xml prepared by
+                             the enable-vector-conf execution of xml-maven-plugin -->
+                        <id>vector-models</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <skip>${vector.skip}</skip>
+                            <target>
+                                <ant antfile="${vector.build.dir}/fetch-vector-models.xml" inheritAll="false">
+                                    <property name="cache.dir" value="${vector.cache.dir}"/>
+                                    <property name="dest.dir" value="${assemble.dir}/onnx-models"/>
+                                </ant>
+                                <copy file="${vector.build.dir}/conf.xml" todir="${assemble.dir}/etc" overwrite="true"/>
+                                <!-- macOS .app: the appbundler flattens its resource fileSets, so the
+                                     onnx-models/<id> tree is placed ahead of it (it does not clear the bundle);
+                                     etc/conf.xml is taken from ${assemble.dir}/etc by its additionalResourcePaths -->
+                                <condition property="mac.bundle">
+                                    <equals arg1="${mac.bundle.phase}" arg2="package"/>
+                                </condition>
+                                <copy todir="${mac.bundle.resources.dir}/onnx-models" if:set="mac.bundle" xmlns:if="ant:if">
+                                    <fileset dir="${assemble.dir}/onnx-models"/>
+                                </copy>
                             </target>
                         </configuration>
                     </execution>
@@ -659,6 +698,37 @@
                     </catalogs>
                 </configuration>
                 <executions>
+                    <execution>
+                        <id>enable-vector-conf</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>transform</goal>
+                        </goals>
+                        <configuration>
+                            <skip>${vector.skip}</skip>
+                            <forceCreation>true</forceCreation>
+                            <transformationSets>
+                                <transformationSet>
+                                    <dir>${project.basedir}/src/main/config</dir>
+                                    <includes>
+                                        <include>conf.xml</include>
+                                    </includes>
+                                    <stylesheet>src/main/xslt/conf-vector.xslt</stylesheet>
+                                    <parameters>
+                                        <parameter>
+                                            <name>models</name>
+                                            <value>${vector.models}</value>
+                                        </parameter>
+                                        <parameter>
+                                            <name>fetch-script</name>
+                                            <value>file:${vector.build.dir}/fetch-vector-models.xml</value>
+                                        </parameter>
+                                    </parameters>
+                                    <outputDir>${vector.build.dir}</outputDir>
+                                </transformationSet>
+                            </transformationSets>
+                        </configuration>
+                    </execution>
                     <execution>
                         <id>adjust-jetty-deploy-for-appassembler</id>
                         <phase>package</phase>
@@ -923,10 +993,11 @@
 
     <profiles>
         <profile>
-            <!-- Shares the `onnx-model` id with exist-parent's profile so that a single
-                 `-Ponnx-model` activates the model download (in parent) AND adds the
-                 exist-vector runtime dependency (here). Keep ids in sync. -->
-            <id>onnx-model</id>
+            <!-- Shares the `vector` id with exist-parent's profile so that a single
+                 `-Pvector` activates the test model download (in parent) AND adds the
+                 exist-vector runtime dependency (here); shipping and enabling the models
+                 is driven by vector.skip, which the parent profile sets. Keep ids in sync. -->
+            <id>vector</id>
             <dependencies>
                 <dependency>
                     <groupId>${project.groupId}</groupId>
@@ -1096,6 +1167,14 @@
                                     <additionalResourcePaths>
                                         <fileSet>
                                             <directory>${project.basedir}/src/main/config</directory>
+                                            <outputDirectory>etc</outputDirectory>
+                                        </fileSet>
+                                        <!-- the assembled conf.xml: the same file unless -Pvector enabled embeddings -->
+                                        <fileSet>
+                                            <directory>${assemble.dir}/etc</directory>
+                                            <includes>
+                                                <include>conf.xml</include>
+                                            </includes>
                                             <outputDirectory>etc</outputDirectory>
                                         </fileSet>
                                     </additionalResourcePaths>

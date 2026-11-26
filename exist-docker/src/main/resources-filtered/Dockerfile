@@ -29,6 +29,7 @@ COPY etc /exist/etc
 COPY lib /exist/lib
 COPY logs /exist/logs
 COPY schema /exist/schema
+${docker.vector.copy}
 
 
 # Build-time metadata as defined by OCI
@@ -55,6 +56,7 @@ ENV EXIST_HOME=/exist
 ENV CLASSPATH=/exist/lib/${exist.uber.jar.filename}
 
 ENV JAVA_TOOL_OPTIONS="\
+  ${vector.java.opts} \
   -Dfile.encoding=UTF8 \
   -Dsun.jnu.encoding=UTF-8 \
   -Djava.awt.headless=true \

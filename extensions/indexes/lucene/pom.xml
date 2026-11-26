@@ -242,7 +242,7 @@
     <profiles>
         <!-- Model download is inherited from exist-parent. This profile adds exist.home for surefire tests that need it. -->
         <profile>
-            <id>onnx-model</id>
+            <id>vector</id>
             <build>
                 <plugins>
                     <plugin>

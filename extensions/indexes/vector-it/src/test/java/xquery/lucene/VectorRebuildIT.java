@@ -69,7 +69,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
  * <p>
  * The test that embeds skips when the model is not available. Run with:
  * <pre>
- *   mvn verify -pl extensions/indexes/vector-it -Ponnx-model
+ *   mvn verify -pl extensions/indexes/vector-it -Pvector
  * </pre>
  */
 @SuppressWarnings("PMD.ClassNamingConventions") // Failsafe runs the classes named *IT

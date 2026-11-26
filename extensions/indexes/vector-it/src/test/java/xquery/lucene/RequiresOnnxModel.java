@@ -31,7 +31,7 @@ import java.lang.annotation.Target;
 /**
  * Marks a test that needs the local ONNX model at {@code target/onnx-models/all-MiniLM-L6-v2}.
  * <p>
- * Without the model the test is skipped, unless the {@code onnx-model} profile is active:
+ * Without the model the test is skipped, unless the {@code vector} profile is active:
  * the profile sets {@value OnnxModelCondition#REQUIRED_PROPERTY}, and then a missing model
  * fails the test, so that a model which stopped resolving cannot pass as a skip.
  */

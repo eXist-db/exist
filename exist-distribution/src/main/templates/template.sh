@@ -125,7 +125,7 @@ if $cygwin; then
   [ -n "$REPO" ] && REPO=$(cygpath --path --windows "$REPO")
 fi
 
-_JAVA_OPTS='-Xms256m -XX:+UseNUMA -XX:+UseZGC -XX:+UseStringDeduplication -Dfile.encoding=UTF-8'
+_JAVA_OPTS='@VECTOR_JAVA_OPTS@ -Xms256m -XX:+UseNUMA -XX:+UseZGC -XX:+UseStringDeduplication -Dfile.encoding=UTF-8'
 if [ -n "$JAVA_OPTS" ] ; then
   _JAVA_OPTS="$_JAVA_OPTS $JAVA_OPTS"
 fi
