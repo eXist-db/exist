@@ -34,6 +34,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import ai.onnxruntime.OnnxValue;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
@@ -57,6 +58,7 @@ public final class OnnxVectorProvider implements VectorEmbeddingProvider {
   private static final String LAST_HIDDEN_STATE = "last_hidden_state";
   private static final String SENTENCE_EMBEDDING = "sentence_embedding";
   private static final String TOKEN_EMBEDDINGS = "token_embeddings";
+  private static final String ONLINE_CPUS = "/sys/devices/system/cpu/online";
 
   private final OrtEnvironment env;
   private final OrtSession session;
@@ -290,6 +292,12 @@ public final class OnnxVectorProvider implements VectorEmbeddingProvider {
 
   private static OrtSession createSession(final OrtEnvironment env, final Path modelFile) throws Exception {
     try (final OrtSession.SessionOptions opts = new OrtSession.SessionOptions()) {
+      final int hostCpus = hostCpus();
+      final int threads = intraOpThreads(Runtime.getRuntime().availableProcessors(), hostCpus);
+      if (threads > 0) {
+        opts.setIntraOpNumThreads(threads);
+        LOG.info("Using {} ONNX Runtime threads: {} of the host's {} CPUs are available", threads, threads, hostCpus);
+      }
       try {
         opts.addCUDA(0);
         LOG.info("Using CUDA execution provider for embedding (device 0)");
@@ -298,6 +306,54 @@ public final class OnnxVectorProvider implements VectorEmbeddingProvider {
       }
       return env.createSession(modelFile.toString(), opts);
     }
+  }
+
+  /**
+   * ONNX Runtime sizes its pool of threads by the host's cores, which under a CPU limit is more threads than CPUs.
+   * Without a limit its default is faster than one thread per CPU.
+   *
+   * @param cpus the CPUs the JVM may use, a CPU limit included
+   * @param hostCpus the CPUs of the host, or 0 if not known
+   * @return the number of intra-op threads to set, or 0 to keep ONNX Runtime's default
+   */
+  static int intraOpThreads(final int cpus, final int hostCpus) {
+    return cpus < hostCpus ? cpus : 0;
+  }
+
+  /**
+   * @return the number of CPUs of the host, which a container's CPU limit does not change, or 0 where it is not
+   *     known (a system other than Linux)
+   */
+  static int hostCpus() {
+    try {
+      return countCpus(Files.readString(Path.of(ONLINE_CPUS)));
+    } catch (final IOException | RuntimeException e) {
+      return 0;
+    }
+  }
+
+  /**
+   * Counts the CPUs of a Linux CPU list such as {@code 0-3,6-7}.
+   *
+   * @param list the list, as in {@code /sys/devices/system/cpu/online}
+   * @return the number of CPUs, or 0 if the list cannot be read
+   */
+  static int countCpus(final String list) {
+    int count = 0;
+    for (final String range : list.trim().split(",")) {
+      final String[] bounds = range.split("-");
+      try {
+        final int first = Integer.parseInt(bounds[0]);
+        final int last = bounds.length > 1 ? Integer.parseInt(bounds[1]) : first;
+        if (bounds.length > 2 || last < first) {
+          return 0;
+        }
+        count += last - first + 1;
+      } catch (final NumberFormatException e) {
+        return 0;
+      }
+    }
+    return count;
   }
 
   @Nullable
