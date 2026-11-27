@@ -74,7 +74,7 @@ jobs:
 
       - name: Build exist-indexes-jmh
         run: >
-          mvn -B install -Pperf-tests -pl exist-indexes-jmh -am -DskipTests
+          mvn -B install -Pperf-tests,onnx-model -pl exist-indexes-jmh -am -DskipTests
           -Ddependency-check.skip=true -Ddocker=false
 
       - name: Run exist-indexes-jmh benchmarks
