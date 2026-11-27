@@ -2067,7 +2067,8 @@ public class MutableCollection implements Collection {
     }
 
     /** 
-     * Get XML Reader from ReaderPool and setup validation when needed.
+     * Get XML Reader from ReaderPool and setup validation when needed: the validation mode of the collection
+     * configuration if it sets one, else the one of the server.
      *
      * @param broker The database broker
      * @param validation true if validation should be enabled
@@ -2080,14 +2081,17 @@ public class MutableCollection implements Collection {
         final XMLReaderPool xmlReaderPool = broker.getBrokerPool().getXmlReaderPool();
         final XMLReader reader = xmlReaderPool.borrowXMLReader();
 
-        // If Collection configuration exists (try to) get validation mode
-        // and setup reader with this information.
+        // If the Collection configuration sets a validation mode, use it. A configuration
+        // that does not (the default one, or one with only an index configuration) leaves
+        // the reader in the validation mode of the server, as the pool set it up.
         if (!validation) {
             xmlReaderPool.setValidationMode(reader, XMLReaderObjectFactory.VALIDATION_SETTING.DISABLED);
 
-        } else if(collectionConf != null) {
+        } else if (collectionConf != null) {
             final VALIDATION_SETTING mode = collectionConf.getValidationMode();
-            xmlReaderPool.setValidationMode(reader, mode);
+            if (mode != VALIDATION_SETTING.UNKNOWN) {
+                xmlReaderPool.setValidationMode(reader, mode);
+            }
         }
         // Return configured reader.
         return reader;

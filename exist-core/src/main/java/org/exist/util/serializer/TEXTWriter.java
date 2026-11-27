@@ -224,4 +224,9 @@ public class TEXTWriter extends XMLWriter {
         charref[o++] = ';';
         writer.write(charref, 0, o);
     }
+
+    @Override
+    protected boolean writesInternalSubset() {
+        return false;
+    }
 }

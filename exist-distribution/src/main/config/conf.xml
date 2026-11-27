@@ -58,7 +58,7 @@
         - http://exist-db.org/exist/apps/doc/documentation.xml
 
 -->
-<exist xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../schema/conf.xsd" schemaVersion="2.11.0">
+<exist xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../schema/conf.xsd" schemaVersion="2.11.1">
 
     <!-- 
         Configures the database backend.
@@ -889,7 +889,14 @@
             can validate against both: schemas and DTDs.
             
             Possible values: "yes", "no", "auto". "auto" will leave validation 
-            to the parser.   
+            to the parser. If the element or its mode is missing, "auto" is used.
+
+            This is the mode of the server. It applies to every collection
+            whose configuration (collection.xconf) does not set a validation
+            mode of its own; a mode set in a collection configuration takes
+            precedence for that collection and the collections below it.
+            With "yes", every document that has neither a schema nor a DOCTYPE
+            is rejected, collection configuration documents included.
 
             Regardless of the mode, the external DTD subset of a document is
             read when it is found in one of the catalogs configured below, so
@@ -929,6 +936,13 @@
                 The time (in seconds) after which an unused grammar should expire and be removed
                 from the grammar pool.
                 Value -1: grammars will not be removed over time.
+
+            A cached grammar is not refreshed when its DTD or schema changes, and the
+            lifetime of an entry is renewed each time it is used, so an entry that is in
+            use does not expire. After you edit a DTD or schema that has been used, call
+            validation:clear-grammar-cache() to have it read again. A DTD whose grammar is
+            never cached (it declares a notation, or an unparsed or external general
+            entity) is read again for every document, and needs no clearing.
         -->
         <grammar-cache size="500" expire="3600"/>
     </validation>

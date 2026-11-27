@@ -70,6 +70,21 @@ public interface Receiver<T extends INodeHandle> {
 	
 	void documentType(String name, String publicId, String systemId) throws SAXException;
 
+	/**
+	 * The document type with the declarations of its internal subset that the database keeps.
+	 * A receiver that does not write them ignores them.
+	 *
+	 * @param name the name of the document element
+	 * @param publicId the public id, or null
+	 * @param systemId the system id, or null
+	 * @param internalSubset the declarations, to be written between <code>[</code> and <code>]</code>, or null
+	 * @throws SAXException if the document type cannot be handled
+	 */
+	default void documentType(final String name, final String publicId, final String systemId, final String internalSubset)
+			throws SAXException {
+		documentType(name, publicId, systemId);
+	}
+
     void highlightText(CharSequence seq) throws SAXException;
     
     void setCurrentNode(T node);

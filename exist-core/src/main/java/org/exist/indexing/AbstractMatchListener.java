@@ -148,6 +148,11 @@ public class AbstractMatchListener implements MatchListener {
     }
 
     @Override
+    public void documentType(final String name, final String publicId, final String systemId, final String internalSubset) throws SAXException {
+        if (nextListener != null) {nextListener.documentType(name, publicId, systemId, internalSubset);}
+    }
+
+    @Override
     public void highlightText(CharSequence seq) throws SAXException {
         if (nextListener != null) {
             //Nothing to do

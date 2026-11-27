@@ -303,4 +303,9 @@ public class JSONWriter extends XMLWriter {
     public void documentType(final String name, final String publicId, final String systemId) throws TransformerException {
         // skip
     }
+
+    @Override
+    protected boolean writesInternalSubset() {
+        return false;
+    }
 }

@@ -208,6 +208,12 @@ public class CollectionConfiguration {
         return srcCollectionURI;
     }
 
+    /**
+     * Get the validation mode that this configuration sets.
+     *
+     * @return the mode, or {@link XMLReaderObjectFactory.VALIDATION_SETTING#UNKNOWN} if it sets none, in which
+     *     case the validation mode of the server applies
+     */
     public XMLReaderObjectFactory.VALIDATION_SETTING getValidationMode() {
         return validationMode;
     }

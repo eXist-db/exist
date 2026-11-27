@@ -56,6 +56,7 @@ import org.exist.util.ExistSAXParserFactory;
 import org.exist.util.XMLReaderObjectFactory;
 import org.exist.util.io.TemporaryFileManager;
 import org.exist.validation.GrammarPool;
+import org.exist.validation.ReaderGrammarPool;
 import org.exist.validation.ValidationContentHandler;
 import org.exist.validation.ValidationReport;
 import org.exist.validation.Xsd11SchemaDetection;
@@ -191,15 +192,9 @@ public class Jaxp extends BasicFunction {
     public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
         final ValidationReport report = new ValidationReport();
 
-        MemTreeBuilder instanceBuilder;
-        ContentHandler contenthandler;
-        if (isCalledAs("jaxp-parse")) {
-            instanceBuilder = context.getDocumentBuilder();
-            contenthandler = new DocumentBuilderReceiver(this, instanceBuilder, true); // (namespace?)
-        } else {
-            instanceBuilder = null;
-            contenthandler = new ValidationContentHandler();
-        }
+        final ParseTarget target = newParseTarget();
+        ContentHandler contenthandler = target.contenthandler();
+        MemTreeBuilder instanceBuilder = target.instanceBuilder();
 
         InputSource instance = null;
         LSResourceResolver catalogResolver = null;
@@ -232,7 +227,8 @@ public class Jaxp extends BasicFunction {
             final boolean useCache = ((BooleanValue) args[1].itemAt(0)).getValue();
             if (useCache) {
                 LOG.debug("Grammar caching enabled.");
-                xmlReader.setProperty(XMLReaderObjectFactory.APACHE_PROPERTIES_INTERNAL_GRAMMARPOOL, getGrammarPool());
+                // a view of the shared pool, which does not cache the DTD grammars of the documents it parses
+                xmlReader.setProperty(XMLReaderObjectFactory.APACHE_PROPERTIES_INTERNAL_GRAMMARPOOL, new ReaderGrammarPool(getGrammarPool()));
             }
 
             /* The bundled Xerces XSD 1.1 support is only wired into the JAXP
@@ -426,6 +422,15 @@ public class Jaxp extends BasicFunction {
      *                        {@code null} for {@code jaxp}/{@code jaxp-report}.
      */
     private record ParseTarget(ContentHandler contenthandler, @Nullable MemTreeBuilder instanceBuilder) {
+    }
+
+    /** The handler the parse reports to: one that builds the instance for jaxp-parse, one that only validates otherwise. */
+    private ParseTarget newParseTarget() {
+        if (isCalledAs("jaxp-parse")) {
+            final MemTreeBuilder instanceBuilder = context.getDocumentBuilder();
+            return new ParseTarget(new DocumentBuilderReceiver(this, instanceBuilder, true), instanceBuilder); // (namespace?)
+        }
+        return new ParseTarget(new ValidationContentHandler(), null);
     }
 
     /**

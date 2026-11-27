@@ -201,6 +201,11 @@ public class CharacterMappingWriter implements SerializerWriter {
     }
 
     @Override
+    public void documentType(final String name, final String publicId, final String systemId, final String internalSubset) throws TransformerException {
+        wrappedSerializerWriter.documentType(name, publicId, systemId, internalSubset);
+    }
+
+    @Override
     public void reset() {
         this.characterMap = null;
         if (wrappedSerializerWriter != null) {

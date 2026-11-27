@@ -57,6 +57,7 @@ import org.w3c.dom.DOMException;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.exist.validation.DtdEntityRestorer;
+import org.exist.validation.ReaderGrammarPool;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.ErrorHandler;
@@ -79,6 +80,9 @@ public class Indexer implements ContentHandler, LexicalHandler, DeclHandler, Err
     private static final int CACHE_CHILD_COUNT_MAX = 0x10000;
 
     public static final String ATTR_CDATA_TYPE = "CDATA";
+    /** The name under which SAX reports the external subset of the DTD as an entity. */
+    private static final String EXTERNAL_SUBSET = "[dtd]";
+
     public static final String ATTR_ID_TYPE = "ID";
     public static final String ATTR_IDREF_TYPE = "IDREF";
     public static final String ATTR_IDREFS_TYPE = "IDREFS";
@@ -100,7 +104,6 @@ public class Indexer implements ContentHandler, LexicalHandler, DeclHandler, Err
     private StreamListener indexListener;
 
     private XMLString charBuf = new XMLString();
-    private boolean inCDATASection = false;
     private int currentLine = 0;
     private final NodePath2 currentPath = new NodePath2();
 
@@ -109,7 +112,6 @@ public class Indexer implements ContentHandler, LexicalHandler, DeclHandler, Err
 
     private boolean insideDTD = false;
     private boolean validate = false;
-    private int level = 0;
     private Locator locator = null;
     private int normalize = XMLString.SUPPRESS_BOTH;
     private final Map<String, String> nsMappings = new HashMap<>();
@@ -158,6 +160,17 @@ public class Indexer implements ContentHandler, LexicalHandler, DeclHandler, Err
     @Nullable private String dtdPublicId = null;
     @Nullable private String dtdSystemId = null;
     @Nullable private String dtdBaseSystemId = null;
+    @Nullable private String dtdName = null;
+    /** Asked for the grammar of the external DTD of the document, when it is not cached, see {@link #endDTD()}. */
+    @Nullable private ReaderGrammarPool readerGrammarPool = null;
+
+    /**
+     * The attribute types the internal subset of the DOCTYPE declares. They are kept with the document type, and they
+     * type the attributes of the document: the parser takes the types from the DTD it holds for the system id of the
+     * DOCTYPE, which can be that of another document with the same external DTD and another internal subset.
+     */
+    private DtdAttributeTypes internalAttributeTypes = new DtdAttributeTypes();
+    private boolean insideExternalSubset = false;
     private String currentEntityName = null;
     private final XMLString currentEntityValue = new XMLString();
     
@@ -181,15 +194,12 @@ public class Indexer implements ContentHandler, LexicalHandler, DeclHandler, Err
             .getProperty(PROPERTY_SUPPRESS_WHITESPACE);
         if (suppressWS != null) {
             switch (suppressWS) {
-                case "leading":
-                    normalize = XMLString.SUPPRESS_LEADING_WS;
-                    break;
-                case "trailing":
-                    normalize = XMLString.SUPPRESS_TRAILING_WS;
-                    break;
-                case "none":
-                    normalize = 0;
-                    break;
+                case "leading" -> normalize = XMLString.SUPPRESS_LEADING_WS;
+                case "trailing" -> normalize = XMLString.SUPPRESS_TRAILING_WS;
+                case "none" -> normalize = 0;
+                default -> {
+                    // an unknown value keeps the default: suppress leading and trailing whitespace
+                }
             }
         }
         Boolean temp;
@@ -197,6 +207,15 @@ public class Indexer implements ContentHandler, LexicalHandler, DeclHandler, Err
 	     .getProperty(PROPERTY_PRESERVE_WS_MIXED_CONTENT)) != null) {
             preserveWSmixed = temp;
 	}
+    }
+
+    /**
+     * Set the grammar pool of the reader, which is asked for the grammar of the external DTD of a document.
+     *
+     * @param readerGrammarPool the pool
+     */
+    public void setReaderGrammarPool(@Nullable final ReaderGrammarPool readerGrammarPool) {
+        this.readerGrammarPool = readerGrammarPool;
     }
 
     /**
@@ -230,7 +249,6 @@ public class Indexer implements ContentHandler, LexicalHandler, DeclHandler, Err
             indexSpec = collectionConfig.getIndexConfiguration();
         }
         // reset internal fields
-        level = 0;
         currentPath.reset();
         stack.clear();
         docSize = 0;
@@ -324,18 +342,28 @@ public class Indexer implements ContentHandler, LexicalHandler, DeclHandler, Err
                 charBuf.reset();
             }
         }
-        inCDATASection = false;
     }
 
     @Override
     public void endDTD() throws SAXException {
         insideDTD = false;
+        insideExternalSubset = false;
+
+        // keep the declarations of the internal subset with the document type, to write them out again
+        final String internalSubset = internalAttributeTypes.toInternalSubset(dtdPublicId != null || dtdSystemId != null);
+        if (internalSubset != null && dtdName != null) {
+            document.setDocumentType(new DocumentTypeImpl(null, dtdName, dtdPublicId, dtdSystemId, internalSubset));
+        }
 
         // A cached DTD is not scanned again, so make its entities available now that the
         // internal subset, which takes precedence, has been seen
         if (dtdEntityRestorer != null && dtdSystemId != null) {
             try {
-                dtdEntityRestorer.restore(dtdPublicId, dtdSystemId, dtdBaseSystemId);
+                if (!dtdEntityRestorer.restore(dtdPublicId, dtdSystemId, dtdBaseSystemId) && readerGrammarPool != null && dtdName != null) {
+                    // the grammar that the parser builds for this document holds its internal subset, so it is not cached:
+                    // the DTD alone is parsed once the reader is idle
+                    readerGrammarPool.requestSeed(dtdPublicId, dtdSystemId, dtdBaseSystemId, dtdName);
+                }
             } catch (final IOException e) {
                 throw new SAXException(e.getMessage(), e);
             }
@@ -461,7 +489,6 @@ public class Indexer implements ContentHandler, LexicalHandler, DeclHandler, Err
             }
             currentPath.removeLastNode();
             setPrevious(last);
-            level--;
         } finally {
             if (elemContent != null) {
                 elemContent.reset();
@@ -543,7 +570,6 @@ public class Indexer implements ContentHandler, LexicalHandler, DeclHandler, Err
         if (!stack.isEmpty()) {
             processText(stack.peek(), ProcessTextParent.CDATA_START);
         }
-        inCDATASection = true;
     }
 
     // Methods of interface LexicalHandler
@@ -554,6 +580,7 @@ public class Indexer implements ContentHandler, LexicalHandler, DeclHandler, Err
         final DocumentTypeImpl docType = new DocumentTypeImpl(null, name, publicId, systemId);
         document.setDocumentType(docType);
         insideDTD = true;
+        dtdName = name;
 
         dtdPublicId = publicId;
         dtdSystemId = systemId;
@@ -562,6 +589,9 @@ public class Indexer implements ContentHandler, LexicalHandler, DeclHandler, Err
 
     @Override
     public void startDocument() {
+        internalAttributeTypes = new DtdAttributeTypes();
+        insideExternalSubset = false;
+        dtdName = null;
         if (!validate) {
             progress = new ProgressIndicator(currentLine, 100);
             document.setChildCount(0);
@@ -596,132 +626,54 @@ public class Indexer implements ContentHandler, LexicalHandler, DeclHandler, Err
         return false;
     }
 
+    /**
+     * The type of an attribute as the internal subset of this document declares it, or else as the parser reports it.
+     * The parser takes the types from the DTD it holds for the system id of the DOCTYPE, which can be that of another
+     * document with the same external DTD and another internal subset, whose declarations come first in XML.
+     *
+     * @param declared the type the internal subset declares for the attribute, see {@link DtdAttributeTypes#typeOf}
+     * @param attributes the attributes of the element
+     * @param index the index of the attribute
+     * @return the type, as the parser reports types: {@code ID}, {@code IDREF}, {@code IDREFS}, {@code CDATA}, ...
+     */
+    private static String attributeType(final int declared, final Attributes attributes, final int index) {
+        return switch (declared) {
+            case AttrImpl.ID -> ATTR_ID_TYPE;
+            case AttrImpl.IDREF -> ATTR_IDREF_TYPE;
+            case AttrImpl.IDREFS -> ATTR_IDREFS_TYPE;
+            case AttrImpl.CDATA -> ATTR_CDATA_TYPE;
+            default -> attributes.getType(index);
+        };
+    }
+
+    /**
+     * The value of an attribute. A parser that did not know the attribute as an ID, IDREF or IDREFS has not normalised
+     * its value, which {@link #attributeType} declares it to be.
+     *
+     * <p>The other way round, an attribute that the internal subset declares as CDATA over an ID in the external DTD
+     * keeps the value the parser normalised for the ID, if it used that declaration: SAX does not give the value as it
+     * was written.</p>
+     */
+    private static String attributeValue(final int declared, final String value) {
+        return declared == AttrImpl.ID || declared == AttrImpl.IDREF || declared == AttrImpl.IDREFS
+                ? StringValue.trimWhitespace(StringValue.collapseWhitespace(value)) : value;
+    }
+
     @Override
     public void startElement(final String namespace, final String name, final String qname, final Attributes attributes) throws SAXException {
-        // calculate number of real attributes:
-        // don't store namespace declarations
-        int attrLength = attributes.getLength();
-        for (int i = 0; i < attributes.getLength(); i++) {
-            final String attrNS = attributes.getURI(i);
-            final String attrQName = attributes.getQName(i);
-            if (attrQName.startsWith("xmlns")
-                    || attrNS.equals(Namespaces.EXIST_NS)) {
-                --attrLength;
-            }
-        }
+        final int storedAttributes = countStoredAttributes(attributes);
 
-        ElementImpl node;
-        int p = qname.indexOf(':');
+        final int p = qname.indexOf(':');
         final String prefix = (p != Constants.STRING_NOT_FOUND) ? qname.substring(0, p) : "";
         final QName qn = broker.getBrokerPool().getSymbols().getQName(Node.ELEMENT_NODE, namespace, name, prefix);
 
-        if (!stack.isEmpty()) {
-            final ElementImpl last = stack.peek();
-            processText(last, ProcessTextParent.ELEMENT_START);
-            try {
-                if (!usedElements.isEmpty()) {
-                    node = usedElements.pop();
-                    node.setNodeName(qn, broker.getBrokerPool().getSymbols());
-                } else {
-                    node = new ElementImpl((last != null) ? last.getExpression() : null, qn, broker.getBrokerPool().getSymbols());
-                }
-            } catch (final DOMException e) {
-                throw new SAXException(e.getMessage(), e);
-            }
-            // copy xml:space setting
-            node.setPreserveSpace(last.preserveSpace());
-            // append the node to its parent
-            // (computes the node id and updates the parent's child count)
-            last.appendChildInternal(prevNode, node);
-            setPrevious(null);
-            node.setOwnerDocument(document);
-            node.setAttributes((short) attrLength);
-            if (nsMappings != null && !nsMappings.isEmpty()) {
-                node.setNamespaceMappings(nsMappings);
-                nsMappings.clear();
-            }
-            stack.push(node);
-            currentPath.addNode(node, attributes);
-            node.setPosition(elementCnt++);
-            if (!validate) {
-                if (childCnt != null) {
-                    node.setChildCount(childCnt[node.getPosition()]);
-                }
-                storeElement(node);
-            }
-        } else {
-            try {
-                node = new ElementImpl(null, qn, broker.getBrokerPool().getSymbols());
-            } catch (final DOMException e) {
-                throw new SAXException(e.getMessage(), e);
-            }
-            rootNode = node;
-            setPrevious(null);
-            node.setOwnerDocument(document);
-            node.setNodeId(broker.getBrokerPool().getNodeFactory().createInstance(nodeFactoryInstanceCnt++));
-            node.setAttributes((short) attrLength);
-            if (nsMappings != null && !nsMappings.isEmpty()) {
-                node.setNamespaceMappings(nsMappings);
-                nsMappings.clear();
-            }
-            stack.push(node);
-            currentPath.addNode(node, attributes);
-            node.setPosition(elementCnt++);
-            if (!validate) {
-                if (childCnt != null) {
-                    node.setChildCount(childCnt[node.getPosition()]);
-                }
-                storeElement(node);
-            }
-            document.appendChild((NodeHandle)node);
-        }
-        level++;
+        final ElementImpl node = stack.isEmpty()
+                ? startRootElement(qn, storedAttributes, attributes)
+                : startChildElement(qn, storedAttributes, attributes);
 
-        for (int i = 0; i < attributes.getLength(); i++) {
-            final String attrNS = attributes.getURI(i);
-            final String attrLocalName = attributes.getLocalName(i);
-            final String attrQName = attributes.getQName(i);
-            // skip xmlns-attributes and attributes in eXist's namespace
-            if (attrQName.startsWith("xmlns") || attrNS.equals(Namespaces.EXIST_NS)) {
-                --attrLength;
-            } else {
-                p = attrQName.indexOf(':');
-                final String attrPrefix = (p != Constants.STRING_NOT_FOUND) ? attrQName.substring(0, p) : null;
-                final AttrImpl attr = (AttrImpl) NodePool.getInstance().borrowNode(Node.ATTRIBUTE_NODE);
-                final QName attrQN = broker.getBrokerPool().getSymbols().getQName(Node.ATTRIBUTE_NODE, attrNS, attrLocalName, attrPrefix);
-                try {
-                    attr.setNodeName(attrQN, broker.getBrokerPool().getSymbols());
-                } catch (final DOMException e) {
-                    throw new SAXException(e.getMessage(), e);
-                }
-                attr.setValue(attributes.getValue(i));
-                attr.setOwnerDocument(document);
-                if (attributes.getType(i).equals(ATTR_ID_TYPE)) {
-                    attr.setType(AttrImpl.ID);
-                } else if (attributes.getType(i).equals(ATTR_IDREF_TYPE)) {
-                    attr.setType(AttrImpl.IDREF);
-                } else if (attributes.getType(i).equals(ATTR_IDREFS_TYPE)) {
-                    attr.setType(AttrImpl.IDREFS);
-                } else if (attr.getQName().equals(Namespaces.XML_ID_QNAME)) {
-                    // an xml:id attribute. Normalize the attribute and set its
-                    // type to ID
-                    attr.setValue(StringValue.trimWhitespace(StringValue.collapseWhitespace(attr.getValue())));
-
-                    attr.setType(AttrImpl.ID);
-                } else if (attr.getQName().equals(Namespaces.XML_SPACE_QNAME)) {
-                    node.setPreserveSpace("preserve".equals(attr.getValue()));
-                }
-                node.appendChildInternal(prevNode, attr);
-                setPrevious(attr);
-                if (!validate) {
-                    broker.storeNode(transaction, attr, currentPath, indexSpec);
-
-                    if (indexListener != null) {
-                        indexListener.attribute(transaction, attr, currentPath);
-                    }
-                }
-            }
-        }
+        final int skipped = storeAttributes(node, qname, attributes);
+        // The attributes that were skipped are taken off the count a second time, as they always were
+        final int attrLength = storedAttributes - skipped;
         if (attrLength > 0) {
             node.setAttributes((short) attrLength);
         }
@@ -734,6 +686,144 @@ public class Indexer implements ContentHandler, LexicalHandler, DeclHandler, Err
             }
         }
         docSize++;
+    }
+
+    /** Whether an attribute is stored: namespace declarations and attributes in eXist's namespace are not. */
+    private static boolean isStored(final String attrNS, final String attrQName) {
+        return !(attrQName.startsWith("xmlns") || attrNS.equals(Namespaces.EXIST_NS));
+    }
+
+    /** The number of attributes that are stored. */
+    private static int countStoredAttributes(final Attributes attributes) {
+        int count = attributes.getLength();
+        for (int i = 0; i < attributes.getLength(); i++) {
+            if (!isStored(attributes.getURI(i), attributes.getQName(i))) {
+                --count;
+            }
+        }
+        return count;
+    }
+
+    private ElementImpl startChildElement(final QName qn, final int attrLength, final Attributes attributes) throws SAXException {
+        final ElementImpl last = stack.peek();
+        processText(last, ProcessTextParent.ELEMENT_START);
+        final ElementImpl node;
+        try {
+            if (!usedElements.isEmpty()) {
+                node = usedElements.pop();
+                node.setNodeName(qn, broker.getBrokerPool().getSymbols());
+            } else {
+                node = new ElementImpl((last != null) ? last.getExpression() : null, qn, broker.getBrokerPool().getSymbols());
+            }
+        } catch (final DOMException e) {
+            throw new SAXException(e.getMessage(), e);
+        }
+        // copy xml:space setting
+        node.setPreserveSpace(last.preserveSpace());
+        // append the node to its parent
+        // (computes the node id and updates the parent's child count)
+        last.appendChildInternal(prevNode, node);
+        setPrevious(null);
+        node.setOwnerDocument(document);
+        enter(node, attrLength, attributes);
+        return node;
+    }
+
+    private ElementImpl startRootElement(final QName qn, final int attrLength, final Attributes attributes) throws SAXException {
+        final ElementImpl node;
+        try {
+            node = new ElementImpl(null, qn, broker.getBrokerPool().getSymbols());
+        } catch (final DOMException e) {
+            throw new SAXException(e.getMessage(), e);
+        }
+        rootNode = node;
+        setPrevious(null);
+        node.setOwnerDocument(document);
+        node.setNodeId(broker.getBrokerPool().getNodeFactory().createInstance(nodeFactoryInstanceCnt++));
+        enter(node, attrLength, attributes);
+        document.appendChild((NodeHandle) node);
+        return node;
+    }
+
+    /** Makes an element the current one, and stores it unless the document is only validated. */
+    private void enter(final ElementImpl node, final int attrLength, final Attributes attributes) {
+        node.setAttributes((short) attrLength);
+        if (nsMappings != null && !nsMappings.isEmpty()) {
+            node.setNamespaceMappings(nsMappings);
+            nsMappings.clear();
+        }
+        stack.push(node);
+        currentPath.addNode(node, attributes);
+        node.setPosition(elementCnt++);
+        if (!validate) {
+            if (childCnt != null) {
+                node.setChildCount(childCnt[node.getPosition()]);
+            }
+            storeElement(node);
+        }
+    }
+
+    /**
+     * Appends the attributes of an element to it, and stores them.
+     *
+     * @return the number of attributes that were skipped
+     */
+    private int storeAttributes(final ElementImpl node, final String qname, final Attributes attributes) throws SAXException {
+        int skipped = 0;
+        for (int i = 0; i < attributes.getLength(); i++) {
+            final String attrNS = attributes.getURI(i);
+            final String attrQName = attributes.getQName(i);
+            if (!isStored(attrNS, attrQName)) {
+                ++skipped;
+                continue;
+            }
+            final int p = attrQName.indexOf(':');
+            final String attrPrefix = (p != Constants.STRING_NOT_FOUND) ? attrQName.substring(0, p) : null;
+            final AttrImpl attr = (AttrImpl) NodePool.getInstance().borrowNode(Node.ATTRIBUTE_NODE);
+            final QName attrQN = broker.getBrokerPool().getSymbols().getQName(Node.ATTRIBUTE_NODE, attrNS, attributes.getLocalName(i), attrPrefix);
+            try {
+                attr.setNodeName(attrQN, broker.getBrokerPool().getSymbols());
+            } catch (final DOMException e) {
+                throw new SAXException(e.getMessage(), e);
+            }
+            final int declaredType = internalAttributeTypes.typeOf(qname, attrQName);
+            attr.setValue(attributeValue(declaredType, attributes.getValue(i)));
+            attr.setOwnerDocument(document);
+            setAttributeType(node, attr, attributeType(declaredType, attributes, i));
+            node.appendChildInternal(prevNode, attr);
+            setPrevious(attr);
+            if (!validate) {
+                broker.storeNode(transaction, attr, currentPath, indexSpec);
+
+                if (indexListener != null) {
+                    indexListener.attribute(transaction, attr, currentPath);
+                }
+            }
+        }
+        return skipped;
+    }
+
+    /** Sets the type of an attribute that the DTD declares, or that its name gives it. */
+    private static void setAttributeType(final ElementImpl element, final AttrImpl attr, final String attrType) {
+        switch (attrType) {
+            case ATTR_ID_TYPE -> attr.setType(AttrImpl.ID);
+            case ATTR_IDREF_TYPE -> attr.setType(AttrImpl.IDREF);
+            case ATTR_IDREFS_TYPE -> attr.setType(AttrImpl.IDREFS);
+            default -> setAttributeTypeByName(element, attr);
+        }
+    }
+
+    /**
+     * The attributes that a name makes special when the DTD does not type them: an xml:id attribute is normalized and
+     * an ID, and an xml:space attribute sets how its element keeps whitespace. A name is an object, so this is not a switch.
+     */
+    private static void setAttributeTypeByName(final ElementImpl element, final AttrImpl attr) {
+        if (attr.getQName().equals(Namespaces.XML_ID_QNAME)) {
+            attr.setValue(StringValue.trimWhitespace(StringValue.collapseWhitespace(attr.getValue())));
+            attr.setType(AttrImpl.ID);
+        } else if (attr.getQName().equals(Namespaces.XML_SPACE_QNAME)) {
+            element.setPreserveSpace("preserve".equals(attr.getValue()));
+        }
     }
 
     private void storeText() {
@@ -765,6 +855,9 @@ public class Indexer implements ContentHandler, LexicalHandler, DeclHandler, Err
 
     @Override
     public void startEntity(final String name) {
+        if (EXTERNAL_SUBSET.equals(name)) {
+            insideExternalSubset = true;
+        }
         // while validating, all entities are put into a map
         // to cache them for later use
         if (validate) {
@@ -777,6 +870,9 @@ public class Indexer implements ContentHandler, LexicalHandler, DeclHandler, Err
 
     @Override
     public void endEntity(final String name) {
+        if (EXTERNAL_SUBSET.equals(name)) {
+            insideExternalSubset = false;
+        }
         // store the entity into a map for later
         if (validate && currentEntityValue != null) {
             entityMap.put(currentEntityName, currentEntityValue.toString());
@@ -832,7 +928,14 @@ public class Indexer implements ContentHandler, LexicalHandler, DeclHandler, Err
 
     @Override
     public void attributeDecl(final String eName, final String aName, final String type, final String mode, final String value) {
-        // not used
+        // the external subset is the business of its DTD, which the system id of the DOCTYPE names
+        if (insideInternalSubset()) {
+            internalAttributeTypes.declare(eName, aName, type);
+        }
+    }
+
+    private boolean insideInternalSubset() {
+        return insideDTD && !insideExternalSubset;
     }
 
     @Override
@@ -859,18 +962,17 @@ public class Indexer implements ContentHandler, LexicalHandler, DeclHandler, Err
     private void setPrevious(final StoredNode previous) {
         if (prevNode != null) {
             switch (prevNode.getNodeType()) {
-            case Node.ATTRIBUTE_NODE:
-                prevNode.release();
-                break;
-            case Node.ELEMENT_NODE:
-                if (prevNode != rootNode) {
-                    prevNode.clear();
-                    usedElements.push((ElementImpl) prevNode);
+                case Node.ATTRIBUTE_NODE -> prevNode.release();
+                case Node.ELEMENT_NODE -> {
+                    if (prevNode != rootNode) {
+                        prevNode.clear();
+                        usedElements.push((ElementImpl) prevNode);
+                    }
                 }
-                break;
-            case Node.TEXT_NODE:
-                prevNode.clear();
-                break;
+                case Node.TEXT_NODE -> prevNode.clear();
+                default -> {
+                    // the other kinds of node need no clean-up
+                }
             }
         }
         prevNode = previous;

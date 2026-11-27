@@ -79,6 +79,7 @@ import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.Locale;
+import javax.annotation.Nullable;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -167,55 +168,15 @@ public class SystemExport {
      * @param errorList   a list of {@link ErrorReport} objects as returned by methods in {@link ConsistencyCheck}.
      * @return the path to the created backup file or directory, or {@code null} if an error occurred.
      */
-    public Path export(final String targetDir, boolean incremental, final int maxInc, final boolean zip, final List<ErrorReport> errorList) {
+    public Path export(final String targetDir, final boolean incremental, final int maxInc, final boolean zip, final List<ErrorReport> errorList) {
         Path backupFile = null;
-
         try {
             final BackupDirectory directory = new BackupDirectory(targetDir);
-            BackupDescriptor prevBackup = null;
+            final BackupPlan plan = planBackup(directory, incremental, maxInc);
+            final BackupDescriptor prevBackup = plan.previous();
+            final Properties properties = plan.properties();
 
-            if (incremental) {
-                prevBackup = directory.lastBackupFile();
-                LOG.info("Creating incremental backup. Prev backup: {}", (prevBackup == null) ? "none" : prevBackup.getSymbolicPath());
-            }
-
-            final Properties properties = new Properties();
-            int seqNr = 1;
-
-            if (incremental) {
-                properties.setProperty(BackupDescriptor.PREVIOUS_PROP_NAME, (prevBackup == null) ? "" : prevBackup.getName());
-
-                if (prevBackup != null) {
-                    final Properties prevProp = prevBackup.getProperties();
-
-                    if (prevProp != null) {
-                        final String seqNrStr = prevProp.getProperty(BackupDescriptor.NUMBER_IN_SEQUENCE_PROP_NAME, "1");
-
-                        try {
-                            seqNr = Integer.parseInt(seqNrStr);
-
-                            if (seqNr == maxInc) {
-                                seqNr = 1;
-                                incremental = false;
-                                prevBackup = null;
-                            } else {
-                                ++seqNr;
-                            }
-                        } catch (final NumberFormatException e) {
-                            LOG.warn("Bad sequence number in backup descriptor: {}", prevBackup.getName());
-                        }
-                    }
-                }
-            }
-            properties.setProperty(BackupDescriptor.NUMBER_IN_SEQUENCE_PROP_NAME, Integer.toString(seqNr));
-            properties.setProperty(BackupDescriptor.INCREMENTAL_PROP_NAME, incremental ? "yes" : "no");
-
-            try {
-                properties.setProperty(BackupDescriptor.DATE_PROP_NAME, new DateTimeValue(new Date()).getStringValue());
-            } catch (final XPathException e) {
-            }
-
-            backupFile = directory.createBackup(incremental && (prevBackup != null), zip);
+            backupFile = directory.createBackup(plan.incremental() && (prevBackup != null), zip);
 
             final FunctionE<Path, BackupWriter, IOException> fWriter;
             if (zip) {
@@ -235,7 +196,7 @@ public class SystemExport {
                 final CollectionCallback cb = new CollectionCallback(output, date, prevBackup, errorList, true);
                 broker.getCollectionsFailsafe(transaction, cb);
 
-                exportOrphans(output, cb.getDocs(), errorList);
+                exportOrphans(output, cb.getDocs());
             }
 
             return backupFile;
@@ -248,6 +209,66 @@ public class SystemExport {
                 FileUtils.deleteQuietly(backupFile);
             }
             return null;
+        }
+    }
+
+
+    /**
+     * What a backup is, decided before it is written.
+     *
+     * @param incremental whether it is incremental: a full backup is made, whatever was asked for, when the sequence of incremental backups is complete
+     * @param previous the backup that it continues, or null
+     * @param properties the properties that it stores
+     */
+    private record BackupPlan(boolean incremental, @Nullable BackupDescriptor previous, Properties properties) {
+    }
+
+    private BackupPlan planBackup(final BackupDirectory directory, final boolean incremental, final int maxInc) throws IOException {
+        BackupDescriptor prevBackup = null;
+        if (incremental) {
+            prevBackup = directory.lastBackupFile();
+            LOG.info("Creating incremental backup. Prev backup: {}", (prevBackup == null) ? "none" : prevBackup.getSymbolicPath());
+        }
+
+        final Properties properties = new Properties();
+        boolean incrementalBackup = incremental;
+        int seqNr = 1;
+
+        if (incrementalBackup) {
+            properties.setProperty(BackupDescriptor.PREVIOUS_PROP_NAME, (prevBackup == null) ? "" : prevBackup.getName());
+
+            final OptionalInt predecessorSeqNr = prevBackup == null ? OptionalInt.empty() : numberInSequenceOf(prevBackup);
+            if (predecessorSeqNr.isPresent()) {
+                if (predecessorSeqNr.getAsInt() == maxInc) {
+                    incrementalBackup = false;
+                    prevBackup = null;
+                } else {
+                    seqNr = predecessorSeqNr.getAsInt() + 1;
+                }
+            }
+        }
+        properties.setProperty(BackupDescriptor.NUMBER_IN_SEQUENCE_PROP_NAME, Integer.toString(seqNr));
+        properties.setProperty(BackupDescriptor.INCREMENTAL_PROP_NAME, incrementalBackup ? "yes" : "no");
+
+        try {
+            properties.setProperty(BackupDescriptor.DATE_PROP_NAME, new DateTimeValue(new Date()).getStringValue());
+        } catch (final XPathException e) {
+            // the date is left out
+        }
+        return new BackupPlan(incrementalBackup, prevBackup, properties);
+    }
+
+    /** The number in its sequence that a backup stores, if it stores properties and the number can be read. */
+    private static OptionalInt numberInSequenceOf(final BackupDescriptor backup) throws IOException {
+        final Properties properties = backup.getProperties();
+        if (properties == null) {
+            return OptionalInt.empty();
+        }
+        try {
+            return OptionalInt.of(Integer.parseInt(properties.getProperty(BackupDescriptor.NUMBER_IN_SEQUENCE_PROP_NAME, "1")));
+        } catch (final NumberFormatException e) {
+            LOG.warn("Bad sequence number in backup descriptor: {}", backup.getName());
+            return OptionalInt.empty();
         }
     }
 
@@ -333,9 +354,8 @@ public class SystemExport {
      *
      * @param output    the backup writer
      * @param docs      a document set containing all the documents which were exported regularily. the method will ignore those.
-     * @param errorList a list of {@link org.exist.backup.ErrorReport} objects as returned by methods in {@link ConsistencyCheck}
      */
-    private void exportOrphans(final BackupWriter output, final DocumentSet docs, final List<ErrorReport> errorList) throws IOException {
+    private void exportOrphans(final BackupWriter output, final DocumentSet docs) throws IOException {
         output.newCollection("/db/__lost_and_found__");
 
         final SAXSerializer serializer = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
@@ -715,7 +735,7 @@ public class SystemExport {
 
         final DocumentType docType = doc.getDoctype();
         if (docType != null) {
-            receiver.documentType(docType.getName(), docType.getPublicId(), docType.getSystemId());
+            receiver.documentType(docType.getName(), docType.getPublicId(), docType.getSystemId(), docType.getInternalSubset());
         }
     }
 

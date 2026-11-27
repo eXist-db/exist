@@ -300,4 +300,9 @@ public class AdaptiveWriter extends IndentingXMLWriter {
             broker.returnSerializer(serializer);
         }
     }
+
+    @Override
+    protected boolean writesInternalSubset() {
+        return false;
+    }
 }

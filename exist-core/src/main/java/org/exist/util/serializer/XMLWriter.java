@@ -265,6 +265,7 @@ public class XMLWriter implements SerializerWriter {
     }
 
     public void endDocument() throws TransformerException {
+        // nothing is written at the end of a document
     }
 
     public void startElement(final String namespaceUri, final String localName, final String qname) throws TransformerException {
@@ -694,6 +695,33 @@ public class XMLWriter implements SerializerWriter {
         endDocumentType();
     }
 
+    @Override
+    public void documentType(final String name, final String publicId, final String systemId, final String internalSubset) throws TransformerException {
+        if (internalSubset == null || !writesInternalSubset()) {
+            documentType(name, publicId, systemId);
+            return;
+        }
+        startDocumentType(name, publicId, systemId);
+        try {
+            writer.write(" [");
+            writer.write(internalSubset);
+            writer.write("]");
+        } catch (final IOException ioe) {
+            throw new TransformerException(ioe.getMessage(), ioe);
+        }
+        endDocumentType();
+    }
+
+    /**
+     * Whether this writer writes the declarations of an internal subset behind the DOCTYPE. The writers of the other
+     * output methods, which have no use for them, say no.
+     *
+     * @return true if the declarations are written
+     */
+    protected boolean writesInternalSubset() {
+        return true;
+    }
+
     protected void closeStartTag(final boolean isEmpty) throws TransformerException {
         try {
             if (tagIsOpen) {
@@ -842,7 +870,8 @@ public class XMLWriter implements SerializerWriter {
         final boolean checkSpecials = needsEscaping(inAttribute);
         char ch = 0;
         final int len = text.length();
-        int pos = 0, i;
+        int pos = 0;
+        int i;
         while(pos < len) {
             i = pos;
             while(i < len) {
@@ -967,7 +996,7 @@ public class XMLWriter implements SerializerWriter {
     @Nullable
     private static java.text.Normalizer.Form parseNormalizationForm(final String value) {
         if (value == null) return null;
-        return switch (value.trim().toUpperCase(java.util.Locale.ROOT)) {
+        return switch (value.trim().toUpperCase(Locale.ROOT)) {
             case "NFC" -> java.text.Normalizer.Form.NFC;
             case "NFD" -> java.text.Normalizer.Form.NFD;
             case "NFKC" -> java.text.Normalizer.Form.NFKC;

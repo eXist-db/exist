@@ -92,7 +92,7 @@ public class Xsd11StoreTimeValidationTest {
     @RegisterExtension
     public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(
             propertiesBuilder()
-                    .set(XMLReaderObjectFactory.PROPERTY_VALIDATION_MODE, "yes")
+                    .set(XMLReaderObjectFactory.PROPERTY_VALIDATION_MODE, "no")
                     .build(),
             true,
             true);
@@ -156,9 +156,8 @@ public class Xsd11StoreTimeValidationTest {
             transact.commit(txn);
         }
 
-        // A leading-CollectionConfiguration-without-an-explicit-<validation> element resolves to
-        // VALIDATION_SETTING.UNKNOWN ("maybe() == false"), which *disables* validation regardless
-        // of any global validation.mode default -- an explicit collection.xconf is required.
+        // The server does not validate (mode no) and the collection configuration says yes: the mode of the
+        // collection configuration wins, so the document is validated at store time.
         TestTools.insertDocumentToURL(
                 new UnsynchronizedByteArrayInputStream(XCONF_YES.getBytes(UTF_8)),
                 "xmldb:exist:///db/system/config" + TEST_COLLECTION_URI + "/collection.xconf");
